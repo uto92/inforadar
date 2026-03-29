@@ -1,0 +1,41 @@
+# ANA SFC レート検索設定
+# ========================
+
+# 検索する路線リスト
+routes:
+  - origin: TYO        # 東京（羽田/成田）
+    destination: OKA    # 沖縄（那覇）
+  - origin: TYO
+    destination: CTS    # 札幌（新千歳）
+  - origin: TYO
+    destination: FUK    # 福岡
+  - origin: TYO
+    destination: HNL    # ホノルル
+  - origin: TYO
+    destination: SIN    # シンガポール
+
+# 検索期間
+search:
+  # 出発日の範囲（YYYY-MM-DD）
+  date_from: "2026-05-01"
+  date_to: "2026-05-31"
+  # 曜日フィルタ（空の場合は全曜日）
+  # weekdays: [fri, sat, sun]
+  weekdays: []
+
+# 搭乗クラス（Y: エコノミー, PY: プレミアムエコノミー, C: ビジネス, F: ファースト）
+cabin_classes:
+  - Y
+  - C
+
+# マイル単価の閾値（円/マイル）
+# この値以上のレートが「お得」と判定されます
+rate_threshold: 2.0
+
+# リクエスト間隔（秒）- サーバーに負荷をかけないように
+request_delay: 3.0
+
+# ANA会員情報（環境変数での設定を推奨）
+# ana_credentials:
+#   username: ${ANA_USERNAME}
+#   password: ${ANA_PASSWORD}
