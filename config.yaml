@@ -1,18 +1,31 @@
 # ANA SFC レート検索設定
 # ========================
+# 大阪（伊丹/関空）発メイン
 
 # 検索する路線リスト
 routes:
-  - origin: TYO        # 東京（羽田/成田）
-    destination: OKA    # 沖縄（那覇）
-  - origin: TYO
-    destination: CTS    # 札幌（新千歳）
-  - origin: TYO
-    destination: FUK    # 福岡
-  - origin: TYO
-    destination: HNL    # ホノルル
-  - origin: TYO
-    destination: SIN    # シンガポール
+  # 国内線（伊丹発）
+  - origin: ITM           # 伊丹
+    destination: HND      # 羽田
+  - origin: ITM
+    destination: CTS      # 札幌（新千歳）
+  - origin: ITM
+    destination: OKA      # 沖縄（那覇）
+  - origin: ITM
+    destination: SDJ      # 仙台
+  - origin: ITM
+    destination: KMJ      # 熊本
+  - origin: ITM
+    destination: NGS      # 長崎
+  - origin: ITM
+    destination: KOJ      # 鹿児島
+  - origin: ITM
+    destination: ISG      # 石垣島
+  - origin: ITM
+    destination: MMB      # 女満別
+  # 国際線（関空発）
+  - origin: KIX
+    destination: TPE      # 台北（桃園）
 
 # 検索期間
 search:

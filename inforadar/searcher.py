@@ -48,6 +48,7 @@ DOMESTIC_MILES_CHART = {
 
 # 主要国内路線の距離（km）と参考運賃（円）
 DOMESTIC_ROUTE_DATA = {
+    # 東京発
     ("TYO", "OKA"): {"distance": 1554, "base_price_y": 45000, "base_price_c": 75000},
     ("TYO", "CTS"): {"distance": 835, "base_price_y": 38000, "base_price_c": 65000},
     ("TYO", "FUK"): {"distance": 881, "base_price_y": 42000, "base_price_c": 70000},
@@ -63,6 +64,16 @@ DOMESTIC_ROUTE_DATA = {
     ("TYO", "AKJ"): {"distance": 1043, "base_price_y": 48000, "base_price_c": 80000},
     ("TYO", "MMB"): {"distance": 990, "base_price_y": 46000, "base_price_c": 78000},
     ("TYO", "ISG"): {"distance": 1950, "base_price_y": 55000, "base_price_c": 90000},
+    # 大阪（伊丹）発
+    ("ITM", "HND"): {"distance": 400, "base_price_y": 28000, "base_price_c": 48000},
+    ("ITM", "CTS"): {"distance": 1150, "base_price_y": 40000, "base_price_c": 68000},
+    ("ITM", "OKA"): {"distance": 1180, "base_price_y": 35000, "base_price_c": 60000},
+    ("ITM", "SDJ"): {"distance": 620, "base_price_y": 30000, "base_price_c": 52000},
+    ("ITM", "KMJ"): {"distance": 480, "base_price_y": 25000, "base_price_c": 44000},
+    ("ITM", "NGS"): {"distance": 540, "base_price_y": 27000, "base_price_c": 46000},
+    ("ITM", "KOJ"): {"distance": 560, "base_price_y": 28000, "base_price_c": 48000},
+    ("ITM", "ISG"): {"distance": 1550, "base_price_y": 48000, "base_price_c": 80000},
+    ("ITM", "MMB"): {"distance": 1300, "base_price_y": 45000, "base_price_c": 76000},
 }
 
 # 主要国際線マイルチャートと参考運賃
@@ -98,6 +109,15 @@ INTERNATIONAL_ROUTE_DATA = {
     ("TYO", "SYD"): {
         "miles": {"Y": 37000, "PY": 56000, "C": 65000, "F": 125000},
         "base_price": {"Y": 100000, "PY": 220000, "C": 420000, "F": 950000},
+    },
+    # 関空発
+    ("KIX", "TPE"): {
+        "miles": {"Y": 17000, "PY": 26000, "C": 35000, "F": 0},
+        "base_price": {"Y": 45000, "PY": 90000, "C": 180000, "F": 0},
+    },
+    ("KIX", "HNL"): {
+        "miles": {"Y": 35000, "PY": 53000, "C": 60000, "F": 120000},
+        "base_price": {"Y": 85000, "PY": 185000, "C": 360000, "F": 820000},
     },
 }
 
