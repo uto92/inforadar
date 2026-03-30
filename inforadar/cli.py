@@ -51,6 +51,12 @@ def main():
         help="空席なしのフライトも表示",
     )
     parser.add_argument(
+        "--min-seats",
+        type=int,
+        default=1,
+        help="最低残席数（デフォルト: 1、2人旅なら --min-seats 2）",
+    )
+    parser.add_argument(
         "--renkyu",
         action="store_true",
         help="連休（GW・お盆・SW・年末年始等）に絞って検索",
@@ -84,6 +90,11 @@ def main():
 
     if args.threshold is not None:
         config.rate_threshold = args.threshold
+
+    min_seats = args.min_seats
+    if min_seats > 1:
+        print(f"👥 {min_seats}名分の空席があるフライトのみ表示")
+        print()
 
     # 連休モードの場合、検索範囲を年間に拡大
     if args.renkyu:
@@ -122,12 +133,12 @@ def main():
         sys.exit(0)
 
     # サマリー表示
-    print(format_summary(results, config.rate_threshold))
+    print(format_summary(results, config.rate_threshold, min_seats=min_seats))
     print()
 
     # 連休別おすすめ表示
     if args.renkyu and hasattr(config, '_renkyus'):
-        print(_format_renkyu_suggestions(results, config._renkyus, config.rate_threshold))
+        print(_format_renkyu_suggestions(results, config._renkyus, config.rate_threshold, min_seats=min_seats))
         print()
 
     # 詳細テーブル表示
@@ -136,6 +147,7 @@ def main():
         rate_threshold=config.rate_threshold,
         only_available=not args.show_all,
         only_good_deals=args.deals_only,
+        min_seats=min_seats,
     ))
 
 
@@ -165,11 +177,12 @@ def _format_renkyu_suggestions(
     results: list,
     renkyus: list[Renkyu],
     rate_threshold: float,
+    min_seats: int = 1,
 ) -> str:
     """連休別のおすすめを表示"""
     from .formatter import _cabin_label
 
-    lines = ["=" * 65, "🎌 連休別おすすめフライト", "=" * 65]
+    lines = ["=" * 75, "🎌 連休別おすすめフライト", "=" * 75]
 
     seen_renkyus = set()
     for r in renkyus:
@@ -177,10 +190,10 @@ def _format_renkyu_suggestions(
             continue
         seen_renkyus.add(r.name)
 
-        # この連休期間のフライトを抽出
+        # この連休期間のフライトを抽出（min_seats適用）
         renkyu_results = [
             f for f in results
-            if r.start <= f.date <= r.end and f.is_available
+            if r.start <= f.date <= r.end and f.seats_available >= min_seats
         ]
         if not renkyu_results:
             continue
@@ -212,15 +225,17 @@ def _format_renkyu_suggestions(
             elif f.rate >= rate_threshold:
                 deal_mark = " ★"
 
+            arr_str = f"→{f.arrival_time}" if f.arrival_time != "--:--" else ""
             lines.append(
                 f"    {str(f.route):16s} {f.date.strftime('%m/%d(%a)')} "
+                f"{f.departure_time}{arr_str:8s} "
                 f"{_cabin_label(f.cabin_class):8s} "
                 f"{f.rate:.1f}円/マイル "
                 f"({f.miles_required:,}マイル → 有償¥{f.cash_price:,}) "
                 f"残{f.seats_available}席{deal_mark}"
             )
 
-    lines.append("=" * 65)
+    lines.append("=" * 75)
     return "\n".join(lines)
 
 

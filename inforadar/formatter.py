@@ -11,12 +11,13 @@ def format_results(
     only_available: bool = True,
     only_good_deals: bool = False,
     sort_by_rate: bool = True,
+    min_seats: int = 1,
 ) -> str:
     """検索結果をテーブル形式でフォーマット"""
 
     filtered = results
     if only_available:
-        filtered = [r for r in filtered if r.is_available]
+        filtered = [r for r in filtered if r.seats_available >= min_seats]
     if only_good_deals:
         filtered = [r for r in filtered if r.rate >= rate_threshold]
     if sort_by_rate:
@@ -26,7 +27,7 @@ def format_results(
         return "該当するフライトが見つかりませんでした。"
 
     headers = [
-        "路線", "日付", "便名", "出発", "クラス",
+        "路線", "日付", "便名", "出発", "到着", "クラス",
         "必要マイル", "有償価格", "税等", "マイル単価", "残席", "評価",
     ]
 
@@ -37,6 +38,7 @@ def format_results(
             r.date.strftime("%m/%d(%a)"),
             r.flight_number,
             r.departure_time,
+            r.arrival_time,
             _cabin_label(r.cabin_class),
             f"{r.miles_required:,}",
             f"¥{r.cash_price:,}",
@@ -52,9 +54,10 @@ def format_results(
 def format_summary(
     results: list[FlightResult],
     rate_threshold: float = 2.0,
+    min_seats: int = 1,
 ) -> str:
     """検索結果のサマリーを出力"""
-    available = [r for r in results if r.is_available]
+    available = [r for r in results if r.seats_available >= min_seats]
     good_deals = [r for r in available if r.rate >= rate_threshold]
 
     lines = [
