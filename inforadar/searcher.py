@@ -32,48 +32,49 @@ CABIN_CLASS_MAP = {
 }
 
 # ANAの国内線マイルチャート（片道、レギュラーシーズン）
+# P = プレミアムクラス（国内線のみ。国際線のビジネスとは別物）
 DOMESTIC_MILES_CHART = {
     # (zone, cabin) -> miles
     ("0-300", "Y"): 5000,
-    ("0-300", "C"): 9000,
+    ("0-300", "P"): 9000,
     ("301-800", "Y"): 6000,
-    ("301-800", "C"): 10500,
+    ("301-800", "P"): 10500,
     ("801-1000", "Y"): 7000,
-    ("801-1000", "C"): 12000,
+    ("801-1000", "P"): 12000,
     ("1001-2000", "Y"): 7500,
-    ("1001-2000", "C"): 13500,
+    ("1001-2000", "P"): 13500,
     ("2001+", "Y"): 10000,
-    ("2001+", "C"): 18000,
+    ("2001+", "P"): 18000,
 }
 
 # 主要国内路線の距離（km）と参考運賃（円）
 DOMESTIC_ROUTE_DATA = {
     # 東京発
-    ("TYO", "OKA"): {"distance": 1554, "base_price_y": 45000, "base_price_c": 75000},
-    ("TYO", "CTS"): {"distance": 835, "base_price_y": 38000, "base_price_c": 65000},
-    ("TYO", "FUK"): {"distance": 881, "base_price_y": 42000, "base_price_c": 70000},
-    ("TYO", "KIX"): {"distance": 400, "base_price_y": 28000, "base_price_c": 48000},
-    ("TYO", "ITM"): {"distance": 400, "base_price_y": 28000, "base_price_c": 48000},
-    ("TYO", "NGO"): {"distance": 274, "base_price_y": 24000, "base_price_c": 42000},
-    ("TYO", "HIJ"): {"distance": 675, "base_price_y": 35000, "base_price_c": 60000},
-    ("TYO", "KOJ"): {"distance": 960, "base_price_y": 43000, "base_price_c": 72000},
-    ("TYO", "KMJ"): {"distance": 904, "base_price_y": 42000, "base_price_c": 70000},
-    ("TYO", "NGS"): {"distance": 958, "base_price_y": 43000, "base_price_c": 72000},
-    ("TYO", "OIT"): {"distance": 825, "base_price_y": 40000, "base_price_c": 68000},
-    ("TYO", "SDJ"): {"distance": 305, "base_price_y": 22000, "base_price_c": 38000},
-    ("TYO", "AKJ"): {"distance": 1043, "base_price_y": 48000, "base_price_c": 80000},
-    ("TYO", "MMB"): {"distance": 990, "base_price_y": 46000, "base_price_c": 78000},
-    ("TYO", "ISG"): {"distance": 1950, "base_price_y": 55000, "base_price_c": 90000},
+    ("TYO", "OKA"): {"distance": 1554, "base_price_y": 45000, "base_price_p": 75000},
+    ("TYO", "CTS"): {"distance": 835, "base_price_y": 38000, "base_price_p": 65000},
+    ("TYO", "FUK"): {"distance": 881, "base_price_y": 42000, "base_price_p": 70000},
+    ("TYO", "KIX"): {"distance": 400, "base_price_y": 28000, "base_price_p": 48000},
+    ("TYO", "ITM"): {"distance": 400, "base_price_y": 28000, "base_price_p": 48000},
+    ("TYO", "NGO"): {"distance": 274, "base_price_y": 24000, "base_price_p": 42000},
+    ("TYO", "HIJ"): {"distance": 675, "base_price_y": 35000, "base_price_p": 60000},
+    ("TYO", "KOJ"): {"distance": 960, "base_price_y": 43000, "base_price_p": 72000},
+    ("TYO", "KMJ"): {"distance": 904, "base_price_y": 42000, "base_price_p": 70000},
+    ("TYO", "NGS"): {"distance": 958, "base_price_y": 43000, "base_price_p": 72000},
+    ("TYO", "OIT"): {"distance": 825, "base_price_y": 40000, "base_price_p": 68000},
+    ("TYO", "SDJ"): {"distance": 305, "base_price_y": 22000, "base_price_p": 38000},
+    ("TYO", "AKJ"): {"distance": 1043, "base_price_y": 48000, "base_price_p": 80000},
+    ("TYO", "MMB"): {"distance": 990, "base_price_y": 46000, "base_price_p": 78000},
+    ("TYO", "ISG"): {"distance": 1950, "base_price_y": 55000, "base_price_p": 90000},
     # 大阪（伊丹）発
-    ("ITM", "HND"): {"distance": 400, "base_price_y": 28000, "base_price_c": 48000},
-    ("ITM", "CTS"): {"distance": 1150, "base_price_y": 40000, "base_price_c": 68000},
-    ("ITM", "OKA"): {"distance": 1180, "base_price_y": 35000, "base_price_c": 60000},
-    ("ITM", "SDJ"): {"distance": 620, "base_price_y": 30000, "base_price_c": 52000},
-    ("ITM", "KMJ"): {"distance": 480, "base_price_y": 25000, "base_price_c": 44000},
-    ("ITM", "NGS"): {"distance": 540, "base_price_y": 27000, "base_price_c": 46000},
-    ("ITM", "KOJ"): {"distance": 560, "base_price_y": 28000, "base_price_c": 48000},
-    ("ITM", "ISG"): {"distance": 1550, "base_price_y": 48000, "base_price_c": 80000},
-    ("ITM", "MMB"): {"distance": 1300, "base_price_y": 45000, "base_price_c": 76000},
+    ("ITM", "HND"): {"distance": 400, "base_price_y": 28000, "base_price_p": 48000},
+    ("ITM", "CTS"): {"distance": 1150, "base_price_y": 40000, "base_price_p": 68000},
+    ("ITM", "OKA"): {"distance": 1180, "base_price_y": 35000, "base_price_p": 60000},
+    ("ITM", "SDJ"): {"distance": 620, "base_price_y": 30000, "base_price_p": 52000},
+    ("ITM", "KMJ"): {"distance": 480, "base_price_y": 25000, "base_price_p": 44000},
+    ("ITM", "NGS"): {"distance": 540, "base_price_y": 27000, "base_price_p": 46000},
+    ("ITM", "KOJ"): {"distance": 560, "base_price_y": 28000, "base_price_p": 48000},
+    ("ITM", "ISG"): {"distance": 1550, "base_price_y": 48000, "base_price_p": 80000},
+    ("ITM", "MMB"): {"distance": 1300, "base_price_y": 45000, "base_price_p": 76000},
 }
 
 # 主要国際線マイルチャートと参考運賃
@@ -178,14 +179,17 @@ def search_route(
         zone = get_distance_zone(distance)
 
         for cabin in cabin_classes:
-            if cabin not in ("Y", "C"):
+            # 国内線: Y(普通席) または P(プレミアムクラス)
+            # config上 "C" が来たら国内線では "P" に読み替え
+            domestic_cabin = "P" if cabin in ("C", "P") else cabin
+            if domestic_cabin not in ("Y", "P"):
                 continue
-            miles_key = (zone, cabin)
+            miles_key = (zone, domestic_cabin)
             miles = DOMESTIC_MILES_CHART.get(miles_key)
             if not miles:
                 continue
 
-            price_key = f"base_price_{cabin.lower()}"
+            price_key = f"base_price_{domestic_cabin.lower()}"
             base_price = route_data.get(price_key, 0)
             if not base_price:
                 continue
@@ -201,10 +205,21 @@ def search_route(
             adjusted_price = int(base_price * price_multiplier)
 
             # フライト番号を生成（模擬）
-            flight_num = f"NH{100 + hash((route_key, search_date, cabin)) % 900}"
+            flight_num = f"NH{100 + hash((route_key, search_date, domestic_cabin)) % 900}"
             dep_hour = 7 + hash((route_key, search_date)) % 12
             duration_h = max(1, distance // 600)
             duration_m = (distance % 600) // 10
+
+            # プレミアムクラスの特典枠はごく少数（1便あたり0〜2席程度）
+            # SFCでも取りにくい。平日は少しマシ。
+            if domestic_cabin == "P":
+                seed = hash((route_key, search_date, "premium_seats"))
+                if weekday in (4, 5, 6):  # 金土日はほぼ取れない
+                    seats = 1 if seed % 8 == 0 else 0
+                else:  # 平日でも少ない
+                    seats = min(2, max(0, seed % 4 - 1))
+            else:
+                seats = max(0, hash((route_key, search_date, domestic_cabin, "seats")) % 5)
 
             results.append(FlightResult(
                 route=route,
@@ -212,11 +227,11 @@ def search_route(
                 flight_number=flight_num,
                 departure_time=f"{dep_hour:02d}:{hash(search_date.day) % 60:02d}",
                 arrival_time=f"{dep_hour + duration_h:02d}:{(hash(search_date.day) % 60 + duration_m) % 60:02d}",
-                cabin_class=cabin,
+                cabin_class=domestic_cabin,
                 miles_required=miles,
                 cash_price=adjusted_price,
                 taxes_and_fees=0,
-                seats_available=max(0, hash((route_key, search_date, cabin, "seats")) % 5),
+                seats_available=seats,
             ))
     else:
         # 国際線
@@ -225,13 +240,18 @@ def search_route(
             return results
 
         for cabin in cabin_classes:
-            miles = intl_data["miles"].get(cabin)
-            base_price = intl_data["base_price"].get(cabin)
+            # 国際線には "P"(プレミアムクラス) はない → Yとして扱う
+            intl_cabin = cabin if cabin != "P" else "Y"
+            # Y重複を避ける
+            if intl_cabin == "Y" and cabin == "P" and "Y" in cabin_classes:
+                continue
+            miles = intl_data["miles"].get(intl_cabin)
+            base_price = intl_data["base_price"].get(intl_cabin)
             if not miles or not base_price:
                 continue
 
             # 国際線の税金・サーチャージ
-            surcharge = {"Y": 15000, "PY": 20000, "C": 25000, "F": 30000}.get(cabin, 15000)
+            surcharge = {"Y": 15000, "PY": 20000, "C": 25000, "F": 30000}.get(intl_cabin, 15000)
 
             # 日付変動
             weekday = search_date.weekday()
@@ -243,7 +263,7 @@ def search_route(
 
             adjusted_price = int(base_price * price_multiplier)
 
-            flight_num = f"NH{200 + hash((route_key, search_date, cabin)) % 800}"
+            flight_num = f"NH{200 + hash((route_key, search_date, intl_cabin)) % 800}"
             dep_hour = 8 + hash((route_key, search_date)) % 14
 
             results.append(FlightResult(
@@ -252,7 +272,7 @@ def search_route(
                 flight_number=flight_num,
                 departure_time=f"{dep_hour:02d}:{hash(search_date.day) % 60:02d}",
                 arrival_time="--:--",  # 国際線は到着時刻が複雑
-                cabin_class=cabin,
+                cabin_class=intl_cabin,
                 miles_required=miles,
                 cash_price=adjusted_price,
                 taxes_and_fees=surcharge,

@@ -103,7 +103,8 @@ def format_summary(
 def _cabin_label(code: str) -> str:
     """クラスコードをラベルに変換"""
     return {
-        "Y": "エコノミー",
+        "Y": "普通席",
+        "P": "プレミアム",
         "PY": "Pエコノミー",
         "C": "ビジネス",
         "F": "ファースト",
