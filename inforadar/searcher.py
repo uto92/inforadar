@@ -266,6 +266,11 @@ def search_all(config: SearchConfig, verbose: bool = False) -> list[FlightResult
     """全路線・全日程で一括検索"""
     all_results = []
     dates = generate_dates(config)
+
+    # 連休モードの場合、対象日のみに絞って検索
+    if hasattr(config, '_renkyu_dates') and config._renkyu_dates:
+        dates = [d for d in dates if d in config._renkyu_dates]
+
     total = len(config.routes) * len(dates)
     count = 0
 
@@ -281,6 +286,6 @@ def search_all(config: SearchConfig, verbose: bool = False) -> list[FlightResult
             all_results.extend(results)
 
             if count < total and config.request_delay > 0:
-                time.sleep(min(config.request_delay, 0.1))  # デモ用に短縮
+                time.sleep(0)  # デモ用: 実API接続時はconfig.request_delayを使用
 
     return all_results

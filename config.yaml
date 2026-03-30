@@ -30,8 +30,8 @@ routes:
 # 検索期間
 search:
   # 出発日の範囲（YYYY-MM-DD）
-  date_from: "2026-05-01"
-  date_to: "2026-05-31"
+  date_from: "2026-04-01"
+  date_to: "2027-01-05"
   # 曜日フィルタ（空の場合は全曜日）
   # weekdays: [fri, sat, sun]
   weekdays: []
