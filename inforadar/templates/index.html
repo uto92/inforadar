@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InfoRadar - ANA SFC お得レート検索</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Noto Sans JP', sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
+.container { max-width: 800px; margin: 0 auto; padding: 24px 16px; }
+h1 { font-size: 1.5rem; text-align: center; margin-bottom: 8px; }
+.subtitle { text-align: center; color: #94a3b8; margin-bottom: 32px; font-size: 0.9rem; }
+.card { background: #1e293b; border-radius: 12px; padding: 24px; margin-bottom: 16px; }
+.card h2 { font-size: 1.1rem; margin-bottom: 16px; color: #38bdf8; }
+.form-group { margin-bottom: 16px; }
+label { display: block; font-size: 0.85rem; color: #94a3b8; margin-bottom: 6px; }
+select, input { width: 100%; padding: 10px 12px; background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: #e2e8f0; font-size: 1rem; }
+select:focus, input:focus { outline: none; border-color: #38bdf8; }
+.row { display: flex; gap: 12px; }
+.row > * { flex: 1; }
+.renkyu-grid { display: grid; grid-template-columns: 1fr; gap: 8px; }
+.renkyu-btn { display: block; padding: 14px 16px; background: #1e293b; border: 1px solid #334155; border-radius: 10px; color: #e2e8f0; text-decoration: none; transition: all 0.2s; }
+.renkyu-btn:hover { background: #334155; border-color: #38bdf8; transform: translateY(-1px); }
+.renkyu-btn .name { font-weight: 600; font-size: 1rem; }
+.renkyu-btn .dates { color: #94a3b8; font-size: 0.85rem; margin-top: 4px; }
+.renkyu-btn .badge { display: inline-block; background: #1e3a5f; color: #38bdf8; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; margin-left: 8px; }
+.renkyu-btn .leave { color: #fbbf24; font-size: 0.8rem; margin-top: 4px; }
+.search-all { display: block; width: 100%; padding: 14px; background: #2563eb; border: none; border-radius: 10px; color: white; font-size: 1rem; font-weight: 600; cursor: pointer; text-align: center; text-decoration: none; margin-top: 16px; }
+.search-all:hover { background: #1d4ed8; }
+@media (min-width: 640px) { .renkyu-grid { grid-template-columns: 1fr 1fr; } }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>InfoRadar</h1>
+  <p class="subtitle">ANA SFC お得レート自動検索</p>
+
+  <div class="card">
+    <h2>検索設定</h2>
+    <form id="settings">
+      <div class="row">
+        <div class="form-group">
+          <label>人数（最低残席数）</label>
+          <select id="min_seats">
+            <option value="1">1名</option>
+            <option value="2" selected>2名</option>
+            <option value="3">3名</option>
+            <option value="4">4名</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>お得判定（円/マイル）</label>
+          <input type="number" id="threshold" value="2.0" step="0.5" min="0.5">
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2>連休から探す</h2>
+    <div class="renkyu-grid">
+      {% set seen = [] %}
+      {% for r in renkyus %}
+        {% if r.name not in seen %}
+          {% if seen.append(r.name) %}{% endif %}
+          <a class="renkyu-btn" href="#" onclick="searchRenkyu('{{ r.name }}'); return false;">
+            <div class="name">{{ r.name }} <span class="badge">{{ r.days }}日間</span></div>
+            <div class="dates">{{ r.start.strftime('%m/%d(%a)') }} 〜 {{ r.end.strftime('%m/%d(%a)') }}</div>
+            {% if r.paid_leave_needed > 0 %}
+              <div class="leave">有給{{ r.paid_leave_needed }}日で実現</div>
+            {% endif %}
+          </a>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+
+  <a class="search-all" href="#" onclick="searchAll(); return false;">全期間で検索</a>
+</div>
+
+<script>
+function searchRenkyu(name) {
+  const seats = document.getElementById('min_seats').value;
+  const threshold = document.getElementById('threshold').value;
+  window.location.href = `/search?renkyu=${encodeURIComponent(name)}&min_seats=${seats}&threshold=${threshold}`;
+}
+function searchAll() {
+  const seats = document.getElementById('min_seats').value;
+  const threshold = document.getElementById('threshold').value;
+  window.location.href = `/search?min_seats=${seats}&threshold=${threshold}`;
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>検索結果 - InfoRadar</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Noto Sans JP', sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
+.container { max-width: 960px; margin: 0 auto; padding: 24px 16px; }
+.back { color: #38bdf8; text-decoration: none; font-size: 0.9rem; }
+.back:hover { text-decoration: underline; }
+h1 { font-size: 1.3rem; margin: 12px 0 4px; }
+.meta { color: #94a3b8; font-size: 0.85rem; margin-bottom: 20px; }
+.summary { background: #1e293b; border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+.summary h2 { font-size: 1rem; color: #38bdf8; margin-bottom: 12px; }
+.stat-row { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 12px; }
+.stat { background: #0f172a; border-radius: 8px; padding: 12px 16px; flex: 1; min-width: 120px; text-align: center; }
+.stat .num { font-size: 1.5rem; font-weight: 700; color: #38bdf8; }
+.stat .label { font-size: 0.75rem; color: #94a3b8; margin-top: 4px; }
+.best-list { list-style: none; }
+.best-list li { padding: 8px 0; border-bottom: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px; }
+.best-list li:last-child { border-bottom: none; }
+.best-route { font-weight: 600; min-width: 140px; }
+.best-rate { color: #4ade80; font-weight: 700; }
+.best-detail { color: #94a3b8; font-size: 0.85rem; }
+.flights { margin-top: 16px; }
+.flights h2 { font-size: 1rem; color: #38bdf8; margin-bottom: 12px; }
+.flight-card { background: #1e293b; border-radius: 10px; padding: 16px; margin-bottom: 10px; border-left: 4px solid #334155; }
+.flight-card.great { border-left-color: #4ade80; }
+.flight-card.good { border-left-color: #fbbf24; }
+.flight-top { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+.flight-route { font-size: 1.1rem; font-weight: 700; }
+.flight-rate { font-size: 1.1rem; font-weight: 700; }
+.flight-rate.great { color: #4ade80; }
+.flight-rate.good { color: #fbbf24; }
+.flight-mid { display: flex; gap: 20px; flex-wrap: wrap; color: #94a3b8; font-size: 0.9rem; margin-bottom: 6px; }
+.flight-mid .time { color: #e2e8f0; font-weight: 600; }
+.flight-bottom { display: flex; gap: 16px; flex-wrap: wrap; font-size: 0.85rem; color: #94a3b8; }
+.tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+.tag-great { background: #064e3b; color: #4ade80; }
+.tag-good { background: #422006; color: #fbbf24; }
+.tag-seats { background: #1e3a5f; color: #38bdf8; }
+.empty { text-align: center; padding: 48px; color: #64748b; }
+.empty .icon { font-size: 2rem; margin-bottom: 12px; }
+@media (min-width: 640px) {
+  .flight-card { display: grid; grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <a class="back" href="/">&larr; 検索条件に戻る</a>
+
+  {% if selected_renkyu %}
+  <h1>{{ selected_renkyu.name }}</h1>
+  <p class="meta">
+    {{ selected_renkyu.start.strftime('%Y/%m/%d(%a)') }} 〜 {{ selected_renkyu.end.strftime('%m/%d(%a)') }}
+    （{{ selected_renkyu.days }}日間）
+    {% if selected_renkyu.paid_leave_needed > 0 %}
+    ・有給{{ selected_renkyu.paid_leave_needed }}日
+    {% endif %}
+    ・{{ min_seats }}名 ・{{ threshold }}円/マイル以上
+  </p>
+  {% else %}
+  <h1>全期間検索</h1>
+  <p class="meta">
+    {{ config.date_from }} 〜 {{ config.date_to }}
+    ・{{ min_seats }}名 ・{{ threshold }}円/マイル以上
+  </p>
+  {% endif %}
+
+  <div class="summary">
+    <h2>サマリー</h2>
+    <div class="stat-row">
+      <div class="stat">
+        <div class="num">{{ total }}</div>
+        <div class="label">該当フライト</div>
+      </div>
+      <div class="stat">
+        <div class="num">{% if route_bests %}{{ "%.1f"|format(route_bests[0].rate) }}{% else %}-{% endif %}</div>
+        <div class="label">ベスト円/マイル</div>
+      </div>
+      <div class="stat">
+        <div class="num">{{ min_seats }}名</div>
+        <div class="label">必要席数</div>
+      </div>
+    </div>
+
+    {% if route_bests %}
+    <h2>路線別ベスト</h2>
+    <ul class="best-list">
+      {% for r in route_bests %}
+      <li>
+        <span class="best-route">{{ r.route }}</span>
+        <span class="best-rate">{{ "%.1f"|format(r.rate) }}円/マイル</span>
+        <span class="best-detail">{{ cabin_label(r.cabin_class) }} {{ r.date.strftime('%m/%d') }} {{ r.miles_required|string }}マイル</span>
+      </li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+  </div>
+
+  <div class="flights">
+    <h2>フライト一覧（{{ total }}件）</h2>
+
+    {% if not results %}
+    <div class="empty">
+      <div class="icon">:( </div>
+      <p>条件に合うフライトが見つかりませんでした</p>
+      <p>人数を減らすか、閾値を下げてみてください</p>
+    </div>
+    {% endif %}
+
+    {% for f in results[:50] %}
+    <div class="flight-card {{ 'great' if f.rate >= threshold * 2 else ('good' if f.rate >= threshold * 1.5 else '') }}">
+      <div class="flight-top">
+        <span class="flight-route">{{ f.route }}</span>
+        <span>
+          <span class="flight-rate {{ 'great' if f.rate >= threshold * 2 else ('good' if f.rate >= threshold * 1.5 else '') }}">
+            {{ "%.1f"|format(f.rate) }}円/マイル
+          </span>
+          {% if f.rate >= threshold * 2 %}
+          <span class="tag tag-great">超お得</span>
+          {% elif f.rate >= threshold * 1.5 %}
+          <span class="tag tag-good">お得</span>
+          {% endif %}
+        </span>
+      </div>
+      <div class="flight-mid">
+        <span>{{ f.date.strftime('%m/%d(%a)') }}</span>
+        <span class="time">{{ f.departure_time }} → {{ f.arrival_time }}</span>
+        <span>{{ f.flight_number }}</span>
+        <span>{{ cabin_label(f.cabin_class) }}</span>
+        <span class="tag tag-seats">残{{ f.seats_available }}席</span>
+      </div>
+      <div class="flight-bottom">
+        <span>必要: {{ "{:,}".format(f.miles_required) }}マイル{% if f.taxes_and_fees %} + ¥{{ "{:,}".format(f.taxes_and_fees) }}{% endif %}</span>
+        <span>有償: ¥{{ "{:,}".format(f.cash_price) }}</span>
+        {% if min_seats >= 2 %}
+        <span>2名計: {{ "{:,}".format(f.miles_required * 2) }}マイル</span>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+
+    {% if total > 50 %}
+    <p style="text-align: center; color: #64748b; margin-top: 16px;">
+      上位50件を表示中（全{{ total }}件）
+    </p>
+    {% endif %}
+  </div>
+</div>
+</body>
+</html>
