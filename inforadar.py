@@ -14,12 +14,15 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import smtplib
 import sys
 from datetime import datetime, timezone, timedelta
 from email.mime.text import MIMEText
 from email.header import Header
+from html.parser import HTMLParser
 from pathlib import Path
+from urllib.parse import urljoin
 
 import feedparser
 import requests
@@ -34,6 +37,7 @@ FETCH_TIMEOUT = 20
 USER_AGENT = "InfoRadar/0.1 (+https://github.com/uto92/inforadar)"
 MAX_SEEN_PER_FEED = 500   # フィードごとの既読ID保持上限
 FIRST_RUN_SHOW = 5        # 初回取得時にレポートへ載せる件数
+MAX_HTML_ITEMS = 100      # HTML監視で1ページから拾うリンク上限
 
 
 def load_yaml(path: Path) -> dict:
@@ -62,49 +66,123 @@ def entry_id(entry) -> str:
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()[:16]
 
 
-def fetch_feed(url: str):
-    """URL または ローカルパスからフィードを取得してパースする。"""
-    if os.path.exists(url):  # テスト用フィクスチャ
-        return feedparser.parse(url)
+def fetch_raw(url: str) -> bytes:
+    """URL または ローカルパス（テスト用フィクスチャ）から生データを取得する。"""
+    if os.path.exists(url):
+        return Path(url).read_bytes()
     resp = requests.get(url, timeout=FETCH_TIMEOUT, headers={"User-Agent": USER_AGENT})
     resp.raise_for_status()
-    return feedparser.parse(resp.content)
+    return resp.content
 
 
-def match_keywords(entry, keywords) -> list:
-    """タイトル・概要にマッチしたキーワードを返す。"""
-    text = entry.get("title", "") + " " + entry.get("summary", "")
-    return [kw for kw in keywords if kw in text]
+def fetch_rss_entries(url: str) -> list:
+    """RSS/Atom フィードを取得し、正規化したエントリのリストを返す。"""
+    parsed = feedparser.parse(fetch_raw(url))
+    if parsed.bozo and not parsed.entries:
+        raise ValueError(f"パース失敗: {parsed.bozo_exception}")
+    return [{
+        "id": entry_id(e),
+        "title": e.get("title", "(no title)").strip(),
+        "link": e.get("link", ""),
+        "published": e.get("published", e.get("updated", "")),
+        "text": e.get("title", "") + " " + e.get("summary", ""),
+    } for e in parsed.entries]
+
+
+class LinkCollector(HTMLParser):
+    """ページ内の <a href> とアンカーテキストを収集する。"""
+
+    def __init__(self):
+        super().__init__()
+        self.links = []          # (href, text)
+        self._href = None
+        self._text = []
+        self._depth = 0          # <a> の入れ子タグ深度
+
+    def handle_starttag(self, tag, attrs):
+        if tag == "a":
+            href = dict(attrs).get("href")
+            if href:
+                self._href = href
+                self._text = []
+                self._depth = 0
+        elif self._href is not None:
+            self._depth += 1
+
+    def handle_endtag(self, tag):
+        if self._href is None:
+            return
+        if tag == "a" or self._depth == 0:
+            text = " ".join("".join(self._text).split())
+            self.links.append((self._href, text))
+            self._href = None
+        else:
+            self._depth -= 1
+
+    def handle_data(self, data):
+        if self._href is not None:
+            self._text.append(data)
+
+
+def fetch_html_entries(url: str, link_pattern: str) -> list:
+    """HTML ページから link_pattern（正規表現）に合うリンクを新着候補として抽出する。
+
+    RSS 非提供サイト向け。リンクURLの出現＝新着とみなす（本文差分は見ない）。
+    """
+    html = fetch_raw(url).decode("utf-8", errors="replace")
+    collector = LinkCollector()
+    collector.feed(html)
+
+    pattern = re.compile(link_pattern)
+    entries, seen_links = [], set()
+    for href, text in collector.links:
+        absolute = urljoin(url, href)
+        if not pattern.search(absolute) or absolute in seen_links:
+            continue
+        seen_links.add(absolute)
+        entries.append({
+            "id": hashlib.sha256(absolute.encode("utf-8")).hexdigest()[:16],
+            "title": text or absolute,
+            "link": absolute,
+            "published": "",
+            "text": text,
+        })
+        if len(entries) >= MAX_HTML_ITEMS:
+            break
+    if not entries:
+        raise ValueError(f"link_pattern '{link_pattern}' に合致するリンクが0件"
+                         "（ページ構造の変化かパターン誤りの可能性）")
+    return entries
 
 
 def check_feed(feed_cfg: dict, state: dict, global_keywords: list) -> dict:
-    """1フィードを取得し、新着エントリと状態更新を返す。"""
+    """1ソースを取得し、新着エントリと状態更新を返す。"""
     url = feed_cfg["url"]
     keywords = list(feed_cfg.get("keywords", [])) + list(global_keywords)
     feed_state = state["feeds"].setdefault(url, {"seen": []})
     first_run = not feed_state["seen"]
     seen = set(feed_state["seen"])
 
-    parsed = fetch_feed(url)
-    if parsed.bozo and not parsed.entries:
-        raise ValueError(f"パース失敗: {parsed.bozo_exception}")
+    if feed_cfg.get("type", "rss") == "html":
+        entries = fetch_html_entries(url, feed_cfg["link_pattern"])
+    else:
+        entries = fetch_rss_entries(url)
 
     new_entries = []
-    for entry in parsed.entries:
-        eid = entry_id(entry)
-        if eid in seen:
+    for entry in entries:
+        if entry["id"] in seen:
             continue
-        seen.add(eid)
+        seen.add(entry["id"])
         new_entries.append({
-            "title": entry.get("title", "(no title)").strip(),
-            "link": entry.get("link", ""),
-            "published": entry.get("published", entry.get("updated", "")),
-            "matched": match_keywords(entry, keywords),
+            "title": entry["title"],
+            "link": entry["link"],
+            "published": entry["published"],
+            "matched": [kw for kw in keywords if kw in entry["text"]],
         })
 
     # 既読IDは新しいものを先頭に保持し、上限で切り詰める
     feed_state["seen"] = (
-        [entry_id(e) for e in parsed.entries] +
+        [e["id"] for e in entries] +
         [i for i in feed_state["seen"] if i in seen]
     )[:MAX_SEEN_PER_FEED]
     feed_state["last_checked"] = datetime.now(JST).isoformat(timespec="seconds")

@@ -1,10 +1,12 @@
 # InfoRadar 監視ソース定義
 #
 # categories[].feeds[] の各エントリ:
-#   name:     表示名
-#   url:      RSS/Atom フィードURL（ローカルパスも可・テスト用）
-#   keywords: 任意。マッチした記事に ★ を付けて上位に表示（OR条件・部分一致）
-#   enabled:  false で一時停止
+#   name:         表示名
+#   url:          RSS/Atom フィードURL または HTMLページURL（ローカルパスも可・テスト用）
+#   type:         省略時 rss。RSS非提供サイトは html（リンク出現＝新着とみなす）
+#   link_pattern: type: html のとき必須。記事リンクを絞り込む正規表現（絶対URLに適用）
+#   keywords:     任意。マッチした記事に ★ を付けて上位に表示（OR条件・部分一致）
+#   enabled:      false で一時停止
 #
 # 注意: 本ファイルのURLは開発サンドボックスから疎通確認できていません（初回の
 # GitHub Actions 実行レポートで取得可否を確認し、失敗ソースは修正してください）。
@@ -27,9 +29,13 @@ categories:
         url: https://www.mlit.go.jp/index.rdf
       - name: 日本都市計画学会
         url: https://www.cpij.or.jp/feed/
-      # RSS未提供（HTML監視は今後拡張）:
+      - name: JR東日本 プレスリリース
+        type: html
+        url: https://www.jreast.co.jp/press/
+        link_pattern: "/press/20"
+        keywords: [定期券, ポイント, Suica, コールセンター]
+      # link_pattern 未確定（初回実行で構造確認後に追加）:
       # - グッドデザイン賞 https://www.g-mark.org/
-      # - JR東日本プレスリリース https://www.jreast.co.jp/press/
       # - JR九州ニュースリリース https://www.jrkyushu.co.jp/news/
 
   - name: 競合・自社動向
@@ -37,6 +43,10 @@ categories:
       - name: PKSHA Technology
         url: https://www.pksha.com/feed/
         keywords: [FAQ, コールセンター, チャットボット]
-      # RSS未提供（PR TIMES の企業別RSSは company_id 判明後に追加）:
+      - name: JR西日本 ニュースリリース
+        type: html
+        url: https://www.westjr.co.jp/press/
+        link_pattern: "/press/article/"
+        keywords: [WESTER, ICOCA, 定期券]
+      # link_pattern 未確定（初回実行で構造確認後に追加）:
       # - Helpfeel https://www.helpfeel.com/
-      # - JR西日本 ニュースリリース https://www.westjr.co.jp/press/

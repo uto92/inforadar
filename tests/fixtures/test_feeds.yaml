@@ -10,6 +10,11 @@ categories:
       - name: サンプルフィード
         url: tests/fixtures/sample_feed.xml
         keywords: [地域公共交通]
+      - name: サンプルHTMLページ
+        type: html
+        url: tests/fixtures/sample_page.html
+        link_pattern: "/press/article/"
+        keywords: [WESTER]
       - name: 存在しないフィード（失敗確認用）
         url: tests/fixtures/does_not_exist.xml
         enabled: false
