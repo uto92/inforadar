@@ -1,0 +1,312 @@
+<!-- @dsCard group="Mockups" -->
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WESTERポータル to-be トップ｜モックアップ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<style>
+:root{
+  --navy:#0d366b; --blue:#1c5cab; --blue-bright:#2a78d6; --sky:#eaf2fb;
+  --gold:#eda100; --gold-soft:#fdf3dd;
+  --ink:#16202b; --sub:#52606f; --muted:#8a95a1; --line:#e2e8ee; --bg:#f6f8fa; --white:#fff;
+  --radius:12px; --shadow:0 1px 3px rgba(13,38,76,.08),0 6px 20px rgba(13,38,76,.07);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Noto Sans JP',sans-serif;font-size:14px;line-height:1.8;color:var(--ink);background:var(--bg)}
+a{color:var(--blue);text-decoration:none}
+ul{list-style:none}
+.container{max-width:1080px;margin:0 auto;padding:0 24px}
+section{padding:56px 0}
+h2{font-size:22px;font-weight:700;letter-spacing:.02em}
+.sec-head{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:8px}
+.sec-lead{font-size:13px;color:var(--sub);margin-bottom:24px}
+.more{font-size:13px;font-weight:500}
+.btn{display:inline-flex;align-items:center;gap:8px;background:var(--navy);color:#fff;padding:13px 30px;font-size:14px;font-weight:700;border-radius:999px;transition:opacity .15s}
+.btn:hover{opacity:.85}
+.btn-gold{background:var(--gold);color:#3a2a00}
+.btn-line{display:inline-flex;align-items:center;gap:8px;background:#fff;color:var(--navy);padding:12px 28px;font-size:14px;font-weight:500;border-radius:999px;border:1.5px solid var(--navy)}
+.card{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px}
+.grid{display:grid;gap:20px}
+.chip{display:inline-block;background:var(--sky);color:var(--blue);font-size:11px;font-weight:700;padding:2px 10px;border-radius:999px}
+/* mock bar */
+.mock-bar{position:fixed;right:16px;bottom:16px;z-index:99;background:#16202b;color:#fff;border-radius:999px;padding:8px 10px;display:flex;gap:6px;align-items:center;font-size:12px;box-shadow:0 4px 16px rgba(0,0,0,.3)}
+.mock-bar button{font-family:inherit;font-size:12px;border:0;border-radius:999px;padding:5px 14px;background:transparent;color:#cfd6dd;cursor:pointer}
+.mock-bar button.on{background:#fff;color:#16202b;font-weight:700}
+/* header */
+header{background:#fff;box-shadow:0 1px 0 var(--line);position:sticky;top:0;z-index:50}
+.header-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 0;gap:20px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:900;font-size:18px;color:var(--navy);letter-spacing:.04em}
+.logo-mark{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--navy),var(--blue-bright));color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px}
+.gnav{display:flex;gap:26px;font-size:13px;font-weight:500;align-items:center}
+.gnav a{color:var(--ink)}
+.gnav a:hover{color:var(--blue)}
+/* hero */
+.hero-out{background:linear-gradient(120deg,var(--navy) 0%,var(--blue) 55%,var(--blue-bright) 100%);color:#fff;padding:64px 0}
+.hero-out h1{font-size:32px;font-weight:900;line-height:1.5;margin-bottom:12px}
+.hero-out p.lead{font-size:15px;opacity:.9;margin-bottom:28px}
+.hero-visual{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:16px;height:240px;display:flex;align-items:center;justify-content:center;font-size:13px;color:rgba(255,255,255,.8)}
+.hero-in{background:linear-gradient(120deg,var(--navy),var(--blue));color:#fff;padding:36px 0 48px}
+.hello{font-size:15px;font-weight:700;margin-bottom:16px}
+.dash{display:grid;grid-template-columns:1.3fr 1fr 1fr 1fr;gap:16px}
+.dash .card{padding:18px 20px}
+.dash .label{font-size:12px;color:var(--sub);font-weight:500}
+.dash .value{font-size:30px;font-weight:700;color:var(--ink)}
+.dash .unit{font-size:13px;font-weight:500;color:var(--sub)}
+.dash a{font-size:12px;font-weight:500}
+/* steps */
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;counter-reset:step}
+.step{position:relative;background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);padding:26px 20px 22px;text-align:center}
+.step::before{counter-increment:step;content:counter(step);position:absolute;top:-14px;left:50%;transform:translateX(-50%);width:28px;height:28px;border-radius:50%;background:var(--navy);color:#fff;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center}
+.step .icon{width:56px;height:56px;border-radius:50%;background:var(--sky);color:var(--blue);display:flex;align-items:center;justify-content:center;font-size:22px;margin:4px auto 12px}
+.step h3{font-size:14px;font-weight:700}
+.step p{font-size:12px;color:var(--sub)}
+/* campaign */
+.cp .card{padding:0;overflow:hidden}
+.cp .thumb{height:130px;background:linear-gradient(135deg,#c9d9ec,#eaf2fb);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px}
+.cp .body{padding:16px 18px 18px}
+.cp h3{font-size:14px;font-weight:700;margin-bottom:8px}
+.cond{font-size:12px;color:var(--sub);display:flex;gap:8px;margin-bottom:3px}
+.cond dt{flex:0 0 34px;color:var(--blue);font-weight:700}
+/* news */
+.news li{display:flex;gap:14px;align-items:center;flex-wrap:wrap;background:#fff;padding:14px 18px;border-radius:10px;box-shadow:var(--shadow);margin-bottom:8px;font-size:13px}
+.badge-imp{background:#fdecec;color:#c0392b;font-size:11px;font-weight:700;padding:1px 10px;border-radius:999px}
+.badge-info{background:var(--sky);color:var(--blue);font-size:11px;font-weight:700;padding:1px 10px;border-radius:999px}
+.news .date{color:var(--muted);font-size:12px}
+.news .ttl{flex:1;font-weight:500}
+.news a.faq{font-size:12px;white-space:nowrap}
+/* support */
+.support-box{background:#fff;border-radius:16px;box-shadow:var(--shadow);padding:36px;text-align:center}
+.searchbar{display:flex;max-width:620px;margin:0 auto;border:1.5px solid var(--line);border-radius:999px;overflow:hidden;background:var(--bg)}
+.searchbar input{flex:1;border:0;background:transparent;padding:13px 22px;font-family:inherit;font-size:13px;outline:none}
+.searchbar button{border:0;background:var(--navy);color:#fff;padding:0 28px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer}
+.quick{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:16px}
+.quick a{background:var(--bg);border:1px solid var(--line);color:var(--ink);font-size:12px;padding:7px 16px;border-radius:999px}
+.quick a:hover{border-color:var(--blue);color:var(--blue)}
+/* footer */
+footer{background:var(--navy);color:#cdd9e8;padding:48px 0 32px;margin-top:40px}
+footer h3{font-size:13px;color:#fff;margin-bottom:12px;font-weight:700}
+footer a{color:#cdd9e8;font-size:12.5px}
+footer li{margin-bottom:8px}
+.copyright{font-size:11px;color:#8aa2c0;margin-top:36px}
+/* state switching */
+body.state-out .only-in{display:none}
+body.state-in .only-out{display:none}
+@media (max-width:860px){.dash,.steps{grid-template-columns:1fr 1fr}.grid{grid-template-columns:1fr!important}}
+</style>
+</head>
+<body class="state-out">
+
+<div class="mock-bar" role="group" aria-label="表示状態の切り替え">
+  <span style="padding-left:6px"><i class="fa-solid fa-eye"></i> 表示</span>
+  <button type="button" class="on" data-state="state-out">未ログイン</button>
+  <button type="button" data-state="state-in">ログイン後</button>
+</div>
+
+<header>
+  <div class="container header-inner">
+    <div class="logo"><span class="logo-mark">W</span>WESTER</div>
+    <nav class="gnav">
+      <a href="#">会員サービス</a>
+      <a href="wester-mock-point.html">WESTERポイント</a>
+      <a href="wester-mock-support.html">サポート</a>
+      <a href="#" class="btn-line only-out" style="padding:8px 20px;font-size:13px">ログイン</a>
+      <a href="#" class="btn only-out" style="padding:9px 20px;font-size:13px">会員登録（無料）</a>
+      <span class="only-in chip" style="font-size:12px;padding:6px 14px"><i class="fa-solid fa-circle-user"></i> 西田さん</span>
+    </nav>
+  </div>
+</header>
+
+<!-- ヒーロー：未ログイン -->
+<div class="hero-out only-out">
+  <div class="container grid" style="grid-template-columns:1.15fr 1fr;align-items:center">
+    <div>
+      <h1>電車も、買い物も、<br>ひとつのIDで、たまる。</h1>
+      <p class="lead">WESTERは、JR西日本のサービスをひとつのIDでつなぐ会員サービスです。</p>
+      <a href="#" class="btn btn-gold" style="font-size:15px;padding:15px 36px"><i class="fa-solid fa-user-plus"></i> 無料で会員登録する</a>
+      <a href="#first" class="btn-line" style="margin-left:10px;background:transparent;color:#fff;border-color:rgba(255,255,255,.6)">はじめての方へ</a>
+    </div>
+    <div class="hero-visual"><i class="fa-solid fa-image" style="font-size:28px;margin-right:10px"></i> キービジュアル（サービス全体イメージ）</div>
+  </div>
+</div>
+
+<!-- ヒーロー：ログイン後 -->
+<div class="hero-in only-in">
+  <div class="container">
+    <p class="hello">こんにちは、西田さん</p>
+    <div class="dash">
+      <div class="card">
+        <p class="label"><i class="fa-solid fa-coins" style="color:var(--gold)"></i> ポイント残高</p>
+        <p class="value">9,999<span class="unit"> pt</span></p>
+        <p style="font-size:11px;color:var(--muted)">うち期間限定 500pt（9/30まで）</p>
+        <a href="wester-mock-point.html#history">残高・履歴を見る <i class="fa-solid fa-angle-right"></i></a>
+      </div>
+      <div class="card">
+        <p class="label"><i class="fa-solid fa-train" style="color:var(--blue)"></i> マイ駅：大阪駅</p>
+        <p style="font-size:13px;font-weight:700;color:#0a7a3d;margin-top:6px"><i class="fa-solid fa-circle-check"></i> 平常運転</p>
+        <a href="#">時刻表・運行情報 <i class="fa-solid fa-angle-right"></i></a>
+      </div>
+      <div class="card">
+        <p class="label"><i class="fa-solid fa-flag-checkered" style="color:var(--blue)"></i> エントリー中</p>
+        <p class="value" style="font-size:24px">2<span class="unit"> 件</span></p>
+        <a href="#">状況を見る <i class="fa-solid fa-angle-right"></i></a>
+      </div>
+      <div class="card">
+        <p class="label"><i class="fa-solid fa-thumbs-up" style="color:var(--blue)"></i> おすすめ</p>
+        <p style="font-size:12px;color:var(--sub);margin-top:4px">ICOCA夏のご利用キャンペーンが対象です。</p>
+        <a href="#campaign">確認する <i class="fa-solid fa-angle-right"></i></a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- はじめての方へ -->
+<section id="first" class="only-out">
+  <div class="container">
+    <div class="sec-head"><h2>はじめての方へ</h2></div>
+    <p class="sec-lead">4つのステップで、WESTERのある毎日がはじまります。</p>
+    <div class="steps">
+      <div class="step">
+        <div class="icon"><i class="fa-solid fa-id-card"></i></div>
+        <h3>WESTER会員登録</h3>
+        <p>無料。すべての起点になる共通IDをつくります。</p>
+      </div>
+      <div class="step">
+        <div class="icon"><i class="fa-solid fa-train-subway"></i></div>
+        <h3>ICOCAを登録してためる</h3>
+        <p>電車と買い物で、WESTERポイントがたまります。</p>
+      </div>
+      <div class="step">
+        <div class="icon"><i class="fa-solid fa-mobile-screen"></i></div>
+        <h3>アプリで確認する</h3>
+        <p>残高・履歴・列車の運行情報をアプリで見られます。</p>
+      </div>
+      <div class="step">
+        <div class="icon"><i class="fa-solid fa-credit-card"></i></div>
+        <h3>カード・Wesmo!でさらに</h3>
+        <p>J-WESTカードとWesmo!で、ためる・つかうが広がります。</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:32px"><a href="#" class="btn"><i class="fa-solid fa-user-plus"></i> まずは無料で会員登録する</a></div>
+  </div>
+</section>
+
+<!-- キャンペーン -->
+<section id="campaign" style="background:#fff">
+  <div class="container cp">
+    <div class="sec-head"><h2>キャンペーン</h2><a class="more" href="#">一覧を見る <i class="fa-solid fa-angle-right"></i></a></div>
+    <p class="sec-lead">対象・条件・期間を明記しています。ご自身が対象かどうか、ひと目でわかります。</p>
+    <div class="grid" style="grid-template-columns:repeat(3,1fr)">
+      <div class="card">
+        <div class="thumb"><i class="fa-solid fa-image fa-lg"></i></div>
+        <div class="body">
+          <span class="chip">エントリー制</span>
+          <h3 style="margin-top:8px">ICOCA夏のご利用キャンペーン</h3>
+          <dl>
+            <div class="cond"><dt>対象</dt><dd>WESTER会員の方</dd></div>
+            <div class="cond"><dt>条件</dt><dd>エントリー＋ICOCA利用</dd></div>
+            <div class="cond"><dt>期間</dt><dd>7/1（水）〜7/31（金）</dd></div>
+          </dl>
+          <a href="#" style="font-size:12px;font-weight:700">自分が対象か確認する <i class="fa-solid fa-angle-right"></i></a>
+        </div>
+      </div>
+      <div class="card">
+        <div class="thumb"><i class="fa-solid fa-image fa-lg"></i></div>
+        <div class="body">
+          <span class="chip">カード会員向け</span>
+          <h3 style="margin-top:8px">J-WESTカード ご利用特典</h3>
+          <dl>
+            <div class="cond"><dt>対象</dt><dd>J-WESTカード会員の方</dd></div>
+            <div class="cond"><dt>条件</dt><dd>期間中のカード決済</dd></div>
+            <div class="cond"><dt>期間</dt><dd>7/1（水）〜8/31（月）</dd></div>
+          </dl>
+          <a href="#" style="font-size:12px;font-weight:700">自分が対象か確認する <i class="fa-solid fa-angle-right"></i></a>
+        </div>
+      </div>
+      <div class="card">
+        <div class="thumb"><i class="fa-solid fa-image fa-lg"></i></div>
+        <div class="body">
+          <span class="chip">新規の方向け</span>
+          <h3 style="margin-top:8px">はじめてのWESTER特典</h3>
+          <dl>
+            <div class="cond"><dt>対象</dt><dd>新規会員登録の方</dd></div>
+            <div class="cond"><dt>条件</dt><dd>登録月内の初回利用</dd></div>
+            <div class="cond"><dt>期間</dt><dd>通年</dd></div>
+          </dl>
+          <a href="#" style="font-size:12px;font-weight:700">自分が対象か確認する <i class="fa-solid fa-angle-right"></i></a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- お知らせ -->
+<section>
+  <div class="container">
+    <div class="sec-head"><h2>お知らせ</h2><a class="more" href="#">一覧を見る <i class="fa-solid fa-angle-right"></i></a></div>
+    <ul class="news">
+      <li>
+        <span class="badge-imp">重要</span><span class="date">2026.06.28</span>
+        <span class="ttl">システムメンテナンスに伴うログイン停止のお知らせ</span>
+        <a class="faq" href="wester-mock-support.html"><i class="fa-solid fa-circle-question"></i> 関連FAQ</a>
+      </li>
+      <li>
+        <span class="badge-info">お知らせ</span><span class="date">2026.06.20</span>
+        <span class="ttl">ワンタイムパスワードの認証方式変更について</span>
+        <a class="faq" href="wester-mock-support.html#otp"><i class="fa-solid fa-circle-question"></i> 関連FAQ</a>
+      </li>
+      <li>
+        <span class="badge-info">お知らせ</span><span class="date">2026.06.12</span>
+        <span class="ttl">WESTERアプリ バージョンアップのお知らせ</span>
+        <a class="faq" href="wester-mock-support.html"><i class="fa-solid fa-circle-question"></i> 関連FAQ</a>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<!-- サポート導線 -->
+<section style="background:linear-gradient(180deg,var(--sky),var(--bg));padding-bottom:64px">
+  <div class="container">
+    <div class="support-box">
+      <h2 style="margin-bottom:6px">お困りですか？</h2>
+      <p class="sec-lead" style="margin-bottom:20px">ほとんどのお手続きは、このサイト内でそのまま完了できます。</p>
+      <div class="searchbar">
+        <input type="text" placeholder="質問をキーワードで検索（例：パスワード 再設定）" aria-label="FAQ検索">
+        <button type="button"><i class="fa-solid fa-magnifying-glass"></i> 検索</button>
+      </div>
+      <div class="quick">
+        <a href="wester-mock-support.html#password">パスワードを忘れた</a>
+        <a href="wester-mock-support.html#otp">ワンタイムパスワードが届かない</a>
+        <a href="wester-mock-support.html#id">IDを統合したい</a>
+        <a href="wester-mock-point.html">ポイントを確認したい</a>
+      </div>
+      <p style="font-size:12px;color:var(--muted);margin-top:18px">FAQで解決しない場合は <a href="wester-mock-support.html#contact">お問い合わせ</a> へ</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <div class="grid" style="grid-template-columns:repeat(4,1fr)">
+      <div><h3>会員サービス</h3><ul><li><a href="#">サービス一覧</a></li><li><a href="#">WESTERサービスとは</a></li><li><a href="#">会員登録・移行</a></li><li><a href="#">マイページ</a></li></ul></div>
+      <div><h3>WESTERポイント</h3><ul><li><a href="wester-mock-point.html">ポイントとは</a></li><li><a href="wester-mock-point.html#earn">ためる</a></li><li><a href="wester-mock-point.html#use">つかう</a></li></ul></div>
+      <div><h3>サポート</h3><ul><li><a href="wester-mock-support.html">よくあるご質問</a></li><li><a href="wester-mock-support.html#self">手続きの自己解決</a></li><li><a href="wester-mock-support.html#contact">お問い合わせ</a></li></ul></div>
+      <div><h3>きまり</h3><ul><li><a href="#">サービス規約集</a></li><li><a href="#">プライバシー</a></li><li><a href="#">サイトマップ</a></li></ul></div>
+    </div>
+    <p class="copyright">© West Japan Railway Company（モックアップ・配色は仮）</p>
+  </div>
+</footer>
+
+<script>
+document.querySelectorAll('.mock-bar button').forEach(function(b){
+  b.addEventListener('click',function(){
+    document.body.className=b.dataset.state;
+    document.querySelectorAll('.mock-bar button').forEach(function(x){x.classList.toggle('on',x===b)});
+  });
+});
+</script>
+</body>
+</html>

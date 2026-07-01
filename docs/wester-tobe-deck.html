@@ -1,0 +1,302 @@
+<!-- @dsCard group="Docs" -->
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WESTERポータル刷新 to-be 提案資料</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<style>
+:root{
+  --page:#f9f9f7; --surface:#fcfcfb;
+  --ink:#0b0b0b; --sub:#52514e; --muted:#898781; --grid:#e1e0d9; --baseline:#c3c2b7;
+  --blue:#2a78d6; --blue-deep:#0d366b; --gold:#eda100;
+  --shadow:0 1px 3px rgba(20,20,20,.06),0 8px 28px rgba(20,20,20,.06);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Noto Sans JP',sans-serif;font-size:14px;line-height:1.9;color:var(--ink);background:var(--page)}
+a{color:var(--blue);text-decoration:none}
+.deck{max-width:960px;margin:0 auto;padding:40px 24px 80px}
+.slide{background:var(--surface);border-radius:16px;box-shadow:var(--shadow);padding:48px 56px;margin-bottom:32px}
+.kicker{font-size:12px;font-weight:700;color:var(--blue);letter-spacing:.12em;margin-bottom:6px}
+h1{font-size:30px;font-weight:900;line-height:1.5}
+h2{font-size:22px;font-weight:700;margin-bottom:6px}
+h3{font-size:15px;font-weight:700}
+.lead{font-size:13.5px;color:var(--sub);margin-bottom:24px}
+.slide-no{font-size:11px;color:var(--muted);text-align:right;margin-top:28px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;font-size:12px;color:var(--sub);font-weight:700;padding:10px 14px;border-bottom:2px solid var(--baseline)}
+td{padding:11px 14px;border-bottom:1px solid var(--grid);vertical-align:top}
+.tag{display:inline-block;background:#eef3fa;color:var(--blue);font-size:11px;font-weight:700;padding:1px 10px;border-radius:999px;white-space:nowrap}
+.tag-warn{background:#faf0ec;color:#a1450e}
+.grid{display:grid;gap:16px}
+/* stat tiles */
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:8px 0 4px}
+.tile{background:var(--page);border-radius:12px;padding:18px 20px}
+.tile .label{font-size:12px;color:var(--sub);font-weight:500}
+.tile .value{font-size:34px;font-weight:700;line-height:1.4}
+.tile .ctx{font-size:11.5px;color:var(--muted)}
+/* bar chart */
+.chart{margin:12px 0 4px}
+.bar-row{display:grid;grid-template-columns:130px 1fr 64px;align-items:center;gap:12px;padding:7px 0;border-radius:8px}
+.bar-row:hover{background:var(--page)}
+.bar-row .name{font-size:12.5px;color:var(--sub);text-align:right}
+.bar-track{position:relative;height:24px}
+.bar{position:absolute;top:2px;height:20px;background:var(--blue);border-radius:0 4px 4px 0}
+.bar.target{background:#9ec5f4}
+.bar-row .val{font-size:13px;font-weight:700;font-variant-numeric:initial}
+.chart .axis-note{font-size:11px;color:var(--muted);margin-top:6px;padding-left:142px}
+/* screen slides */
+.frame{border:1px solid var(--grid);border-radius:12px;overflow:hidden;background:#fff}
+.frame iframe{width:100%;height:520px;border:0;display:block}
+.frame-cap{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted);padding:10px 14px;background:var(--page)}
+.pt{display:flex;gap:10px;font-size:13px;margin-bottom:10px}
+.pt i{color:var(--blue);padding-top:6px;flex:none}
+/* funnel */
+.funnel{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:14px 0 6px}
+.fcell{border-radius:10px;padding:14px 16px;background:#eef3fa}
+.fcell h4{font-size:12.5px;font-weight:700}
+.fcell p{font-size:11.5px;color:var(--sub)}
+.fcell.goal{background:#f4f1e6}
+.cover{background:linear-gradient(130deg,#0d366b,#1c5cab 60%,#2a78d6);color:#fff}
+.cover .kicker{color:#ffd671}
+.cover .lead{color:rgba(255,255,255,.85)}
+.cover a{color:#fff;text-decoration:underline}
+li{margin-left:1.3em}
+@media (max-width:760px){.slide{padding:28px 22px}.tiles,.funnel{grid-template-columns:1fr 1fr}.grid{grid-template-columns:1fr!important}}
+</style>
+</head>
+<body>
+<div class="deck">
+
+<!-- 1. 表紙 -->
+<div class="slide cover">
+  <p class="kicker">WESTER PORTAL RENEWAL — 2029.03 RELEASE</p>
+  <h1>WESTERポータル刷新<br>to-be デザイン提案</h1>
+  <p class="lead" style="margin-top:14px">ワイヤーフレーム＋モックアップ＋導線設計の説明資料<br>2026年7月1日｜FY2026（準備年度）</p>
+  <p style="font-size:12.5px;opacity:.85">成果物：to-be トップ／会員サポート／WESTERポイント（WF・モックアップ各3枚）、as-is/to-be 差分比較</p>
+  <p class="slide-no" style="color:rgba(255,255,255,.6)">1</p>
+</div>
+
+<!-- 2. 背景と狙い -->
+<div class="slide">
+  <p class="kicker">BACKGROUND</p>
+  <h2>背景：電話が受けきれず、サイトが解決してくれない</h2>
+  <p class="lead">WESTERセンターの応答率はKPIを大幅に下回り、サイト側は自己解決の受け皿になれていません。刷新の核心は「セルフサービスで入電の発生源を潰す」ことです。</p>
+
+  <h3 style="margin-bottom:4px">電話応答率（現状 vs KPI）</h3>
+  <div class="chart" aria-label="電話応答率の比較">
+    <div class="bar-row" title="現状の応答率 23.2%">
+      <span class="name">現状</span>
+      <span class="bar-track"><span class="bar" style="width:23.2%"></span></span>
+      <span class="val">23.2%</span>
+    </div>
+    <div class="bar-row" title="KPI 80%">
+      <span class="name">KPI</span>
+      <span class="bar-track"><span class="bar target" style="width:80%"></span></span>
+      <span class="val">80%</span>
+    </div>
+    <p class="axis-note">応答率（0〜100%）。濃い青＝現状、淡い青＝目標。</p>
+  </div>
+
+  <div class="tiles">
+    <div class="tile">
+      <p class="label">OTP関連などの隠れ需要</p>
+      <p class="value">約2.5倍</p>
+      <p class="ctx">応答できた電話に対する規模</p>
+    </div>
+    <div class="tile">
+      <p class="label">外部ドメインへの離脱リンク</p>
+      <p class="value">約68%</p>
+      <p class="ctx">回遊とログイン状態が断絶</p>
+    </div>
+    <div class="tile">
+      <p class="label">CMS</p>
+      <p class="value">不在</p>
+      <p class="ctx">全更新が外部発注（コスト増・低速）</p>
+    </div>
+  </div>
+  <p class="slide-no">2</p>
+</div>
+
+<!-- 3. 狙い（KPI） -->
+<div class="slide">
+  <p class="kicker">GOAL</p>
+  <h2>狙い：入電−30%・自己解決率70%</h2>
+  <p class="lead">装飾ではなく、情報の優先度と導線の設計で達成します。本資料のWF・モックアップはこの2つの数値仮説を構造に落とし込んだものです。</p>
+  <div class="grid" style="grid-template-columns:1fr 1fr">
+    <div class="tile" style="background:#eef3fa">
+      <p class="label">インバウンド（入電）</p>
+      <p class="value">−30%</p>
+      <p class="ctx">発生源（OTP・ID統合・パスワード・FAQ未解決）を導線で潰す</p>
+    </div>
+    <div class="tile" style="background:#f4f1e6">
+      <p class="label">自己解決率</p>
+      <p class="value">70%</p>
+      <p class="ctx">FAQ→手続き→チャットの3段階で解決を完了させる</p>
+    </div>
+  </div>
+  <p class="slide-no">3</p>
+</div>
+
+<!-- 4. as-is 課題 -->
+<div class="slide">
+  <p class="kicker">AS-IS ISSUES</p>
+  <h2>as-is の構造課題（8点）</h2>
+  <p class="lead">現状トップは「重要なお知らせ→カルーセル→キャンペーン→サービス並列→お知らせ」の縦積みで、次の課題を抱えています。</p>
+  <table>
+    <tr><th style="width:36px">#</th><th>課題</th><th>なにが起きているか</th></tr>
+    <tr><td>1</td><td>情報の優先度が不明確</td><td>バナー羅列から始まり、未登録者と会員が混在。どちらにも中途半端。</td></tr>
+    <tr><td>2</td><td>サービス関係性が不明</td><td>ICOCA・J-WEST・アプリ・Wesmo! が並列で、使う順序がわからない。</td></tr>
+    <tr><td>3</td><td>キャンペーンが主役過剰</td><td>ページの大半がキャンペーン。条件不明で「自分向けか」判断できない。</td></tr>
+    <tr><td>4</td><td>会員登録の動線が弱い</td><td>本文中にコンバージョンポイントがない。</td></tr>
+    <tr><td>5</td><td>FAQが外部ドメイン遷移</td><td>ログイン状態が切れ、未解決時は電話に直結（セルフ失敗→即入電）。</td></tr>
+    <tr><td>6</td><td>お知らせとFAQの分断</td><td>問題→解決の動線が途切れる。</td></tr>
+    <tr><td>7</td><td>マイページが不透明</td><td>何を確認できるか外部からわからず、セルフ解決の入口にならない。</td></tr>
+    <tr><td>8</td><td>サポート動線が入電原因</td><td>パスワード・ID統合・OTPの導線が弱く、電話を誘発。</td></tr>
+  </table>
+  <p class="slide-no">4</p>
+</div>
+
+<!-- 5. to-be 設計原則 -->
+<div class="slide">
+  <p class="kicker">TO-BE PRINCIPLES</p>
+  <h2>to-be 設計原則：課題を導線で解く</h2>
+  <div class="grid" style="grid-template-columns:1fr 1fr;margin-top:8px">
+    <div class="pt"><i class="fa-solid fa-user-group"></i><span><b>会員／新規の出し分け</b>：ヒーローをログイン状態で切替。未ログイン＝1文＋登録CTA、ログイン後＝残高・マイ駅・エントリー。</span></div>
+    <div class="pt"><i class="fa-solid fa-arrow-right-arrow-left"></i><span><b>サービスの順序化</b>：4サービスを「何を→どの順で」の関係で提示。</span></div>
+    <div class="pt"><i class="fa-solid fa-arrow-down-short-wide"></i><span><b>キャンペーンの従属化</b>：厳選し、対象・条件・期間を明記。</span></div>
+    <div class="pt"><i class="fa-solid fa-house-circle-check"></i><span><b>サポートの内製化と段階導線</b>：FAQをサイト内表示（ログイン維持）。未解決時のみ問い合わせ。</span></div>
+    <div class="pt"><i class="fa-solid fa-id-card-clip"></i><span><b>マイページの可視化</b>：残高・履歴・手続きを明示し、セルフ解決の入口に。</span></div>
+    <div class="pt"><i class="fa-solid fa-link-slash"></i><span><b>外部離脱の抑制</b>：外部遷移を減らし、必要な遷移はログイン状態を維持。</span></div>
+    <div class="pt"><i class="fa-solid fa-robot"></i><span><b>AI Ready</b>：FAQ・キャンペーン・手続きを構造化し、将来のエージェントハブ（WESTERオーケストレーター）に備える。</span></div>
+  </div>
+  <p class="slide-no">5</p>
+</div>
+
+<!-- 6. 画面：トップ -->
+<div class="slide">
+  <p class="kicker">SCREEN 1</p>
+  <h2>to-be トップ：入口の整理と出し分け</h2>
+  <div class="grid" style="grid-template-columns:1fr 1fr;margin-bottom:16px">
+    <div>
+      <div class="pt"><i class="fa-solid fa-circle-check"></i><span><b>ヒーロー出し分け</b>（課題1・4・7）：未ログインは「WESTERとは」1文＋登録CTA。ログイン後は残高・マイ駅・エントリー。右下の切替ボタンで両状態を確認できます。</span></div>
+      <div class="pt"><i class="fa-solid fa-circle-check"></i><span><b>はじめての方へ</b>（課題2）：登録→ICOCA→アプリ→カード・Wesmo! の4ステップ導線。</span></div>
+    </div>
+    <div>
+      <div class="pt"><i class="fa-solid fa-circle-check"></i><span><b>キャンペーン従属化</b>（課題3）：厳選3件、対象・条件・期間を明記。</span></div>
+      <div class="pt"><i class="fa-solid fa-circle-check"></i><span><b>お知らせ→FAQ接続</b>（課題6）と<b>自己解決優先のサポート導線</b>（課題5・8）。</span></div>
+    </div>
+  </div>
+  <div class="frame">
+    <iframe src="../mockups/wester-mock-top.html" title="to-be トップ モックアップ"></iframe>
+    <div class="frame-cap"><span>モックアップ（操作できます）</span><a href="../mockups/wester-mock-top.html">単体で開く <i class="fa-solid fa-up-right-from-square"></i></a><a href="../wester-tobe-top.html">ワイヤーフレーム版 <i class="fa-solid fa-up-right-from-square"></i></a></div>
+  </div>
+  <p class="slide-no">6</p>
+</div>
+
+<!-- 7. 画面：サポート -->
+<div class="slide">
+  <p class="kicker">SCREEN 2</p>
+  <h2>会員サポート：入電削減の主戦場</h2>
+  <div class="grid" style="grid-template-columns:1fr 1fr;margin-bottom:16px">
+    <div>
+      <div class="pt"><i class="fa-solid fa-circle-check"></i><span><b>FAQ内製表示</b>（課題5）：外部ドメインへ飛ばさず、ログイン状態を維持。回答直下に「関連手続き」と「解決した／解決しない」。</span></div>
+      <div class="pt"><i class="fa-solid fa-circle-check"></i><span><b>段階導線</b>：FAQ→手続き→チャット→（未解決時のみ）有人。電話は最後の受け皿として小さく。</span></div>
+    </div>
+    <div>
+      <div class="pt"><i class="fa-solid fa-circle-check"></i><span><b>3大入電原因の自己解決フロー</b>（課題8）：パスワード・ID統合・OTPを3手順でオンライン完結。</span></div>
+      <div class="pt"><i class="fa-solid fa-circle-check"></i><span><b>未解決時の受け皿</b>：項目選択→窓口振り分け。試行履歴を引き継ぎ二度手間を防止。</span></div>
+    </div>
+  </div>
+  <div class="frame">
+    <iframe src="../mockups/wester-mock-support.html" title="会員サポート モックアップ"></iframe>
+    <div class="frame-cap"><span>モックアップ（操作できます）</span><a href="../mockups/wester-mock-support.html">単体で開く <i class="fa-solid fa-up-right-from-square"></i></a><a href="../wester-tobe-support.html">ワイヤーフレーム版 <i class="fa-solid fa-up-right-from-square"></i></a></div>
+  </div>
+  <p class="slide-no">7</p>
+</div>
+
+<!-- 8. 画面：ポイント -->
+<div class="slide">
+  <p class="kicker">SCREEN 3</p>
+  <h2>WESTERポイント：ためる・つかうの整理と可視化</h2>
+  <div class="grid" style="grid-template-columns:1fr 1fr;margin-bottom:16px">
+    <div>
+      <div class="pt"><i class="fa-solid fa-circle-check"></i><span><b>ポイントとは</b>を1文で言い切り、以降は「ためる」「つかう」の2軸のみ。</span></div>
+      <div class="pt"><i class="fa-solid fa-circle-check"></i><span><b>ためる</b>：手段ごとに条件を明記（要登録・要エントリー等）。</span></div>
+    </div>
+    <div>
+      <div class="pt"><i class="fa-solid fa-circle-check"></i><span><b>残高・履歴・有効期限の可視化</b>（課題7）：「付かない・消えた」系の問い合わせを自己解決へ。</span></div>
+      <div class="pt"><i class="fa-solid fa-circle-check"></i><span><b>FAQ接続</b>（課題6）：困りごとからサイト内FAQへ直行。</span></div>
+    </div>
+  </div>
+  <div class="frame">
+    <iframe src="../mockups/wester-mock-point.html" title="WESTERポイント モックアップ"></iframe>
+    <div class="frame-cap"><span>モックアップ（操作できます）</span><a href="../mockups/wester-mock-point.html">単体で開く <i class="fa-solid fa-up-right-from-square"></i></a><a href="../wester-tobe-point.html">ワイヤーフレーム版 <i class="fa-solid fa-up-right-from-square"></i></a></div>
+  </div>
+  <p class="slide-no">8</p>
+</div>
+
+<!-- 9. KPIロジック -->
+<div class="slide">
+  <p class="kicker">KPI LOGIC</p>
+  <h2>KPIロジック：段階導線が数値仮説を体現する</h2>
+  <p class="lead">as-is は「FAQ（外部）→解決しない→電話」の2段階でした。to-be は4段階にし、有人到達を全体の30%以下に抑えます。</p>
+  <div class="funnel">
+    <div class="fcell"><h4>STEP1 FAQ</h4><p>サイト内・ログイン維持。お知らせ・各ページから接続。</p></div>
+    <div class="fcell"><h4>STEP2 手続き</h4><p>PW・ID統合・OTPをオンライン完結。</p></div>
+    <div class="fcell"><h4>STEP3 チャット</h4><p>聞き取り→解決策の案内。</p></div>
+    <div class="fcell goal"><h4>STEP4 有人</h4><p>到達30%以下が設計目標＝入電−30%。</p></div>
+  </div>
+  <table style="margin-top:18px">
+    <tr><th>as-is 課題</th><th>to-be 対策</th><th style="width:180px">該当画面</th></tr>
+    <tr><td><span class="tag-warn tag">1 優先度不明・混在</span></td><td>会員/新規出し分けヒーロー</td><td>トップ</td></tr>
+    <tr><td><span class="tag-warn tag">2 関係性が不明</span></td><td>「はじめての方へ」順序導線</td><td>トップ</td></tr>
+    <tr><td><span class="tag-warn tag">3 キャンペーン過剰</span></td><td>従属化・厳選・条件明確化</td><td>トップ</td></tr>
+    <tr><td><span class="tag-warn tag">4 登録動線が弱い</span></td><td>本文中コンバージョンCTA</td><td>トップ</td></tr>
+    <tr><td><span class="tag-warn tag">5 FAQ外部・即入電</span></td><td>内製化・ログイン維持・段階導線</td><td>サポート</td></tr>
+    <tr><td><span class="tag-warn tag">6 お知らせ分断</span></td><td>問題→解決の接続</td><td>トップ・各ページ</td></tr>
+    <tr><td><span class="tag-warn tag">7 マイページ不透明</span></td><td>確認項目の可視化</td><td>トップ・ポイント</td></tr>
+    <tr><td><span class="tag-warn tag">8 入電誘発</span></td><td>自己解決フロー（PW/ID/OTP）</td><td>サポート</td></tr>
+  </table>
+  <p class="slide-no">9</p>
+</div>
+
+<!-- 10. 進め方 -->
+<div class="slide">
+  <p class="kicker">NEXT</p>
+  <h2>進め方と未解決の論点</h2>
+  <div class="grid" style="grid-template-columns:1fr 1fr">
+    <div>
+      <h3 style="margin-bottom:8px">FY2026（準備年度）でやること</h3>
+      <ul style="font-size:13px;color:var(--sub)">
+        <li>本WF・モックアップでIA/導線をレビュー・確定</li>
+        <li>RFP作成・評価（FAQ内製の実現方式はRFP側論点）</li>
+        <li>簡易CMS先行、統合CMS検討</li>
+        <li>ネット会員機能の移管先検討</li>
+      </ul>
+      <h3 style="margin:16px 0 8px">将来レイヤ（中長期）</h3>
+      <ul style="font-size:13px;color:var(--sub)">
+        <li>コンテンツ構造化 → AI Gateway → 会話フロントの依存順で拡張</li>
+        <li>エージェントハブ（WESTERオーケストレーター）へ発展</li>
+      </ul>
+    </div>
+    <div>
+      <h3 style="margin-bottom:8px">未解決の論点</h3>
+      <ul style="font-size:13px;color:var(--sub)">
+        <li>下層の範囲：まず3枚。サービス一覧は必要に応じ追加</li>
+        <li>ログイン後トップの作り込み度：枠まで。データ設計は別途</li>
+        <li>FAQ内製の実現方式：CMS/検索基盤はRFPで</li>
+        <li>キャンペーン厳選ロジック：会員属性でのパーソナライズは将来</li>
+        <li>配色：モックアップの配色は仮。ブランドガイドライン確定後に差し替え</li>
+      </ul>
+    </div>
+  </div>
+  <p class="slide-no">10</p>
+</div>
+
+</div>
+</body>
+</html>
