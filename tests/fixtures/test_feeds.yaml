@@ -1,0 +1,15 @@
+# ローカル動作確認用フィード定義
+# 使い方: python inforadar.py --feeds tests/fixtures/test_feeds.yaml
+global_keywords:
+  - 定期券
+  - MaaS
+
+categories:
+  - name: テスト
+    feeds:
+      - name: サンプルフィード
+        url: tests/fixtures/sample_feed.xml
+        keywords: [地域公共交通]
+      - name: 存在しないフィード（失敗確認用）
+        url: tests/fixtures/does_not_exist.xml
+        enabled: false

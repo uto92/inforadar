@@ -1,0 +1,42 @@
+# InfoRadar 監視ソース定義
+#
+# categories[].feeds[] の各エントリ:
+#   name:     表示名
+#   url:      RSS/Atom フィードURL（ローカルパスも可・テスト用）
+#   keywords: 任意。マッチした記事に ★ を付けて上位に表示（OR条件・部分一致）
+#   enabled:  false で一時停止
+#
+# 注意: 本ファイルのURLは開発サンドボックスから疎通確認できていません（初回の
+# GitHub Actions 実行レポートで取得可否を確認し、失敗ソースは修正してください）。
+
+global_keywords:
+  - 定期券
+  - MaaS
+  - 行動変容
+  - 二地域居住
+  - コンパクトシティ
+  - 地域公共交通
+
+categories:
+  - name: 交通・都市・行動創出
+    feeds:
+      - name: 国土交通省 報道発表
+        url: https://www.mlit.go.jp/pressrelease.rdf
+        keywords: [公共交通, まちづくり, 健康, 団地]
+      - name: 国土交通省 新着情報
+        url: https://www.mlit.go.jp/index.rdf
+      - name: 日本都市計画学会
+        url: https://www.cpij.or.jp/feed/
+      # RSS未提供（HTML監視は今後拡張）:
+      # - グッドデザイン賞 https://www.g-mark.org/
+      # - JR東日本プレスリリース https://www.jreast.co.jp/press/
+      # - JR九州ニュースリリース https://www.jrkyushu.co.jp/news/
+
+  - name: 競合・自社動向
+    feeds:
+      - name: PKSHA Technology
+        url: https://www.pksha.com/feed/
+        keywords: [FAQ, コールセンター, チャットボット]
+      # RSS未提供（PR TIMES の企業別RSSは company_id 判明後に追加）:
+      # - Helpfeel https://www.helpfeel.com/
+      # - JR西日本 ニュースリリース https://www.westjr.co.jp/press/
