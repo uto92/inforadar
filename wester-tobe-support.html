@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WESTERポータル to-be 会員サポート｜ワイヤーフレーム</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Noto Sans JP',sans-serif;font-size:13px;line-height:1.8;color:#1a1a1a;background:#fff}
+a{color:#1a1a1a}
+ul{list-style:none}
+.container{max-width:1040px;margin:0 auto;padding:0 24px}
+.wf-bar{background:#1a1a1a;color:#fff;font-size:11px;padding:8px 16px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.wf-bar a{color:#fff}
+section{padding:36px 0}
+.sec-alt{background:#f5f5f5}
+h2{font-size:16px;font-weight:700}
+.sec-head{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.sec-lead{font-size:12px;color:#555;margin-bottom:16px}
+.ph{background:#d9d9d9;color:#767676;display:flex;align-items:center;justify-content:center;font-size:11px;text-align:center}
+.btn{display:inline-block;background:#1a1a1a;color:#fff;padding:12px 32px;font-size:13px;font-weight:500;text-decoration:none}
+.btn-sub{display:inline-block;background:#e0e0e0;color:#1a1a1a;padding:12px 32px;font-size:13px;text-decoration:none}
+.tag-fix{display:inline-block;background:#1a1a1a;color:#fff;font-size:11px;padding:3px 10px;margin:0 4px 4px 0}
+.wf-note{background:#efefef;color:#444;font-size:11px;padding:10px 14px;margin-top:14px}
+.wf-note i{margin-right:6px}
+.state-label{display:inline-block;background:#6b6b6b;color:#fff;font-size:11px;padding:4px 12px}
+.grid{display:grid;gap:16px}
+.card{background:#fff;padding:16px}
+.header-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 0;gap:16px}
+.logo{width:150px;height:36px}
+.gnav{display:flex;gap:20px;font-size:12px;align-items:center}
+.gnav a{text-decoration:none;font-weight:500}
+footer{background:#2b2b2b;color:#ddd;padding:36px 0}
+footer h3{font-size:12px;color:#fff;margin-bottom:10px}
+footer a{color:#ddd;font-size:12px;text-decoration:none}
+footer li{margin-bottom:6px}
+.copyright{font-size:11px;color:#999;margin-top:28px}
+.flow-step{background:#fff;padding:16px;text-align:center}
+.flow-num{display:inline-block;background:#1a1a1a;color:#fff;padding:2px 10px;font-size:11px;margin-bottom:8px}
+.arrow{display:flex;align-items:center;justify-content:center;color:#888}
+.faq-item{background:#fff;padding:14px 16px;margin-bottom:2px}
+.faq-q{font-weight:700;font-size:12px}
+.faq-q i{margin-right:8px}
+.fb{display:inline-block;background:#e0e0e0;font-size:11px;padding:4px 14px;text-decoration:none}
+.proc-step{display:flex;gap:10px;font-size:12px;margin-bottom:8px}
+.proc-num{background:#1a1a1a;color:#fff;min-width:20px;height:20px;line-height:20px;text-align:center;font-size:11px}
+.radio{display:flex;gap:8px;align-items:center;font-size:12px;background:#fff;padding:10px 14px;margin-bottom:2px}
+.radio i{color:#888}
+</style>
+</head>
+<body>
+
+<div class="wf-bar">
+  <span><i class="fa-solid fa-pen-ruler"></i> ワイヤーフレーム｜WESTERポータル to-be 会員サポート（入電削減の主戦場）</span>
+  <span>更新日 2026-07-01｜<a href="wester-tobe-top.html">to-be トップ</a>｜<a href="index.html">WF一覧</a></span>
+</div>
+
+<!-- グローバルナビ -->
+<header>
+  <div class="container header-inner">
+    <div class="ph logo">ロゴ<br>WESTER</div>
+    <nav class="gnav">
+      <a href="#">会員サービス</a>
+      <a href="wester-tobe-point.html">WESTERポイント</a>
+      <a href="wester-tobe-support.html" style="text-decoration:underline">サポート</a>
+      <span class="state-label"><i class="fa-solid fa-user-check"></i> WESTER IDでログイン中</span>
+    </nav>
+  </div>
+</header>
+
+<!-- パンくず＋ログイン状態 -->
+<div class="container" style="padding-top:12px">
+  <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:11px;color:#555">
+    <span><a href="wester-tobe-top.html">トップ</a> ／ 会員サポート</span>
+    <span>ドメイン：wester.jr-odekake.net（外部遷移なし）</span>
+  </div>
+  <div class="wf-note"><i class="fa-solid fa-circle-info"></i>
+    <span class="tag-fix">対策｜課題5</span>FAQを外部ドメイン（support-faq）へ飛ばさず、サイト内で表示します。WESTER IDのログイン状態を維持したままFAQ・手続きに進めます。
+  </div>
+</div>
+
+<!-- 検索＋カテゴリ -->
+<section id="search">
+  <div class="container">
+    <h1 style="font-size:20px;font-weight:700;margin-bottom:4px">会員サポート</h1>
+    <p class="sec-lead">お困りごとを検索してください。ほとんどの手続きは、このサイト内で完結します。</p>
+    <div style="background:#f5f5f5;padding:24px">
+      <div style="display:flex;gap:8px;max-width:680px;margin:0 auto">
+        <div style="flex:1;background:#fff;padding:12px 14px;color:#888;font-size:12px"><i class="fa-solid fa-magnifying-glass"></i> 質問をキーワードで検索（例：パスワード 再設定）</div>
+        <a href="#faq" class="btn" style="padding:12px 24px">検索</a>
+      </div>
+      <div class="grid" style="grid-template-columns:repeat(5,1fr);margin-top:20px">
+        <a href="#faq" class="card" style="text-align:center;text-decoration:none"><i class="fa-solid fa-coins fa-lg"></i><p style="font-size:12px;font-weight:700;margin-top:6px">ポイント</p></a>
+        <a href="#faq" class="card" style="text-align:center;text-decoration:none"><i class="fa-solid fa-credit-card fa-lg"></i><p style="font-size:12px;font-weight:700;margin-top:6px">カード</p></a>
+        <a href="#faq" class="card" style="text-align:center;text-decoration:none"><i class="fa-solid fa-train-subway fa-lg"></i><p style="font-size:12px;font-weight:700;margin-top:6px">ICOCA</p></a>
+        <a href="#faq" class="card" style="text-align:center;text-decoration:none"><i class="fa-solid fa-mobile-screen fa-lg"></i><p style="font-size:12px;font-weight:700;margin-top:6px">アプリ</p></a>
+        <a href="#faq" class="card" style="text-align:center;text-decoration:none"><i class="fa-solid fa-right-to-bracket fa-lg"></i><p style="font-size:12px;font-weight:700;margin-top:6px">ログイン・会員登録</p></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 段階導線 -->
+<section id="flow" class="sec-alt">
+  <div class="container">
+    <div class="sec-head"><h2>解決までの流れ（段階導線）</h2></div>
+    <p class="sec-lead">自己解決を優先し、有人問い合わせは「それでも解決しない場合のみ」です。「セルフ失敗→即入電」を断ちます。</p>
+    <div class="grid" style="grid-template-columns:1fr 24px 1fr 24px 1fr 24px 1fr;align-items:stretch">
+      <div class="flow-step">
+        <span class="flow-num">STEP 1</span>
+        <p style="font-weight:700;font-size:12px"><i class="fa-solid fa-circle-question"></i> FAQを検索</p>
+        <p style="font-size:11px;color:#555">サイト内でそのまま閲覧できます。</p>
+      </div>
+      <div class="arrow"><i class="fa-solid fa-arrow-right"></i></div>
+      <div class="flow-step">
+        <span class="flow-num">STEP 2</span>
+        <p style="font-weight:700;font-size:12px"><i class="fa-solid fa-list-check"></i> 関連手続きで自己解決</p>
+        <p style="font-size:11px;color:#555">FAQから手続き画面へ直接進めます。</p>
+      </div>
+      <div class="arrow"><i class="fa-solid fa-arrow-right"></i></div>
+      <div class="flow-step">
+        <span class="flow-num">STEP 3</span>
+        <p style="font-weight:700;font-size:12px"><i class="fa-solid fa-comment-dots"></i> チャットボット</p>
+        <p style="font-size:11px;color:#555">状況を聞き取り、解決策を案内します。</p>
+      </div>
+      <div class="arrow"><i class="fa-solid fa-arrow-right"></i></div>
+      <div class="flow-step" style="background:#e8e8e8">
+        <span class="flow-num" style="background:#6b6b6b">STEP 4</span>
+        <p style="font-weight:700;font-size:12px"><i class="fa-solid fa-headset"></i> 有人問い合わせ</p>
+        <p style="font-size:11px;color:#555">未解決の場合のみ。内容別に振り分けます。</p>
+      </div>
+    </div>
+    <div class="wf-note"><i class="fa-solid fa-circle-info"></i>
+      <span class="tag-fix">対策｜課題5・8</span>FAQ→手続き→チャットボット→有人、の順に段階を踏む構造です。
+      <span class="tag-fix">KPI</span>STEP1〜3で自己解決率70%、結果として入電−30%を狙います。
+    </div>
+  </div>
+</section>
+
+<!-- 入電原因の自己解決フロー -->
+<section id="self">
+  <div class="container">
+    <div class="sec-head"><h2>よくあるお困りごと（自己解決フロー）</h2></div>
+    <p class="sec-lead">入電原因の上位（パスワード・ID統合・ワンタイムパスワード）を、手順化してオンラインで完結できるようにします。</p>
+    <div class="grid" style="grid-template-columns:repeat(3,1fr)">
+      <div id="password" class="card" style="background:#f5f5f5">
+        <p style="font-weight:700;font-size:13px;margin-bottom:10px"><i class="fa-solid fa-key"></i> パスワードを忘れた・変えたい</p>
+        <div class="proc-step"><span class="proc-num">1</span><span>登録メールアドレスを入力します。</span></div>
+        <div class="proc-step"><span class="proc-num">2</span><span>届いたリンクから本人確認します。</span></div>
+        <div class="proc-step"><span class="proc-num">3</span><span>新しいパスワードを設定して完了です。</span></div>
+        <a href="#" class="btn" style="width:100%;text-align:center;margin-top:8px">再設定をはじめる</a>
+      </div>
+      <div id="id" class="card" style="background:#f5f5f5">
+        <p style="font-weight:700;font-size:13px;margin-bottom:10px"><i class="fa-solid fa-object-group"></i> IDを統合したい</p>
+        <div class="proc-step"><span class="proc-num">1</span><span>統合したいIDでログインします。</span></div>
+        <div class="proc-step"><span class="proc-num">2</span><span>もう一方のIDを認証します。</span></div>
+        <div class="proc-step"><span class="proc-num">3</span><span>残高・履歴の引き継ぎを確認して完了です。</span></div>
+        <a href="#" class="btn" style="width:100%;text-align:center;margin-top:8px">ID統合をはじめる</a>
+      </div>
+      <div id="otp" class="card" style="background:#f5f5f5">
+        <p style="font-weight:700;font-size:13px;margin-bottom:10px"><i class="fa-solid fa-shield-halved"></i> ワンタイムパスワードが届かない</p>
+        <div class="proc-step"><span class="proc-num">1</span><span>受信設定・迷惑メールを確認します。</span></div>
+        <div class="proc-step"><span class="proc-num">2</span><span>再送信、または別の受信方法を選びます。</span></div>
+        <div class="proc-step"><span class="proc-num">3</span><span>それでも届かない場合は連絡先を変更します。</span></div>
+        <a href="#" class="btn" style="width:100%;text-align:center;margin-top:8px">受信方法を確認する</a>
+      </div>
+    </div>
+    <div class="wf-note"><i class="fa-solid fa-circle-info"></i>
+      <span class="tag-fix">対策｜課題8</span>入電の発生源（OTP・ID統合・パスワード）を、電話なしで自己完結できる手順に置き換えます。OTP関連は応答できた電話の約2.5倍規模の隠れ需要があり、最優先で潰します。
+    </div>
+  </div>
+</section>
+
+<!-- FAQ内製表示 -->
+<section id="faq" class="sec-alt">
+  <div class="container">
+    <div class="sec-head"><h2>よくあるご質問（サイト内表示）</h2><span style="font-size:11px;color:#555"><i class="fa-solid fa-user-check"></i> ログイン状態を維持したまま閲覧できます</span></div>
+    <div>
+      <div class="faq-item">
+        <p class="faq-q"><i class="fa-solid fa-q"></i>質問タイトルが入ります（例：ポイントの有効期限を知りたい）<i class="fa-solid fa-angle-down" style="float:right"></i></p>
+        <div style="font-size:12px;color:#444;padding:10px 0 4px">
+          <p>回答テキストが入ります。回答内から関連する手続きへそのまま進めます。</p>
+          <p style="margin:8px 0"><a href="wester-tobe-point.html#history" class="btn-sub" style="padding:6px 16px;font-size:11px"><i class="fa-solid fa-list-check"></i> 関連手続き：ポイント履歴を確認する</a></p>
+          <p style="font-size:11px;color:#555">この回答で解決しましたか？　<a href="#" class="fb"><i class="fa-solid fa-circle-check"></i> 解決した</a>　<a href="#contact" class="fb"><i class="fa-solid fa-circle-xmark"></i> 解決しない（次のステップへ）</a></p>
+        </div>
+      </div>
+      <div class="faq-item"><p class="faq-q"><i class="fa-solid fa-q"></i>質問タイトルが入ります<i class="fa-solid fa-angle-down" style="float:right"></i></p></div>
+      <div class="faq-item"><p class="faq-q"><i class="fa-solid fa-q"></i>質問タイトルが入ります<i class="fa-solid fa-angle-down" style="float:right"></i></p></div>
+      <div class="faq-item"><p class="faq-q"><i class="fa-solid fa-q"></i>質問タイトルが入ります<i class="fa-solid fa-angle-down" style="float:right"></i></p></div>
+      <div class="faq-item"><p class="faq-q"><i class="fa-solid fa-q"></i>質問タイトルが入ります<i class="fa-solid fa-angle-down" style="float:right"></i></p></div>
+    </div>
+    <div class="wf-note"><i class="fa-solid fa-circle-info"></i>
+      <span class="tag-fix">対策｜課題5・6</span>回答の直下に「関連手続き」と「解決した／解決しない」を置き、未解決の場合だけ次の段階へ進めます。FAQは見出し・条件・手順を構造化して保持し、将来のAI参照（AI Ready）に備えます。
+    </div>
+  </div>
+</section>
+
+<!-- チャットボット -->
+<section id="chatbot">
+  <div class="container">
+    <div class="sec-head"><h2>チャットボットに相談する（STEP 3）</h2></div>
+    <div class="grid" style="grid-template-columns:1fr 1fr;align-items:center">
+      <div class="ph" style="height:160px">チャットボット画面<br>（状況の聞き取り→FAQ・手続きへの案内）</div>
+      <div style="font-size:12px;color:#444">
+        <p>FAQと手続きで解決しなかった場合、チャットボットが状況を聞き取り、該当する解決策を案内します。</p>
+        <p style="margin-top:8px">それでも解決しない場合のみ、有人問い合わせへ引き継ぎます。聞き取った内容は引き継がれ、二度手間になりません。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 未解決時の受け皿 -->
+<section id="contact" class="sec-alt">
+  <div class="container">
+    <div class="sec-head"><h2>お問い合わせ（それでも解決しない場合）</h2></div>
+    <p class="sec-lead">問い合わせの前に「解決しなかった項目」を選んでいただき、適切な窓口へ振り分けます。</p>
+    <div class="grid" style="grid-template-columns:1.2fr 1fr">
+      <div>
+        <p style="font-size:12px;font-weight:700;margin-bottom:8px">1. 解決しなかった項目を選んでください</p>
+        <div class="radio"><i class="fa-regular fa-circle"></i> ログイン・パスワード・ワンタイムパスワード</div>
+        <div class="radio"><i class="fa-regular fa-circle"></i> ID統合・会員情報の変更</div>
+        <div class="radio"><i class="fa-regular fa-circle"></i> ポイントの付与・利用</div>
+        <div class="radio"><i class="fa-regular fa-circle"></i> J-WESTカード・ICOCA</div>
+        <div class="radio"><i class="fa-regular fa-circle"></i> その他</div>
+      </div>
+      <div>
+        <p style="font-size:12px;font-weight:700;margin-bottom:8px">2. 選んだ項目に応じた窓口をご案内します</p>
+        <div class="card" style="margin-bottom:8px">
+          <p style="font-size:12px;font-weight:700"><i class="fa-solid fa-envelope"></i> フォームで問い合わせる（推奨）</p>
+          <p style="font-size:11px;color:#555">試した手順が自動で引き継がれ、回答が早くなります。</p>
+          <a href="#" class="btn" style="padding:8px 20px;font-size:12px;margin-top:6px">フォームへ進む</a>
+        </div>
+        <div class="card" style="background:#e8e8e8">
+          <p style="font-size:12px"><i class="fa-solid fa-phone"></i> 電話で問い合わせる</p>
+          <p style="font-size:11px;color:#555">フォームで解決できない内容のみ、こちらをご利用ください。</p>
+        </div>
+      </div>
+    </div>
+    <div class="wf-note"><i class="fa-solid fa-circle-info"></i>
+      <span class="tag-fix">対策｜課題5・8</span>電話は最後の受け皿として小さく配置し、フォーム＋振り分けを既定にします。試行済みのFAQ・手続きの履歴を窓口へ引き継ぎ、対応を短くします。
+      <span class="tag-fix">KPI</span>この画面に到達するのは全体の30%以下、が導線設計の目標値です。
+    </div>
+  </div>
+</section>
+
+<!-- フッター -->
+<footer>
+  <div class="container">
+    <div class="grid" style="grid-template-columns:repeat(4,1fr)">
+      <div><h3>会員サービス</h3><ul><li><a href="#">サービス一覧</a></li><li><a href="#">WESTERサービスとは</a></li><li><a href="#">会員登録・移行</a></li><li><a href="#">マイページ</a></li></ul></div>
+      <div><h3>WESTERポイント</h3><ul><li><a href="wester-tobe-point.html">ポイントとは</a></li><li><a href="wester-tobe-point.html#earn">ためる</a></li><li><a href="wester-tobe-point.html#use">つかう</a></li></ul></div>
+      <div><h3>サポート</h3><ul><li><a href="#faq">よくあるご質問（サイト内）</a></li><li><a href="#self">手続きの自己解決</a></li><li><a href="#contact">お問い合わせ</a></li><li><a href="#">ご利用にあたって</a></li></ul></div>
+      <div><h3>きまり</h3><ul><li><a href="#">サービス規約集</a></li><li><a href="#">プライバシー</a></li><li><a href="#">サイトマップ</a></li></ul></div>
+    </div>
+    <p class="copyright">© West Japan Railway Company（ワイヤーフレーム）</p>
+  </div>
+</footer>
+
+</body>
+</html>

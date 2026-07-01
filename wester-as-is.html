@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WESTERポータル as-is トップ｜ワイヤーフレーム</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Noto Sans JP',sans-serif;font-size:13px;line-height:1.8;color:#1a1a1a;background:#fff}
+a{color:#1a1a1a}
+ul{list-style:none}
+.container{max-width:1040px;margin:0 auto;padding:0 24px}
+.wf-bar{background:#1a1a1a;color:#fff;font-size:11px;padding:8px 16px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.wf-bar a{color:#fff}
+section{padding:36px 0}
+.sec-alt{background:#f5f5f5}
+h2{font-size:16px;font-weight:700}
+.sec-head{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.ph{background:#d9d9d9;color:#767676;display:flex;align-items:center;justify-content:center;font-size:11px;text-align:center}
+.tag-issue{display:inline-block;background:#6b6b6b;color:#fff;font-size:11px;padding:3px 10px;margin:0 4px 4px 0}
+.wf-note{background:#efefef;color:#444;font-size:11px;padding:10px 14px;margin-top:14px}
+.wf-note i{margin-right:6px}
+.grid{display:grid;gap:16px}
+.header-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
+.logo{width:150px;height:36px}
+.header-links{display:flex;gap:16px;font-size:12px;align-items:center}
+footer{background:#2b2b2b;color:#ddd;padding:36px 0}
+footer h3{font-size:12px;color:#fff;margin-bottom:10px}
+footer a{color:#ddd;font-size:12px;text-decoration:none}
+footer li{margin-bottom:6px}
+.copyright{font-size:11px;color:#999;margin-top:28px}
+</style>
+</head>
+<body>
+
+<div class="wf-bar">
+  <span><i class="fa-solid fa-pen-ruler"></i> ワイヤーフレーム｜WESTERポータル as-is トップ（現状の構造再現・課題注記つき）</span>
+  <span>更新日 2026-07-01｜<a href="index.html">WF一覧へ</a></span>
+</div>
+
+<!-- ヘッダー -->
+<header style="background:#fff">
+  <div class="container header-inner">
+    <div class="ph logo">ロゴ<br>WESTER</div>
+    <div class="header-links">
+      <a href="#"><i class="fa-solid fa-user"></i> ログイン</a>
+      <a href="#"><i class="fa-solid fa-user-plus"></i> 新規会員登録</a>
+      <a href="#"><i class="fa-solid fa-bars"></i> メニュー</a>
+    </div>
+  </div>
+</header>
+
+<!-- 重要なお知らせ -->
+<section style="padding:16px 0;background:#e8e8e8">
+  <div class="container">
+    <p style="font-size:12px"><i class="fa-solid fa-triangle-exclamation"></i> 【重要】システムメンテナンスのお知らせ（テキストリンク）</p>
+    <div class="wf-note"><i class="fa-solid fa-circle-info"></i>
+      <span class="tag-issue">課題6</span>お知らせと FAQ が分断されており、問題→解決の動線がありません。
+    </div>
+  </div>
+</section>
+
+<!-- メインビジュアル（カルーセル） -->
+<section style="padding:24px 0">
+  <div class="container">
+    <div class="ph" style="height:320px">メインビジュアル（カルーセルバナー）<br>キャンペーンバナーが順番に表示されます</div>
+    <div style="display:flex;gap:8px;justify-content:center;margin-top:10px">
+      <span class="ph" style="width:10px;height:10px;border-radius:50%"></span>
+      <span class="ph" style="width:10px;height:10px;border-radius:50%"></span>
+      <span class="ph" style="width:10px;height:10px;border-radius:50%"></span>
+      <span class="ph" style="width:10px;height:10px;border-radius:50%"></span>
+    </div>
+    <div class="wf-note"><i class="fa-solid fa-circle-info"></i>
+      <span class="tag-issue">課題1</span>トップがバナー羅列から始まり、未登録ユーザーと既存会員が混在します。どちらにも中途半端です。
+      <span class="tag-issue">課題4</span>本文中に会員登録のコンバージョンポイントがありません。
+    </div>
+  </div>
+</section>
+
+<!-- キャンペーン情報 -->
+<section class="sec-alt">
+  <div class="container">
+    <div class="sec-head"><h2>キャンペーン情報</h2><a href="#" style="font-size:12px">一覧を見る <i class="fa-solid fa-angle-right"></i></a></div>
+    <div class="grid" style="grid-template-columns:repeat(4,1fr)">
+      <div><div class="ph" style="height:110px">バナー</div><p style="font-size:12px;margin-top:6px">キャンペーンタイトルが入ります</p></div>
+      <div><div class="ph" style="height:110px">バナー</div><p style="font-size:12px;margin-top:6px">キャンペーンタイトルが入ります</p></div>
+      <div><div class="ph" style="height:110px">バナー</div><p style="font-size:12px;margin-top:6px">キャンペーンタイトルが入ります</p></div>
+      <div><div class="ph" style="height:110px">バナー</div><p style="font-size:12px;margin-top:6px">キャンペーンタイトルが入ります</p></div>
+    </div>
+    <div class="grid" style="grid-template-columns:repeat(4,1fr);margin-top:16px">
+      <div><div class="ph" style="height:110px">バナー</div><p style="font-size:12px;margin-top:6px">キャンペーンタイトルが入ります</p></div>
+      <div><div class="ph" style="height:110px">バナー</div><p style="font-size:12px;margin-top:6px">キャンペーンタイトルが入ります</p></div>
+      <div><div class="ph" style="height:110px">バナー</div><p style="font-size:12px;margin-top:6px">キャンペーンタイトルが入ります</p></div>
+      <div><div class="ph" style="height:110px">バナー</div><p style="font-size:12px;margin-top:6px">キャンペーンタイトルが入ります</p></div>
+    </div>
+    <div class="wf-note"><i class="fa-solid fa-circle-info"></i>
+      <span class="tag-issue">課題3</span>ページの大半がキャンペーンで、新規ユーザーには文脈が不明です。対象・条件も明記されていません。
+    </div>
+  </div>
+</section>
+
+<!-- ポイントがたまる主要サービス -->
+<section>
+  <div class="container">
+    <div class="sec-head"><h2>ポイントがたまる主要サービス</h2></div>
+    <div class="grid" style="grid-template-columns:repeat(4,1fr)">
+      <div><div class="ph" style="height:90px">ICOCA</div><p style="font-size:12px;margin-top:6px">ICOCA の説明が入ります</p></div>
+      <div><div class="ph" style="height:90px">J-WESTカード</div><p style="font-size:12px;margin-top:6px">J-WESTカードの説明が入ります</p></div>
+      <div><div class="ph" style="height:90px">WESTERアプリ</div><p style="font-size:12px;margin-top:6px">アプリの説明が入ります</p></div>
+      <div><div class="ph" style="height:90px">Wesmo!</div><p style="font-size:12px;margin-top:6px">Wesmo! の説明が入ります</p></div>
+    </div>
+    <div class="wf-note"><i class="fa-solid fa-circle-info"></i>
+      <span class="tag-issue">課題2</span>4サービスが並列に並ぶだけで、「何をどの順で使うか」の導線がありません。
+    </div>
+  </div>
+</section>
+
+<!-- サービス一覧 -->
+<section class="sec-alt">
+  <div class="container">
+    <div class="sec-head"><h2>サービス一覧</h2><a href="#" style="font-size:12px">すべて見る <i class="fa-solid fa-angle-right"></i></a></div>
+    <div class="grid" style="grid-template-columns:repeat(6,1fr)">
+      <div class="ph" style="height:70px">サービス</div>
+      <div class="ph" style="height:70px">サービス</div>
+      <div class="ph" style="height:70px">サービス</div>
+      <div class="ph" style="height:70px">サービス</div>
+      <div class="ph" style="height:70px">サービス</div>
+      <div class="ph" style="height:70px">サービス</div>
+    </div>
+    <div class="wf-note"><i class="fa-solid fa-circle-info"></i>
+      <span class="tag-issue">外部分散</span>リンクの約68%が外部ドメインへ離脱します（親サイト・EC・FAQ・商業施設20+）。回遊とログイン状態が断絶しやすい構造です。
+      <span class="tag-issue">課題7</span>マイページで何が確認できるか、外部からは分かりません。
+    </div>
+  </div>
+</section>
+
+<!-- お知らせ -->
+<section>
+  <div class="container">
+    <div class="sec-head"><h2>お知らせ</h2><a href="#" style="font-size:12px">一覧を見る <i class="fa-solid fa-angle-right"></i></a></div>
+    <ul style="font-size:12px">
+      <li style="padding:10px 0;background:#fff">2026.06.28　お知らせタイトルが入ります</li>
+      <li style="padding:10px 0">2026.06.20　お知らせタイトルが入ります</li>
+      <li style="padding:10px 0">2026.06.12　お知らせタイトルが入ります</li>
+    </ul>
+    <div class="wf-note"><i class="fa-solid fa-circle-info"></i>
+      <span class="tag-issue">課題5</span><span class="tag-issue">課題8</span>FAQ は外部ドメイン（support-faq.westjr.co.jp）へ完全遷移し、ログイン状態が引き継がれません。FAQで解決しない場合の導線が電話に直結し、「セルフ失敗→即入電」を生んでいます。
+    </div>
+  </div>
+</section>
+
+<!-- フッター（4カラム） -->
+<footer>
+  <div class="container">
+    <div class="grid" style="grid-template-columns:repeat(4,1fr)">
+      <div>
+        <h3>会員サービス</h3>
+        <ul>
+          <li><a href="#">サービス一覧</a></li>
+          <li><a href="#">WESTERサービスとは</a></li>
+          <li><a href="#">会員登録・移行</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>WESTERポイント</h3>
+        <ul>
+          <li><a href="#">ポイントとは</a></li>
+          <li><a href="#">ためる</a></li>
+          <li><a href="#">つかう</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>サポート</h3>
+        <ul>
+          <li><a href="#">よくあるご質問</a></li>
+          <li><a href="#">お問い合わせ</a></li>
+          <li><a href="#">ご利用にあたって</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>きまり</h3>
+        <ul>
+          <li><a href="#">サービス規約集</a></li>
+          <li><a href="#">プライバシー</a></li>
+          <li><a href="#">サイトマップ</a></li>
+        </ul>
+      </div>
+    </div>
+    <p class="copyright">© West Japan Railway Company（ワイヤーフレーム）</p>
+  </div>
+</footer>
+
+</body>
+</html>

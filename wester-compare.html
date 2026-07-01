@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WESTERポータル as-is / to-be 差分比較｜ワイヤーフレーム</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Noto Sans JP',sans-serif;font-size:13px;line-height:1.8;color:#1a1a1a;background:#fff}
+a{color:#1a1a1a}
+.container{max-width:1200px;margin:0 auto;padding:0 24px}
+.wf-bar{background:#1a1a1a;color:#fff;font-size:11px;padding:8px 16px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.wf-bar a{color:#fff}
+section{padding:36px 0}
+.sec-alt{background:#f5f5f5}
+h2{font-size:16px;font-weight:700;margin-bottom:16px}
+.grid{display:grid;gap:16px}
+table{width:100%;border-collapse:collapse;font-size:12px;background:#fff}
+th{background:#1a1a1a;color:#fff;font-weight:700;text-align:left;padding:10px 14px}
+td{padding:10px 14px;vertical-align:top}
+tr:nth-child(even) td{background:#f5f5f5}
+.tag-issue{display:inline-block;background:#6b6b6b;color:#fff;font-size:11px;padding:2px 8px;white-space:nowrap}
+.tag-fix{display:inline-block;background:#1a1a1a;color:#fff;font-size:11px;padding:2px 8px;white-space:nowrap}
+.block{padding:12px 14px;font-size:12px;margin-bottom:6px}
+.blk-asis{background:#e0e0e0}
+.blk-tobe{background:#f5f5f5}
+.blk-strong{background:#1a1a1a;color:#fff}
+.blk-weak{background:#efefef;color:#888}
+.col-title{font-size:13px;font-weight:700;background:#6b6b6b;color:#fff;padding:8px 14px;margin-bottom:10px}
+.diff{font-size:11px;color:#555;margin:-2px 0 8px}
+.frame-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+iframe{width:100%;height:640px;background:#fff}
+.btn-sub{display:inline-block;background:#e0e0e0;color:#1a1a1a;padding:8px 20px;font-size:12px;text-decoration:none}
+</style>
+</head>
+<body>
+
+<div class="wf-bar">
+  <span><i class="fa-solid fa-pen-ruler"></i> ワイヤーフレーム｜as-is / to-be 差分比較（課題→対策マッピング）</span>
+  <span>更新日 2026-07-01｜<a href="index.html">WF一覧へ</a></span>
+</div>
+
+<!-- 課題→対策マッピング -->
+<section>
+  <div class="container">
+    <h2>1. as-is 課題 → to-be 対策 マッピング</h2>
+    <table>
+      <tr><th style="width:40px">#</th><th>as-is 課題</th><th>to-be 対策</th><th style="width:220px">該当WF</th></tr>
+      <tr>
+        <td><span class="tag-issue">1</span></td>
+        <td>情報の優先度が不明確。未登録ユーザーと既存会員が混在。</td>
+        <td><span class="tag-fix">対策</span> 会員／新規の出し分けヒーロー。未ログインは「WESTERとは」＋登録CTA、ログイン後は残高・マイ駅・エントリー。</td>
+        <td><a href="wester-tobe-top.html#hero">to-be トップ｜ヒーロー</a></td>
+      </tr>
+      <tr>
+        <td><span class="tag-issue">2</span></td>
+        <td>4サービスが並列で、関係と順序が見えない。</td>
+        <td><span class="tag-fix">対策</span> 「はじめての方へ」で登録→ICOCA→アプリ→カード・Wesmo! の順序導線を提示。</td>
+        <td><a href="wester-tobe-top.html#first">to-be トップ｜はじめての方へ</a></td>
+      </tr>
+      <tr>
+        <td><span class="tag-issue">3</span></td>
+        <td>キャンペーンが主役過剰。新規には文脈不明。</td>
+        <td><span class="tag-fix">対策</span> 厳選3件に従属化し、対象・条件・期間を明記して「自分向けか」を判別可能に。</td>
+        <td><a href="wester-tobe-top.html#campaign">to-be トップ｜キャンペーン</a></td>
+      </tr>
+      <tr>
+        <td><span class="tag-issue">4</span></td>
+        <td>本文中に会員登録のコンバージョンポイントがない。</td>
+        <td><span class="tag-fix">対策</span> ヒーロー内と「はじめての方へ」終点に登録CTAを配置。</td>
+        <td><a href="wester-tobe-top.html#hero">to-be トップ｜ヒーロー・順序導線</a></td>
+      </tr>
+      <tr>
+        <td><span class="tag-issue">5</span></td>
+        <td>FAQが外部ドメインへ完全遷移。ログイン非引継ぎ・未解決→即入電。</td>
+        <td><span class="tag-fix">対策</span> FAQを内製表示しログイン状態を維持。FAQ→手続き→チャットボット→有人の段階導線。</td>
+        <td><a href="wester-tobe-support.html#faq">会員サポート｜FAQ・段階導線</a></td>
+      </tr>
+      <tr>
+        <td><span class="tag-issue">6</span></td>
+        <td>お知らせとFAQが分断され、問題→解決の動線が途切れる。</td>
+        <td><span class="tag-fix">対策</span> 各お知らせに「関連FAQ」リンクを付け、問題→解決を接続。</td>
+        <td><a href="wester-tobe-top.html#news">to-be トップ｜お知らせ</a></td>
+      </tr>
+      <tr>
+        <td><span class="tag-issue">7</span></td>
+        <td>マイページで何が確認できるか外部から不明。</td>
+        <td><span class="tag-fix">対策</span> 残高・履歴・有効期限・手続きを可視化し、セルフ解決の入口にする。</td>
+        <td><a href="wester-tobe-point.html#history">WESTERポイント｜残高・履歴</a></td>
+      </tr>
+      <tr>
+        <td><span class="tag-issue">8</span></td>
+        <td>パスワード・ID統合・OTPの導線が弱く、入電を誘発。</td>
+        <td><span class="tag-fix">対策</span> 3大入電原因を手順化した自己解決フロー。未解決時は項目選択で窓口振り分け。</td>
+        <td><a href="wester-tobe-support.html#self">会員サポート｜自己解決フロー</a></td>
+      </tr>
+    </table>
+    <p style="font-size:11px;color:#555;margin-top:10px"><i class="fa-solid fa-bullseye"></i> KPI：課題5・8の対策で入電−30%、段階導線全体で自己解決率70%を狙います。</p>
+  </div>
+</section>
+
+<!-- ブロック構造の並置比較 -->
+<section class="sec-alt">
+  <div class="container">
+    <h2>2. トップページ ブロック構造の並置比較</h2>
+    <div class="grid" style="grid-template-columns:1fr 1fr">
+      <div>
+        <p class="col-title">as-is（現状）</p>
+        <div class="block blk-asis">重要なお知らせ（テキスト1行）</div>
+        <div class="block blk-asis">メインビジュアル（カルーセルバナー羅列）</div>
+        <div class="block blk-asis">キャンペーン情報（8枠・条件記載なし）</div>
+        <div class="block blk-asis">ポイントがたまる主要サービス（4つ並列）</div>
+        <div class="block blk-asis">サービス一覧（外部リンク中心・約68%離脱）</div>
+        <div class="block blk-asis">お知らせ（FAQと分断）</div>
+        <div class="block blk-asis">フッター（4カラム）</div>
+      </div>
+      <div>
+        <p class="col-title">to-be（刷新案）</p>
+        <div class="block blk-strong">ヒーロー：会員／新規の出し分け＋登録CTA <span style="font-size:10px">（課題1・4・7）</span></div>
+        <p class="diff"><i class="fa-solid fa-arrow-up"></i> カルーセルを廃止し、ユーザー状態に応じた最重要情報を先頭へ</p>
+        <div class="block blk-strong">はじめての方へ：4サービスの順序導線 <span style="font-size:10px">（課題2）</span></div>
+        <p class="diff"><i class="fa-solid fa-arrow-up"></i> 並列羅列を「何を→どの順で」の導線に置換</p>
+        <div class="block blk-tobe">キャンペーン：厳選3件＋対象・条件・期間 <span style="font-size:10px">（課題3）</span></div>
+        <p class="diff"><i class="fa-solid fa-arrow-down"></i> 主役から従属コンテンツへ降格</p>
+        <div class="block blk-tobe">お知らせ：各行から関連FAQへ接続 <span style="font-size:10px">（課題6）</span></div>
+        <div class="block blk-strong">サポート導線：FAQ検索が先頭、問い合わせは未解決時のみ <span style="font-size:10px">（課題5・8）</span></div>
+        <p class="diff"><i class="fa-solid fa-plus"></i> 新設：自己解決の入口をトップに常設</p>
+        <div class="block blk-tobe">フッター（4カラム維持・サポート項目を整理）</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- サポート導線の比較 -->
+<section>
+  <div class="container">
+    <h2>3. サポート導線の比較（入電削減の核心）</h2>
+    <div class="grid" style="grid-template-columns:1fr 1fr">
+      <div>
+        <p class="col-title">as-is：セルフ失敗→即入電</p>
+        <div class="block blk-asis">FAQ（外部ドメイン support-faq へ完全遷移）</div>
+        <p class="diff"><i class="fa-solid fa-triangle-exclamation"></i> ログイン状態が切れる／再帰導線なし</p>
+        <div class="block blk-asis">解決しない場合 → 電話（直結）</div>
+        <p class="diff"><i class="fa-solid fa-triangle-exclamation"></i> 応答率23.2%・OTP関連の隠れ需要は応答数の約2.5倍</p>
+      </div>
+      <div>
+        <p class="col-title">to-be：段階導線（自己解決70%）</p>
+        <div class="block blk-strong">STEP1 FAQ（サイト内・ログイン維持）</div>
+        <div class="block blk-strong">STEP2 関連手続き（PW・ID統合・OTPを自己完結）</div>
+        <div class="block blk-tobe">STEP3 チャットボット（状況の聞き取り）</div>
+        <div class="block blk-weak">STEP4 有人問い合わせ（未解決時のみ・項目選択で振り分け）</div>
+        <p class="diff"><i class="fa-solid fa-bullseye"></i> STEP4到達を全体の30%以下にする＝入電−30%</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 実画面の並置 -->
+<section class="sec-alt">
+  <div class="container">
+    <h2>4. 実画面の並置（スクロールして比較できます）</h2>
+    <div class="frame-row">
+      <div>
+        <p class="col-title">as-is トップ</p>
+        <iframe src="wester-as-is.html" title="as-is トップ"></iframe>
+        <p style="margin-top:8px"><a class="btn-sub" href="wester-as-is.html"><i class="fa-solid fa-up-right-from-square"></i> 単体で開く</a></p>
+      </div>
+      <div>
+        <p class="col-title">to-be トップ</p>
+        <iframe src="wester-tobe-top.html" title="to-be トップ"></iframe>
+        <p style="margin-top:8px"><a class="btn-sub" href="wester-tobe-top.html"><i class="fa-solid fa-up-right-from-square"></i> 単体で開く</a></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</body>
+</html>

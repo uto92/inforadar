@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WESTERポータル to-be WESTERポイント｜ワイヤーフレーム</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Noto Sans JP',sans-serif;font-size:13px;line-height:1.8;color:#1a1a1a;background:#fff}
+a{color:#1a1a1a}
+ul{list-style:none}
+.container{max-width:1040px;margin:0 auto;padding:0 24px}
+.wf-bar{background:#1a1a1a;color:#fff;font-size:11px;padding:8px 16px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.wf-bar a{color:#fff}
+section{padding:36px 0}
+.sec-alt{background:#f5f5f5}
+h2{font-size:16px;font-weight:700}
+.sec-head{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.sec-lead{font-size:12px;color:#555;margin-bottom:16px}
+.ph{background:#d9d9d9;color:#767676;display:flex;align-items:center;justify-content:center;font-size:11px;text-align:center}
+.btn{display:inline-block;background:#1a1a1a;color:#fff;padding:12px 32px;font-size:13px;font-weight:500;text-decoration:none}
+.btn-sub{display:inline-block;background:#e0e0e0;color:#1a1a1a;padding:12px 32px;font-size:13px;text-decoration:none}
+.tag-fix{display:inline-block;background:#1a1a1a;color:#fff;font-size:11px;padding:3px 10px;margin:0 4px 4px 0}
+.wf-note{background:#efefef;color:#444;font-size:11px;padding:10px 14px;margin-top:14px}
+.wf-note i{margin-right:6px}
+.state-label{display:inline-block;background:#6b6b6b;color:#fff;font-size:11px;padding:4px 12px}
+.grid{display:grid;gap:16px}
+.card{background:#fff;padding:16px}
+.header-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 0;gap:16px}
+.logo{width:150px;height:36px}
+.gnav{display:flex;gap:20px;font-size:12px;align-items:center}
+.gnav a{text-decoration:none;font-weight:500}
+footer{background:#2b2b2b;color:#ddd;padding:36px 0}
+footer h3{font-size:12px;color:#fff;margin-bottom:10px}
+footer a{color:#ddd;font-size:12px;text-decoration:none}
+footer li{margin-bottom:6px}
+.copyright{font-size:11px;color:#999;margin-top:28px}
+table{width:100%;border-collapse:collapse;font-size:12px;background:#fff}
+th{background:#e8e8e8;font-weight:700;text-align:left;padding:10px 14px}
+td{padding:10px 14px;background:#fff}
+tr:nth-child(even) td{background:#fafafa}
+.field{font-size:11px;display:inline-block;background:#e8e8e8;padding:0 8px;margin-right:6px}
+</style>
+</head>
+<body>
+
+<div class="wf-bar">
+  <span><i class="fa-solid fa-pen-ruler"></i> ワイヤーフレーム｜WESTERポータル to-be WESTERポイント</span>
+  <span>更新日 2026-07-01｜<a href="wester-tobe-top.html">to-be トップ</a>｜<a href="index.html">WF一覧</a></span>
+</div>
+
+<!-- グローバルナビ -->
+<header>
+  <div class="container header-inner">
+    <div class="ph logo">ロゴ<br>WESTER</div>
+    <nav class="gnav">
+      <a href="#">会員サービス</a>
+      <a href="wester-tobe-point.html" style="text-decoration:underline">WESTERポイント</a>
+      <a href="wester-tobe-support.html">サポート</a>
+      <span class="state-label"><i class="fa-solid fa-user-check"></i> WESTER IDでログイン中</span>
+    </nav>
+  </div>
+</header>
+
+<div class="container" style="padding-top:12px">
+  <p style="font-size:11px;color:#555"><a href="wester-tobe-top.html">トップ</a> ／ WESTERポイント</p>
+</div>
+
+<!-- ポイントとは -->
+<section id="about">
+  <div class="container">
+    <h1 style="font-size:20px;font-weight:700;margin-bottom:4px">WESTERポイント</h1>
+    <p style="font-size:14px;margin-bottom:16px">WESTERポイントは、電車・買い物・アプリの利用でたまり、チャージやお支払いにつかえる共通ポイントです。</p>
+    <div class="ph" style="height:140px">図：ためる→たまる→つかう の循環図</div>
+    <div class="wf-note"><i class="fa-solid fa-circle-info"></i>
+      <span class="tag-fix">対策｜課題2</span>「ポイントとは」を1文で言い切り、以降を「ためる」「つかう」の2軸だけで整理します。
+    </div>
+  </div>
+</section>
+
+<!-- 残高・履歴（ログイン後） -->
+<section id="history" class="sec-alt">
+  <div class="container">
+    <div class="sec-head"><h2>あなたのポイント（ログイン後）</h2><span class="state-label"><i class="fa-solid fa-user-check"></i> ログイン時のみ表示</span></div>
+    <div class="grid" style="grid-template-columns:1fr 2fr">
+      <div class="card">
+        <p style="font-size:11px;color:#555">現在の残高</p>
+        <p style="font-size:28px;font-weight:700">9,999 <span style="font-size:12px;font-weight:400">pt</span></p>
+        <p style="font-size:11px;color:#555">うち期間限定：500 pt（2026.09.30まで）</p>
+        <a href="#" class="btn-sub" style="padding:8px 16px;font-size:11px;margin-top:8px">有効期限の一覧を見る</a>
+      </div>
+      <div>
+        <table>
+          <tr><th>日付</th><th>内容</th><th style="text-align:right">増減</th></tr>
+          <tr><td>2026.06.28</td><td>ICOCAご利用分</td><td style="text-align:right">＋120 pt</td></tr>
+          <tr><td>2026.06.25</td><td>キャンペーンエントリー特典</td><td style="text-align:right">＋500 pt</td></tr>
+          <tr><td>2026.06.20</td><td>ICOCAチャージにご利用</td><td style="text-align:right">−1,000 pt</td></tr>
+        </table>
+        <p style="font-size:11px;margin-top:8px;text-align:right"><a href="#">履歴をすべて見る <i class="fa-solid fa-angle-right"></i></a></p>
+      </div>
+    </div>
+    <div class="wf-note"><i class="fa-solid fa-circle-info"></i>
+      <span class="tag-fix">対策｜課題7</span>残高・履歴・有効期限をページ内で可視化し、「ポイントが付かない・消えた」系の問い合わせを自己解決に置き換えます。
+      <span class="tag-fix">対策｜課題6</span>付与に関する疑問は <a href="wester-tobe-support.html#faq" style="color:#444">関連FAQ</a> へサイト内で接続します。
+    </div>
+  </div>
+</section>
+
+<!-- ためる -->
+<section id="earn">
+  <div class="container">
+    <div class="sec-head"><h2>ためる</h2></div>
+    <p class="sec-lead">獲得手段ごとに、条件と付与率を明記します。</p>
+    <table>
+      <tr><th>手段</th><th>たまり方</th><th>条件</th></tr>
+      <tr><td><i class="fa-solid fa-train-subway"></i> ICOCAで電車に乗る</td><td>ご利用額に応じて付与</td><td><span class="field">要登録</span>ICOCAをWESTER IDに登録</td></tr>
+      <tr><td><i class="fa-solid fa-cart-shopping"></i> ICOCAで買い物する</td><td>対象店舗で付与</td><td><span class="field">要登録</span>対象店舗はサイト内一覧で確認</td></tr>
+      <tr><td><i class="fa-solid fa-credit-card"></i> J-WESTカードで支払う</td><td>決済額に応じて付与</td><td><span class="field">要カード</span>カード会員の方</td></tr>
+      <tr><td><i class="fa-solid fa-mobile-screen"></i> アプリでエントリーする</td><td>キャンペーンごとに付与</td><td><span class="field">要エントリー</span>条件は各キャンペーンに明記</td></tr>
+      <tr><td><i class="fa-solid fa-wallet"></i> Wesmo!で支払う</td><td>決済額に応じて付与</td><td><span class="field">要登録</span>Wesmo!の利用登録</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- つかう -->
+<section id="use" class="sec-alt">
+  <div class="container">
+    <div class="sec-head"><h2>つかう</h2></div>
+    <p class="sec-lead">使い道と交換レートを一覧で提示します。</p>
+    <div class="grid" style="grid-template-columns:repeat(4,1fr)">
+      <div class="card">
+        <div class="ph" style="height:70px"><i class="fa-solid fa-train-subway fa-lg"></i></div>
+        <p style="font-weight:700;font-size:12px;margin-top:8px">ICOCAにチャージ</p>
+        <p style="font-size:11px;color:#555">1pt＝1円でチャージできます。</p>
+      </div>
+      <div class="card">
+        <div class="ph" style="height:70px"><i class="fa-solid fa-ticket fa-lg"></i></div>
+        <p style="font-weight:700;font-size:12px;margin-top:8px">列車の予約につかう</p>
+        <p style="font-size:11px;color:#555">予約時にポイントを充当できます。</p>
+      </div>
+      <div class="card">
+        <div class="ph" style="height:70px"><i class="fa-solid fa-bag-shopping fa-lg"></i></div>
+        <p style="font-weight:700;font-size:12px;margin-top:8px">お買い物につかう</p>
+        <p style="font-size:11px;color:#555">対象のオンラインストア・店舗でつかえます。</p>
+      </div>
+      <div class="card">
+        <div class="ph" style="height:70px"><i class="fa-solid fa-gift fa-lg"></i></div>
+        <p style="font-weight:700;font-size:12px;margin-top:8px">商品・特典に交換する</p>
+        <p style="font-size:11px;color:#555">交換先の一覧から選べます。</p>
+      </div>
+    </div>
+    <div class="wf-note"><i class="fa-solid fa-circle-info"></i>
+      <span class="tag-fix">対策｜外部分散</span>使い道の説明・条件はサイト内で完結させ、外部（EC等）への遷移は必要な決済時のみ、ログイン状態を維持して行います。
+      <span class="tag-fix">AI Ready</span>手段・条件・レートを構造化データとして保持し、将来のAI参照に備えます。
+    </div>
+  </div>
+</section>
+
+<!-- サポート接続 -->
+<section id="support-link">
+  <div class="container">
+    <div style="background:#f5f5f5;padding:20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+      <p style="font-size:12px"><i class="fa-solid fa-circle-question"></i> ポイントが付かない、有効期限が分からない、など お困りの場合</p>
+      <a href="wester-tobe-support.html" class="btn-sub" style="padding:8px 20px;font-size:12px">ポイントのFAQを見る（サイト内） <i class="fa-solid fa-angle-right"></i></a>
+    </div>
+  </div>
+</section>
+
+<!-- フッター -->
+<footer>
+  <div class="container">
+    <div class="grid" style="grid-template-columns:repeat(4,1fr)">
+      <div><h3>会員サービス</h3><ul><li><a href="#">サービス一覧</a></li><li><a href="#">WESTERサービスとは</a></li><li><a href="#">会員登録・移行</a></li><li><a href="#">マイページ</a></li></ul></div>
+      <div><h3>WESTERポイント</h3><ul><li><a href="#about">ポイントとは</a></li><li><a href="#earn">ためる</a></li><li><a href="#use">つかう</a></li></ul></div>
+      <div><h3>サポート</h3><ul><li><a href="wester-tobe-support.html#faq">よくあるご質問（サイト内）</a></li><li><a href="wester-tobe-support.html#self">手続きの自己解決</a></li><li><a href="wester-tobe-support.html#contact">お問い合わせ</a></li><li><a href="#">ご利用にあたって</a></li></ul></div>
+      <div><h3>きまり</h3><ul><li><a href="#">サービス規約集</a></li><li><a href="#">プライバシー</a></li><li><a href="#">サイトマップ</a></li></ul></div>
+    </div>
+    <p class="copyright">© West Japan Railway Company（ワイヤーフレーム）</p>
+  </div>
+</footer>
+
+</body>
+</html>
