@@ -4,6 +4,9 @@ on:
   schedule:
     - cron: "30 22 * * *" # 毎朝 07:30 JST
   workflow_dispatch:
+  push:
+    branches: ["**"]
+    paths: ["inforadar.py", "tests/**", "requirements*.txt", ".github/workflows/radar.yml"]
 
 permissions:
   contents: write
@@ -13,7 +16,21 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements-dev.txt
+      - run: pytest -q
+
   radar:
+    needs: test
+    # スケジュール実行と手動実行のみレーダーを回す（push検証では走らせない）
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

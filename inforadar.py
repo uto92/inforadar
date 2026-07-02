@@ -124,10 +124,12 @@ class LinkCollector(HTMLParser):
             self._text.append(data)
 
 
-def fetch_html_entries(url: str, link_pattern: str) -> list:
+def fetch_html_entries(url: str, link_pattern: str, base_url: str = None) -> list:
     """HTML ページから link_pattern（正規表現）に合うリンクを新着候補として抽出する。
 
     RSS 非提供サイト向け。リンクURLの出現＝新着とみなす（本文差分は見ない）。
+    base_url は相対リンクの解決基点（省略時は url。ローカルフィクスチャ取得時に
+    本番URLで解決させたいテスト用途で指定する）。
     """
     html = fetch_raw(url).decode("utf-8", errors="replace")
     collector = LinkCollector()
@@ -136,7 +138,7 @@ def fetch_html_entries(url: str, link_pattern: str) -> list:
     pattern = re.compile(link_pattern)
     entries, seen_links = [], set()
     for href, text in collector.links:
-        absolute = urljoin(url, href)
+        absolute = urljoin(base_url or url, href)
         if not pattern.search(absolute) or absolute in seen_links:
             continue
         seen_links.add(absolute)
@@ -180,11 +182,11 @@ def check_feed(feed_cfg: dict, state: dict, global_keywords: list) -> dict:
             "matched": [kw for kw in keywords if kw in entry["text"]],
         })
 
-    # 既読IDは新しいものを先頭に保持し、上限で切り詰める
-    feed_state["seen"] = (
-        [e["id"] for e in entries] +
-        [i for i in feed_state["seen"] if i in seen]
-    )[:MAX_SEEN_PER_FEED]
+    # 既読IDは「今回取得分 → 旧既読」の順で重複排除して保持し、上限で切り詰める。
+    # dict.fromkeys は挿入順を保ちつつ重複を落とす（毎回同じ記事を返すRSSで
+    # seen が重複IDで膨張し、実効的な記憶窓が縮むのを防ぐ）。
+    ordered = [e["id"] for e in entries] + feed_state["seen"]
+    feed_state["seen"] = list(dict.fromkeys(ordered))[:MAX_SEEN_PER_FEED]
     feed_state["last_checked"] = datetime.now(JST).isoformat(timespec="seconds")
 
     shown = new_entries[:FIRST_RUN_SHOW] if first_run else new_entries

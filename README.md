@@ -31,6 +31,15 @@ python inforadar.py            # ドライラン（レポート生成のみ）
 python inforadar.py --notify   # Gmail 通知あり
 ```
 
+## テスト
+
+コア判定ロジック（差分検知・HTMLリンク抽出・キーワード・レポート生成）は外部通信なしで検証できます。CI では毎回 `pytest` が走り、通過しないとレーダーは実行されません。
+
+```bash
+pip install -r requirements-dev.txt
+pytest -q
+```
+
 ## Gmail 通知の設定
 
 Google アカウントで[アプリパスワード](https://myaccount.google.com/apppasswords)を発行し、リポジトリの Actions Secrets に登録します。
