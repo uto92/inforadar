@@ -1,0 +1,31 @@
+{
+  "currency": "JPY",
+  "initial_capital": 10000000,
+  "cash": 8503600,
+  "as_of": "2026-07-17",
+  "positions": {
+    "7974": {
+      "name": "任天堂",
+      "qty": 100,
+      "avg_cost": 7294.0,
+      "last_price": 7294.0,
+      "last_price_date": "2026-07-17"
+    },
+    "9021": {
+      "name": "JR西日本",
+      "qty": 100,
+      "avg_cost": 2995.0,
+      "last_price": 2995.0,
+      "last_price_date": "2026-07-17"
+    },
+    "9042": {
+      "name": "阪急阪神HD",
+      "qty": 100,
+      "avg_cost": 4675.0,
+      "last_price": 4675.0,
+      "last_price_date": "2026-07-17",
+      "note": "初値はソース間で差異あり(参考値)。次回価格更新時に要確認"
+    }
+  },
+  "realized_pnl": 0
+}
