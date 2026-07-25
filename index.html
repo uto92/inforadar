@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>JR西日本 主要駅 混雑ヒートマップ(推定)</title>
+<link href="lib/maplibre-gl.css" rel="stylesheet" />
+<script src="lib/maplibre-gl.js"></script>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #111; }
+  #map { position: absolute; inset: 0; }
+
+  .panel {
+    position: absolute; top: 12px; left: 12px; z-index: 10;
+    background: rgba(15, 17, 22, 0.82); color: #e8e8e8;
+    border: 1px solid rgba(255,255,255,0.12); border-radius: 10px;
+    padding: 12px 14px; width: 300px;
+    font-family: "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic", sans-serif;
+    backdrop-filter: blur(6px);
+  }
+  .panel h1 { margin: 0 0 2px; font-size: 15px; font-weight: 700; }
+  .panel .sub { margin: 0 0 10px; font-size: 11px; color: #9aa0a8; line-height: 1.5; }
+
+  .controls { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  button.play {
+    width: 36px; height: 36px; border-radius: 50%; border: none; cursor: pointer;
+    background: #e8503a; color: #fff; font-size: 14px; flex: none;
+  }
+  button.play:hover { background: #ff6a52; }
+  input[type=range] { flex: 1; accent-color: #e8503a; }
+  select.speed {
+    background: #22252c; color: #ddd; border: 1px solid #444; border-radius: 6px;
+    font-size: 11px; padding: 3px 4px;
+  }
+
+  .areas { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
+  .areas button {
+    background: #22252c; color: #cfd3d8; border: 1px solid #3a3e46; border-radius: 999px;
+    font-size: 11px; padding: 3px 9px; cursor: pointer;
+  }
+  .areas button:hover, .areas button.active { background: #3a3e46; color: #fff; }
+
+  .legend { font-size: 10px; color: #9aa0a8; }
+  .legend .bar {
+    height: 8px; border-radius: 4px; margin: 4px 0 2px;
+    background: linear-gradient(to right,
+      rgba(0,200,120,0.15), rgba(80,220,100,0.6), #ffe14d, #ff9a1f, #e8281e);
+  }
+  .legend .labels { display: flex; justify-content: space-between; }
+
+  .clock {
+    position: absolute; right: 18px; bottom: 28px; z-index: 10;
+    color: #fff; font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 52px; font-weight: 700; letter-spacing: 2px;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+    font-variant-numeric: tabular-nums;
+  }
+  .clock .day { display: block; font-size: 13px; font-weight: 400; text-align: right; color: #cfd3d8; }
+
+  .station-label {
+    color: rgba(230,232,236,0.85); font-size: 10px; white-space: nowrap;
+    font-family: "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+    text-shadow: 0 0 4px #000, 0 0 4px #000; pointer-events: none;
+    transform: translateY(-14px);
+  }
+
+  .tooltip {
+    position: absolute; z-index: 20; pointer-events: none; display: none;
+    background: rgba(15,17,22,0.92); color: #eee; font-size: 11px;
+    border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 6px 8px;
+    font-family: "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+  }
+  .tooltip b { font-size: 12px; }
+
+  @media (max-width: 640px) {
+    .panel { width: calc(100% - 48px); }
+    .clock { font-size: 36px; bottom: 16px; }
+  }
+</style>
+</head>
+<body>
+<div id="map"></div>
+
+<div class="panel">
+  <h1>JR西日本 主要駅 混雑ヒートマップ</h1>
+  <p class="sub">駅別の1日平均乗車人員(公表値ベースの概算)に、駅タイプ別の時間帯変動モデルを掛け合わせた<b>推定値</b>の可視化です。実測の人流データではありません。</p>
+  <div class="controls">
+    <button id="playBtn" class="play" title="再生/停止">&#9654;</button>
+    <input id="timeSlider" type="range" min="300" max="1499" step="1" value="480" />
+    <select id="speedSel" class="speed" title="再生速度">
+      <option value="10">×10</option>
+      <option value="20" selected>×20</option>
+      <option value="45">×45</option>
+      <option value="90">×90</option>
+    </select>
+  </div>
+  <div class="areas" id="areaBtns"></div>
+  <div class="legend">
+    混雑度(相対値)
+    <div class="bar"></div>
+    <div class="labels"><span>少</span><span>多</span></div>
+  </div>
+</div>
+
+<div class="clock"><span class="day">平日イメージ</span><span id="clockText">8:00</span></div>
+<div class="tooltip" id="tooltip"></div>
+
+<script src="data/stations.js"></script>
+<script>
+"use strict";
+
+// ---------- 乱数(シード付き・再現可能) ----------
+function mulberry32(seed) {
+  return function () {
+    seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function gauss(rnd) { // Box–Muller
+  let u = 0, v = 0;
+  while (u === 0) u = rnd();
+  while (v === 0) v = rnd();
+  return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+}
+
+// ---------- 駅ごとの点群を生成 ----------
+// 駅の周囲に「人だまり」を散らし、Agoop風の有機的なにじみを作る
+const MAX_PAX = Math.max(...STATIONS.map(s => s.passengers));
+const points = []; // { lon, lat, station, share, phase, freq }
+
+STATIONS.forEach((st, si) => {
+  const rnd = mulberry32(1000 + si * 7919);
+  const stationW = Math.pow(st.passengers / MAX_PAX, 0.55); // 差が付きすぎないよう緩和
+  const n = Math.max(14, Math.min(120, Math.round(Math.sqrt(st.passengers) / 6)));
+
+  // 中心のほかにサブクラスタ(駅前の別の人だまり)を数個
+  const clusters = [{ dx: 0, dy: 0, w: 0.55 }];
+  const nSub = 2 + Math.floor(rnd() * 3);
+  for (let c = 0; c < nSub; c++) {
+    clusters.push({
+      dx: gauss(rnd) * st.spread * 0.9,
+      dy: gauss(rnd) * st.spread * 0.9,
+      w: 0.45 / nSub,
+    });
+  }
+
+  const mPerDegLat = 111320;
+  const mPerDegLon = 111320 * Math.cos(st.lat * Math.PI / 180);
+
+  for (let i = 0; i < n; i++) {
+    // クラスタを重みで選択
+    let r = rnd(), cl = clusters[0];
+    for (const c of clusters) { r -= c.w; if (r <= 0) { cl = c; break; } }
+    const dx = cl.dx + gauss(rnd) * st.spread * 0.45;
+    const dy = cl.dy + gauss(rnd) * st.spread * 0.45;
+    points.push({
+      lon: st.lon + dx / mPerDegLon,
+      lat: st.lat + dy / mPerDegLat,
+      base: stationW / n * (0.5 + rnd()),
+      station: st,
+      phase: rnd() * Math.PI * 2,
+      freq: 0.5 + rnd() * 1.5,
+    });
+  }
+});
+
+// ---------- 時間帯の重み ----------
+function stationProfileAt(st, minutes) {
+  // minutes: 300(5:00)〜1499(24:59)
+  const hf = minutes / 60 - 5;                  // 0〜19.98
+  const i0 = Math.max(0, Math.min(19, Math.floor(hf)));
+  const i1 = Math.min(19, i0 + 1);
+  const f = hf - i0;
+  let v = 0;
+  for (const [key, w] of Object.entries(st.profile)) {
+    const p = HOURLY_PROFILES[key];
+    v += w * (p[i0] * (1 - f) + p[i1] * f);
+  }
+  return v;
+}
+
+function buildGeoJSON(minutes) {
+  const t = minutes / 60;
+  const features = new Array(points.length);
+  // 駅ごとのプロファイル値はキャッシュ
+  const cache = new Map();
+  for (let i = 0; i < points.length; i++) {
+    const p = points[i];
+    let prof = cache.get(p.station);
+    if (prof === undefined) { prof = stationProfileAt(p.station, minutes); cache.set(p.station, prof); }
+    // 点ごとにゆらぎを加えて有機的に
+    const noise = 0.72 + 0.28 * Math.sin(t * p.freq * 2.2 + p.phase);
+    features[i] = {
+      type: "Feature",
+      geometry: { type: "Point", coordinates: [p.lon, p.lat] },
+      properties: { w: p.base * prof * noise },
+    };
+  }
+  return { type: "FeatureCollection", features };
+}
+
+// ---------- 地図 ----------
+const map = new maplibregl.Map({
+  container: "map",
+  style: {
+    version: 8,
+    sources: {
+      carto: {
+        type: "raster",
+        tiles: [
+          "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png",
+          "https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png",
+          "https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png",
+        ],
+        tileSize: 256,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      },
+    },
+    layers: [{ id: "carto", type: "raster", source: "carto" }],
+  },
+  center: AREA_VIEWS[0].center,
+  zoom: AREA_VIEWS[0].zoom,
+  attributionControl: { compact: true },
+});
+map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
+
+let currentMinutes = 480; // 8:00 スタート
+
+// "load" はタイル取得完了まで待つため、タイルが遅い/取れない環境でも
+// 先にヒートマップを出せる "style.load" でレイヤーを追加する
+map.on("style.load", () => {
+  map.addSource("crowd", { type: "geojson", data: buildGeoJSON(currentMinutes) });
+  map.addLayer({
+    id: "crowd-heat",
+    type: "heatmap",
+    source: "crowd",
+    paint: {
+      "heatmap-weight": ["get", "w"],
+      "heatmap-intensity": [
+        "interpolate", ["linear"], ["zoom"],
+        6, 5, 9, 8, 11, 14, 13, 22,
+      ],
+      "heatmap-radius": [
+        "interpolate", ["exponential", 1.6], ["zoom"],
+        6, 7, 9, 16, 11, 34, 13, 70,
+      ],
+      "heatmap-color": [
+        "interpolate", ["linear"], ["heatmap-density"],
+        0.00, "rgba(0, 0, 0, 0)",
+        0.12, "rgba(30, 160, 110, 0.28)",
+        0.30, "rgba(110, 210, 90, 0.55)",
+        0.50, "rgba(255, 225, 77, 0.80)",
+        0.72, "rgba(255, 154, 31, 0.90)",
+        0.90, "rgba(232, 40, 30, 0.95)",
+        1.00, "rgba(255, 70, 60, 1)",
+      ],
+      "heatmap-opacity": 0.95,
+    },
+  });
+  render(currentMinutes);
+  window.__ready = true;
+});
+
+// ---------- 駅名ラベル + ツールチップ(HTMLマーカー: CJKフォント問題を回避) ----------
+const labelEls = [];
+STATIONS.forEach(st => {
+  const el = document.createElement("div");
+  el.className = "station-label";
+  el.textContent = st.name;
+  new maplibregl.Marker({ element: el, anchor: "center" }).setLngLat([st.lon, st.lat]).addTo(map);
+  labelEls.push(el);
+});
+function updateLabelVisibility() {
+  const show = map.getZoom() >= 9.2;
+  labelEls.forEach(el => { el.style.display = show ? "" : "none"; });
+}
+map.on("zoom", updateLabelVisibility);
+updateLabelVisibility();
+
+const tooltip = document.getElementById("tooltip");
+map.on("mousemove", e => {
+  // 最寄り駅(画面距離60px以内)を表示
+  let best = null, bestD = 60;
+  for (const st of STATIONS) {
+    const p = map.project([st.lon, st.lat]);
+    const d = Math.hypot(p.x - e.point.x, p.y - e.point.y);
+    if (d < bestD) { bestD = d; best = st; }
+  }
+  if (best) {
+    const rel = Math.round(stationProfileAt(best, currentMinutes) * 100);
+    tooltip.style.display = "block";
+    tooltip.style.left = (e.point.x + 14) + "px";
+    tooltip.style.top = (e.point.y + 14) + "px";
+    tooltip.innerHTML = `<b>${best.name}</b><br>乗車人員 約${best.passengers.toLocaleString()}人/日<br>この時間帯の推定混雑度: ${rel}%`;
+  } else {
+    tooltip.style.display = "none";
+  }
+});
+
+// ---------- 再生コントロール ----------
+const playBtn = document.getElementById("playBtn");
+const slider = document.getElementById("timeSlider");
+const speedSel = document.getElementById("speedSel");
+const clockText = document.getElementById("clockText");
+
+let playing = false;
+let lastTs = null;
+
+function fmtTime(minutes) {
+  const h = Math.floor(minutes / 60);
+  const m = Math.floor(minutes % 60);
+  return h + ":" + String(m).padStart(2, "0");
+}
+
+function render(minutes) {
+  currentMinutes = minutes;
+  slider.value = Math.round(minutes);
+  clockText.textContent = fmtTime(minutes);
+  const src = map.getSource("crowd");
+  if (src) src.setData(buildGeoJSON(minutes));
+}
+
+function tick(ts) {
+  if (!playing) return;
+  if (lastTs !== null) {
+    const dt = (ts - lastTs) / 1000;
+    let m = currentMinutes + dt * Number(speedSel.value) / 60 * 60; // 実時間1秒 = ×speed 分
+    if (m > 1499) m = 300; // ループ
+    render(m);
+  }
+  lastTs = ts;
+  requestAnimationFrame(tick);
+}
+
+function setPlaying(p) {
+  playing = p;
+  playBtn.innerHTML = p ? "&#10074;&#10074;" : "&#9654;";
+  lastTs = null;
+  if (p) requestAnimationFrame(tick);
+}
+playBtn.addEventListener("click", () => setPlaying(!playing));
+slider.addEventListener("input", () => { render(Number(slider.value)); });
+
+// ---------- エリアボタン ----------
+const areaBtns = document.getElementById("areaBtns");
+AREA_VIEWS.forEach((v, i) => {
+  const b = document.createElement("button");
+  b.textContent = v.name;
+  if (i === 0) b.classList.add("active");
+  b.addEventListener("click", () => {
+    document.querySelectorAll(".areas button").forEach(x => x.classList.remove("active"));
+    b.classList.add("active");
+    map.flyTo({ center: v.center, zoom: v.zoom, duration: 1200 });
+  });
+  areaBtns.appendChild(b);
+});
+
+// スクリーンショット・デバッグ用フック
+window.__setTime = m => { setPlaying(false); render(m); };
+window.__play = () => setPlaying(true);
+</script>
+</body>
+</html>
