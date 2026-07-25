@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>JR西日本 主要駅 混雑ヒートマップ(推定)</title>
+<title>JR西日本 主要駅 混雑ヒートマップ</title>
 <link href="lib/maplibre-gl.css" rel="stylesheet" />
 <script src="lib/maplibre-gl.js"></script>
 <style>
@@ -126,6 +126,7 @@
 <div class="tooltip" id="tooltip"></div>
 
 <script src="data/stations.js"></script>
+<script src="data/rail_lines.js"></script>
 <script src="data/flow_mesh.js"></script> <!-- 無ければ404になるだけで推定モードで動く -->
 <script>
 "use strict";
@@ -269,24 +270,34 @@ function buildModelGeoJSON(minutes) {
 }
 
 // ---------- 地図 ----------
+// window.__NO_BASEMAP__ を立てると外部タイルを使わない簡易表示になる
+// (オフライン利用や、外部通信が制限された環境への埋め込み用)
+const BASE_STYLE = window.__NO_BASEMAP__
+  ? {
+      version: 8,
+      sources: {},
+      layers: [{ id: "bg", type: "background", paint: { "background-color": "#14171d" } }],
+    }
+  : {
+      version: 8,
+      sources: {
+        carto: {
+          type: "raster",
+          tiles: [
+            "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png",
+            "https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png",
+            "https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png",
+          ],
+          tileSize: 256,
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        },
+      },
+      layers: [{ id: "carto", type: "raster", source: "carto" }],
+    };
+
 const map = new maplibregl.Map({
   container: "map",
-  style: {
-    version: 8,
-    sources: {
-      carto: {
-        type: "raster",
-        tiles: [
-          "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png",
-          "https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png",
-          "https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png",
-        ],
-        tileSize: 256,
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-      },
-    },
-    layers: [{ id: "carto", type: "raster", source: "carto" }],
-  },
+  style: BASE_STYLE,
   center: AREA_VIEWS[0].center,
   zoom: AREA_VIEWS[0].zoom,
   attributionControl: { compact: true },
@@ -298,6 +309,31 @@ let currentMinutes = 480; // 8:00 スタート
 // "load" はタイル取得完了まで待つため、タイルが遅い/取れない環境でも
 // 先にヒートマップを出せる "style.load" でレイヤーを追加する
 map.on("style.load", () => {
+  // JR路線の白いライン(ヒートマップの下に描画)
+  if (typeof RAIL_LINES !== "undefined") {
+    map.addSource("rail", {
+      type: "geojson",
+      data: {
+        type: "FeatureCollection",
+        features: RAIL_LINES.map(l => ({
+          type: "Feature",
+          geometry: { type: "LineString", coordinates: l.coords },
+          properties: { name: l.name },
+        })),
+      },
+    });
+    map.addLayer({
+      id: "rail-line",
+      type: "line",
+      source: "rail",
+      layout: { "line-cap": "round", "line-join": "round" },
+      paint: {
+        "line-color": "#dfe4ea",
+        "line-opacity": window.__NO_BASEMAP__ ? 0.55 : 0.35,
+        "line-width": ["interpolate", ["exponential", 1.4], ["zoom"], 6, 0.8, 9, 1.6, 12, 3.2],
+      },
+    });
+  }
   map.addSource("crowd", { type: "geojson", data: buildGeoJSON(currentMinutes) });
   map.addLayer({
     id: "crowd-heat",
