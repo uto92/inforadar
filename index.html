@@ -40,6 +40,16 @@
   }
   .areas button:hover, .areas button.active { background: #3a3e46; color: #fff; }
 
+  .modes { display: flex; align-items: center; gap: 5px; margin-bottom: 8px; flex-wrap: wrap; font-size: 11px; color: #9aa0a8; }
+  .modes button {
+    background: #22252c; color: #cfd3d8; border: 1px solid #3a3e46; border-radius: 6px;
+    font-size: 11px; padding: 3px 9px; cursor: pointer;
+  }
+  .modes button.active { background: #e8503a; border-color: #e8503a; color: #fff; }
+  .modes button:disabled { opacity: 0.4; cursor: not-allowed; }
+  .source { font-size: 10px; color: #9aa0a8; margin: 0 0 8px; line-height: 1.5; }
+  .source.warn { color: #f0b24a; }
+
   .legend { font-size: 10px; color: #9aa0a8; }
   .legend .bar {
     height: 8px; border-radius: 4px; margin: 4px 0 2px;
@@ -83,7 +93,7 @@
 
 <div class="panel">
   <h1>JR西日本 主要駅 混雑ヒートマップ</h1>
-  <p class="sub">駅別の1日平均乗車人員(公表値ベースの概算)に、駅タイプ別の時間帯変動モデルを掛け合わせた<b>推定値</b>の可視化です。実測の人流データではありません。</p>
+  <p class="sub">朝5時〜深夜0時の駅周辺の混雑をヒートマップ表示。「推定モデル」は乗車人員×時間帯モデルによる推定値、「実データ」は国交省 全国の人流オープンデータ(1kmメッシュ滞在人口)によります。</p>
   <div class="controls">
     <button id="playBtn" class="play" title="再生/停止">&#9654;</button>
     <input id="timeSlider" type="range" min="300" max="1499" step="1" value="480" />
@@ -94,6 +104,16 @@
       <option value="90">×90</option>
     </select>
   </div>
+  <div class="modes">
+    データ:
+    <button id="modeModel" class="active">推定モデル</button>
+    <button id="modeMesh">実データ</button>
+    <span id="dayTypeWrap" style="display:none">
+      <button id="dayW" class="active">平日</button>
+      <button id="dayH">休日</button>
+    </span>
+  </div>
+  <p class="source" id="sourceLine"></p>
   <div class="areas" id="areaBtns"></div>
   <div class="legend">
     混雑度(相対値)
@@ -106,6 +126,7 @@
 <div class="tooltip" id="tooltip"></div>
 
 <script src="data/stations.js"></script>
+<script src="data/flow_mesh.js"></script> <!-- 無ければ404になるだけで推定モードで動く -->
 <script>
 "use strict";
 
@@ -181,7 +202,53 @@ function stationProfileAt(st, minutes) {
   return v;
 }
 
+// ---------- 実データ(1kmメッシュ)モード ----------
+const hasMesh = typeof FLOW_MESH !== "undefined" && FLOW_MESH.cells && FLOW_MESH.cells.length > 0;
+let mode = "model";   // "model" | "mesh"
+let dayType = "w";    // "w"=平日 | "h"=休日
+const meshMax = hasMesh
+  ? Math.max(...FLOW_MESH.cells.map(c => Math.max(c.wd, c.wn, c.hd, c.hn)))
+  : 1;
+
+// 実測は昼(11-15時)と深夜(1-5時)の2時点のみ。その間は日周カーブで補間する
+// (2:30に深夜値、14:30に昼値となる余弦カーブ)
+function dayCurve(minutes) {
+  const h = minutes / 60;
+  return 0.5 - 0.5 * Math.cos(2 * Math.PI * (h - 2.5) / 24);
+}
+function meshPopAt(cell, minutes) {
+  const d = dayType === "w" ? cell.wd : cell.hd;
+  const n = dayType === "w" ? cell.wn : cell.hn;
+  return n + (d - n) * dayCurve(minutes);
+}
+
+function buildMeshGeoJSON(minutes) {
+  const features = FLOW_MESH.cells.map(c => ({
+    type: "Feature",
+    geometry: { type: "Point", coordinates: [c.lon, c.lat] },
+    properties: { w: Math.pow(Math.max(0, meshPopAt(c, minutes)) / meshMax, 0.7) * 0.24 },
+  }));
+  return { type: "FeatureCollection", features };
+}
+
+// ヒートマップ半径: 推定モードは見た目優先、メッシュモードは実距離(約1.4km)に追従
+const RADIUS_MODEL = ["interpolate", ["exponential", 1.6], ["zoom"], 6, 7, 9, 16, 11, 34, 13, 70];
+const RADIUS_MESH = ["interpolate", ["exponential", 2], ["zoom"], 6, 3, 9, 11, 11, 44, 13, 178];
+const INTENSITY_MODEL = ["interpolate", ["linear"], ["zoom"], 6, 5, 9, 8, 11, 14, 13, 22];
+// メッシュモードは半径がズームに追従する(重なり具合が一定)ため強度も一定でよい
+const INTENSITY_MESH = 9;
+function applyModePaint() {
+  if (!map.getLayer("crowd-heat")) return;
+  map.setPaintProperty("crowd-heat", "heatmap-radius", mode === "mesh" ? RADIUS_MESH : RADIUS_MODEL);
+  map.setPaintProperty("crowd-heat", "heatmap-intensity", mode === "mesh" ? INTENSITY_MESH : INTENSITY_MODEL);
+}
+
 function buildGeoJSON(minutes) {
+  if (mode === "mesh") return buildMeshGeoJSON(minutes);
+  return buildModelGeoJSON(minutes);
+}
+
+function buildModelGeoJSON(minutes) {
   const t = minutes / 60;
   const features = new Array(points.length);
   // 駅ごとのプロファイル値はキャッシュ
@@ -238,14 +305,8 @@ map.on("style.load", () => {
     source: "crowd",
     paint: {
       "heatmap-weight": ["get", "w"],
-      "heatmap-intensity": [
-        "interpolate", ["linear"], ["zoom"],
-        6, 5, 9, 8, 11, 14, 13, 22,
-      ],
-      "heatmap-radius": [
-        "interpolate", ["exponential", 1.6], ["zoom"],
-        6, 7, 9, 16, 11, 34, 13, 70,
-      ],
+      "heatmap-intensity": INTENSITY_MODEL,
+      "heatmap-radius": RADIUS_MODEL,
       "heatmap-color": [
         "interpolate", ["linear"], ["heatmap-density"],
         0.00, "rgba(0, 0, 0, 0)",
@@ -259,6 +320,7 @@ map.on("style.load", () => {
       "heatmap-opacity": 0.95,
     },
   });
+  applyModePaint();
   render(currentMinutes);
   window.__ready = true;
 });
@@ -289,11 +351,22 @@ map.on("mousemove", e => {
     if (d < bestD) { bestD = d; best = st; }
   }
   if (best) {
-    const rel = Math.round(stationProfileAt(best, currentMinutes) * 100);
     tooltip.style.display = "block";
     tooltip.style.left = (e.point.x + 14) + "px";
     tooltip.style.top = (e.point.y + 14) + "px";
-    tooltip.innerHTML = `<b>${best.name}</b><br>乗車人員 約${best.passengers.toLocaleString()}人/日<br>この時間帯の推定混雑度: ${rel}%`;
+    if (mode === "mesh") {
+      // 駅から1.2km以内のメッシュの滞在人口(現在時刻の補間値)合計
+      let sum = 0;
+      for (const c of FLOW_MESH.cells) {
+        const dx = (c.lon - best.lon) * 111.32 * Math.cos(best.lat * Math.PI / 180);
+        const dy = (c.lat - best.lat) * 111.32;
+        if (dx * dx + dy * dy <= 1.2 * 1.2) sum += meshPopAt(c, currentMinutes);
+      }
+      tooltip.innerHTML = `<b>${best.name}</b><br>周辺約1km圏の推定滞在人口: ${Math.round(sum).toLocaleString()}人<br><span style="color:#9aa0a8">(昼・深夜の実測値を時刻補間)</span>`;
+    } else {
+      const rel = Math.round(stationProfileAt(best, currentMinutes) * 100);
+      tooltip.innerHTML = `<b>${best.name}</b><br>乗車人員 約${best.passengers.toLocaleString()}人/日<br>この時間帯の推定混雑度: ${rel}%`;
+    }
   } else {
     tooltip.style.display = "none";
   }
@@ -343,6 +416,47 @@ function setPlaying(p) {
 playBtn.addEventListener("click", () => setPlaying(!playing));
 slider.addEventListener("input", () => { render(Number(slider.value)); });
 
+// ---------- モード切替 ----------
+const modeModelBtn = document.getElementById("modeModel");
+const modeMeshBtn = document.getElementById("modeMesh");
+const dayTypeWrap = document.getElementById("dayTypeWrap");
+const dayWBtn = document.getElementById("dayW");
+const dayHBtn = document.getElementById("dayH");
+const sourceLine = document.getElementById("sourceLine");
+const dayLabel = document.querySelector(".clock .day");
+
+function updateModeUI() {
+  modeModelBtn.classList.toggle("active", mode === "model");
+  modeMeshBtn.classList.toggle("active", mode === "mesh");
+  dayTypeWrap.style.display = mode === "mesh" ? "" : "none";
+  dayWBtn.classList.toggle("active", dayType === "w");
+  dayHBtn.classList.toggle("active", dayType === "h");
+  if (mode === "mesh") {
+    const meta = FLOW_MESH.meta || {};
+    const isSample = meta.source === "synthetic-sample";
+    sourceLine.className = isSample ? "source warn" : "source";
+    sourceLine.textContent = isSample
+      ? "⚠ 合成サンプルデータ表示中(実測値ではありません)。tools/fetch_mlit_flow.py で実データに置き換えられます。"
+      : `出典: ${meta.sourceName || "全国の人流オープンデータ(国交省)"}` +
+        (meta.months ? `/ 対象: ${meta.months.join(", ")}` : "") +
+        "。昼(11-15時)・深夜(1-5時)の実測2時点を時刻で補間しています。";
+    dayLabel.textContent = (dayType === "w" ? "平日" : "休日") + (isSample ? "(サンプル)" : "(実データ補間)");
+  } else {
+    sourceLine.className = "source";
+    sourceLine.textContent = "時間帯変動: 駅タイプ別の推定モデル(平日イメージ)";
+    dayLabel.textContent = "平日イメージ";
+  }
+}
+if (!hasMesh) {
+  modeMeshBtn.disabled = true;
+  modeMeshBtn.title = "data/flow_mesh.js がありません(tools/fetch_mlit_flow.py で生成)";
+}
+modeModelBtn.addEventListener("click", () => { mode = "model"; updateModeUI(); applyModePaint(); render(currentMinutes); });
+modeMeshBtn.addEventListener("click", () => { mode = "mesh"; updateModeUI(); applyModePaint(); render(currentMinutes); });
+dayWBtn.addEventListener("click", () => { dayType = "w"; updateModeUI(); render(currentMinutes); });
+dayHBtn.addEventListener("click", () => { dayType = "h"; updateModeUI(); render(currentMinutes); });
+updateModeUI();
+
 // ---------- エリアボタン ----------
 const areaBtns = document.getElementById("areaBtns");
 AREA_VIEWS.forEach((v, i) => {
@@ -360,6 +474,7 @@ AREA_VIEWS.forEach((v, i) => {
 // スクリーンショット・デバッグ用フック
 window.__setTime = m => { setPlaying(false); render(m); };
 window.__play = () => setPlaying(true);
+window.__setMode = (m, d) => { mode = m; if (d) dayType = d; updateModeUI(); applyModePaint(); render(currentMinutes); };
 </script>
 </body>
 </html>
