@@ -10,153 +10,261 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 <style>
 :root{
-  --navy:#0d366b; --blue:#1c5cab; --blue-bright:#2a78d6; --sky:#eaf2fb;
-  --gold:#eda100; --gold-soft:#fdf3dd;
-  --ink:#16202b; --sub:#52606f; --muted:#8a95a1; --line:#e2e8ee; --bg:#f6f8fa; --white:#fff;
-  --radius:12px; --shadow:0 1px 3px rgba(13,38,76,.08),0 6px 20px rgba(13,38,76,.07);
+  --navy-950:#071e3d; --navy-900:#0a2a52; --navy-700:#0d366b; --blue-600:#15509c;
+  --blue-500:#1e63b8; --blue-400:#2f7fdb; --sky-100:#eaf2fb; --sky-50:#f4f8fd;
+  --gold:#e8a013; --gold-deep:#c78507; --gold-soft:#fdf3dd;
+  --ink:#101823; --sub:#4e5b6b; --muted:#8b97a5; --line:#e3e9f0; --bg:#f7f9fb; --white:#fff;
+  --r-lg:20px; --r-md:14px; --r-pill:999px;
+  --sh-sm:0 1px 2px rgba(10,42,82,.06),0 2px 8px rgba(10,42,82,.05);
+  --sh-md:0 2px 4px rgba(10,42,82,.06),0 12px 32px rgba(10,42,82,.10);
+  --sh-lg:0 4px 8px rgba(10,42,82,.08),0 24px 64px rgba(10,42,82,.16);
+  --ease:cubic-bezier(.22,.8,.3,1);
 }
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Noto Sans JP',sans-serif;font-size:14px;line-height:1.8;color:var(--ink);background:var(--bg)}
-a{color:var(--blue);text-decoration:none}
+html{scroll-behavior:smooth}
+body{font-family:'Noto Sans JP',sans-serif;font-size:14.5px;line-height:1.9;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased}
+a{color:var(--blue-500);text-decoration:none}
+a:focus-visible,button:focus-visible{outline:2.5px solid var(--blue-400);outline-offset:3px;border-radius:4px}
 ul{list-style:none}
-.container{max-width:1080px;margin:0 auto;padding:0 24px}
-section{padding:56px 0}
-h2{font-size:22px;font-weight:700;letter-spacing:.02em}
-.sec-head{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:8px}
-.sec-lead{font-size:13px;color:var(--sub);margin-bottom:24px}
-.more{font-size:13px;font-weight:500}
-.btn{display:inline-flex;align-items:center;gap:8px;background:var(--navy);color:#fff;padding:13px 30px;font-size:14px;font-weight:700;border-radius:999px;transition:opacity .15s}
-.btn:hover{opacity:.85}
-.btn-gold{background:var(--gold);color:#3a2a00}
-.btn-line{display:inline-flex;align-items:center;gap:8px;background:#fff;color:var(--navy);padding:12px 28px;font-size:14px;font-weight:500;border-radius:999px;border:1.5px solid var(--navy)}
-.card{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px}
-.grid{display:grid;gap:20px}
-.chip{display:inline-block;background:var(--sky);color:var(--blue);font-size:11px;font-weight:700;padding:2px 10px;border-radius:999px}
-/* mock bar */
-.mock-bar{position:fixed;right:16px;bottom:16px;z-index:99;background:#16202b;color:#fff;border-radius:999px;padding:8px 10px;display:flex;gap:6px;align-items:center;font-size:12px;box-shadow:0 4px 16px rgba(0,0,0,.3)}
-.mock-bar button{font-family:inherit;font-size:12px;border:0;border-radius:999px;padding:5px 14px;background:transparent;color:#cfd6dd;cursor:pointer}
-.mock-bar button.on{background:#fff;color:#16202b;font-weight:700}
-/* header */
-header{background:#fff;box-shadow:0 1px 0 var(--line);position:sticky;top:0;z-index:50}
-.header-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 0;gap:20px}
-.logo{display:flex;align-items:center;gap:10px;font-weight:900;font-size:18px;color:var(--navy);letter-spacing:.04em}
-.logo-mark{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--navy),var(--blue-bright));color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px}
-.gnav{display:flex;gap:26px;font-size:13px;font-weight:500;align-items:center}
-.gnav a{color:var(--ink)}
-.gnav a:hover{color:var(--blue)}
-/* hero */
-.hero-out{background:linear-gradient(120deg,var(--navy) 0%,var(--blue) 55%,var(--blue-bright) 100%);color:#fff;padding:64px 0}
-.hero-out h1{font-size:32px;font-weight:900;line-height:1.5;margin-bottom:12px}
-.hero-out p.lead{font-size:15px;opacity:.9;margin-bottom:28px}
-.hero-visual{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:16px;height:240px;display:flex;align-items:center;justify-content:center;font-size:13px;color:rgba(255,255,255,.8)}
-.hero-in{background:linear-gradient(120deg,var(--navy),var(--blue));color:#fff;padding:36px 0 48px}
-.hello{font-size:15px;font-weight:700;margin-bottom:16px}
-.dash{display:grid;grid-template-columns:1.3fr 1fr 1fr 1fr;gap:16px}
-.dash .card{padding:18px 20px}
-.dash .label{font-size:12px;color:var(--sub);font-weight:500}
-.dash .value{font-size:30px;font-weight:700;color:var(--ink)}
+img{max-width:100%}
+.container{max-width:1120px;margin:0 auto;padding:0 28px}
+section{padding:88px 0}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:var(--blue-500);letter-spacing:.14em;margin-bottom:10px}
+.eyebrow::before{content:"";width:22px;height:2px;background:var(--gold);border-radius:2px}
+h2{font-size:30px;font-weight:900;letter-spacing:.01em;line-height:1.45;text-wrap:balance}
+.sec-head{display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:12px}
+.sec-lead{font-size:14px;color:var(--sub);margin-bottom:36px;max-width:38em}
+.more{font-size:13px;font-weight:700;display:inline-flex;align-items:center;gap:6px}
+.more i{transition:transform .25s var(--ease)}
+.more:hover i{transform:translateX(4px)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;background:var(--navy-700);color:#fff;padding:15px 34px;font-size:14.5px;font-weight:700;border-radius:var(--r-pill);border:0;cursor:pointer;transition:transform .25s var(--ease),box-shadow .25s var(--ease),background .25s;box-shadow:var(--sh-sm)}
+.btn:hover{transform:translateY(-2px);box-shadow:var(--sh-md);background:var(--blue-600)}
+.btn-gold{background:linear-gradient(135deg,#f3b83a,var(--gold) 55%,var(--gold-deep));color:#341f00;box-shadow:0 2px 6px rgba(200,133,7,.35),0 10px 28px rgba(200,133,7,.28)}
+.btn-gold:hover{background:linear-gradient(135deg,#f6c355,#f0ab1f 55%,var(--gold-deep));box-shadow:0 4px 10px rgba(200,133,7,.4),0 16px 40px rgba(200,133,7,.32)}
+.btn-ghost{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.55);box-shadow:none;font-weight:500}
+.btn-ghost:hover{background:rgba(255,255,255,.12);border-color:#fff;box-shadow:none}
+.btn-line{display:inline-flex;align-items:center;gap:8px;background:#fff;color:var(--navy-700);padding:11px 24px;font-size:13.5px;font-weight:700;border-radius:var(--r-pill);border:1.5px solid var(--line);transition:border-color .2s,color .2s,transform .25s var(--ease)}
+.btn-line:hover{border-color:var(--blue-400);color:var(--blue-500);transform:translateY(-1px)}
+.card{background:var(--white);border-radius:var(--r-md);box-shadow:var(--sh-sm);padding:24px;transition:transform .3s var(--ease),box-shadow .3s var(--ease)}
+.grid{display:grid;gap:22px}
+.chip{display:inline-flex;align-items:center;gap:6px;background:var(--sky-100);color:var(--blue-500);font-size:11.5px;font-weight:700;padding:3px 12px;border-radius:var(--r-pill)}
+.rv{opacity:0;transform:translateY(18px);transition:opacity .7s var(--ease),transform .7s var(--ease)}
+.rv.in{opacity:1;transform:none}
+@media (prefers-reduced-motion: reduce){
+  .rv{opacity:1;transform:none;transition:none}
+  .btn,.card,.cp-card,.step-card{transition:none}
+  html{scroll-behavior:auto}
+}
+.mock-bar{position:fixed;right:18px;bottom:18px;z-index:99;background:rgba(16,24,35,.92);backdrop-filter:blur(8px);color:#fff;border-radius:var(--r-pill);padding:8px 10px;display:flex;gap:6px;align-items:center;font-size:12px;box-shadow:0 8px 32px rgba(0,0,0,.35)}
+.mock-bar button{font-family:inherit;font-size:12px;border:0;border-radius:var(--r-pill);padding:6px 16px;background:transparent;color:#c3ccd6;cursor:pointer;transition:background .2s}
+.mock-bar button.on{background:#fff;color:#101823;font-weight:700}
+header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.86);backdrop-filter:blur(14px);box-shadow:0 1px 0 rgba(10,42,82,.08)}
+.header-inner{display:flex;align-items:center;justify-content:space-between;padding:15px 0;gap:20px}
+.logo{display:flex;align-items:center;gap:11px;font-weight:900;font-size:19px;color:var(--navy-700);letter-spacing:.05em}
+.logo-mark{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--navy-700),var(--blue-400));color:#fff;display:flex;align-items:center;justify-content:center;font-size:19px;box-shadow:0 4px 12px rgba(13,54,107,.3)}
+.gnav{display:flex;gap:4px;font-size:13.5px;font-weight:500;align-items:center}
+.gnav>a{color:var(--ink);padding:8px 14px;border-radius:var(--r-pill);transition:background .2s,color .2s}
+.gnav>a:hover{background:var(--sky-100);color:var(--blue-500)}
+.hero-out{position:relative;background:linear-gradient(128deg,var(--navy-950) 0%,var(--navy-700) 45%,var(--blue-500) 100%);color:#fff;padding:96px 0 110px;overflow:hidden}
+.hero-out::after{content:"";position:absolute;inset:auto -20% -55% -20%;height:70%;background:radial-gradient(ellipse at center,rgba(232,160,19,.28),transparent 65%);pointer-events:none}
+.rail{position:absolute;inset:0;width:100%;height:100%;opacity:.5;pointer-events:none}
+.hero-grid{position:relative;display:grid;grid-template-columns:1.15fr 1fr;gap:56px;align-items:center;z-index:1}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:10px;font-size:12.5px;font-weight:700;letter-spacing:.16em;color:#ffd671;margin-bottom:18px}
+.hero-eyebrow::before{content:"";width:26px;height:2px;background:#ffd671;border-radius:2px}
+.hero-out h1{font-size:clamp(30px,3.9vw,44px);font-weight:900;line-height:1.42;letter-spacing:.01em;margin-bottom:18px;text-wrap:balance}
+.hero-out h1 em{font-style:normal;color:#ffd671}
+.hero-out .lead{font-size:15.5px;color:rgba(255,255,255,.82);margin-bottom:34px;max-width:30em}
+.hero-ctas{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+.hero-services{display:flex;gap:8px;flex-wrap:wrap;margin-top:30px}
+.hero-services span{font-size:11.5px;font-weight:500;color:rgba(255,255,255,.85);background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.22);padding:4px 14px;border-radius:var(--r-pill)}
+.idcard-wrap{perspective:1200px}
+.idcard{position:relative;background:linear-gradient(135deg,rgba(255,255,255,.16),rgba(255,255,255,.05));border:1px solid rgba(255,255,255,.35);border-radius:22px;padding:30px 30px 26px;backdrop-filter:blur(10px);box-shadow:0 30px 80px rgba(4,16,34,.55);transform:rotateY(-7deg) rotateX(3deg);transition:transform .6s var(--ease)}
+.idcard:hover{transform:rotateY(-2deg) rotateX(1deg) translateY(-4px)}
+.idcard .row1{display:flex;justify-content:space-between;align-items:center;margin-bottom:26px}
+.idcard .brand{font-weight:900;letter-spacing:.1em;font-size:16px}
+.idcard .ic{width:44px;height:32px;border-radius:6px;background:linear-gradient(135deg,#ffd671,var(--gold));box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}
+.idcard .label{font-size:10.5px;letter-spacing:.14em;color:rgba(255,255,255,.65)}
+.idcard .balance{font-size:38px;font-weight:900;line-height:1.3}
+.idcard .balance small{font-size:14px;font-weight:500;color:rgba(255,255,255,.75)}
+.idcard .row3{display:flex;justify-content:space-between;align-items:flex-end;margin-top:22px;font-size:12px;color:rgba(255,255,255,.8)}
+.idcard .dots{display:flex;gap:5px}
+.idcard .dots i{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.5)}
+.idcard .dots i:first-child{background:#ffd671}
+.hero-in{background:linear-gradient(128deg,var(--navy-950),var(--navy-700) 60%,var(--blue-600));color:#fff;padding:52px 0 64px;position:relative;overflow:hidden}
+.hello{display:flex;align-items:baseline;gap:14px;margin-bottom:22px;position:relative;z-index:1}
+.hello b{font-size:21px;font-weight:900}
+.hello span{font-size:12.5px;color:rgba(255,255,255,.7)}
+.dash{display:grid;grid-template-columns:1.35fr 1fr 1fr 1fr;gap:18px;position:relative;z-index:1}
+.dash .card{padding:20px 22px;border-radius:var(--r-lg)}
+.dash .card:hover{transform:translateY(-3px);box-shadow:var(--sh-md)}
+.dash .label{font-size:12px;color:var(--sub);font-weight:700;display:flex;align-items:center;gap:7px}
+.dash .value{font-size:32px;font-weight:900;color:var(--ink);line-height:1.4}
 .dash .unit{font-size:13px;font-weight:500;color:var(--sub)}
-.dash a{font-size:12px;font-weight:500}
-/* steps */
-.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;counter-reset:step}
-.step{position:relative;background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);padding:26px 20px 22px;text-align:center}
-.step::before{counter-increment:step;content:counter(step);position:absolute;top:-14px;left:50%;transform:translateX(-50%);width:28px;height:28px;border-radius:50%;background:var(--navy);color:#fff;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center}
-.step .icon{width:56px;height:56px;border-radius:50%;background:var(--sky);color:var(--blue);display:flex;align-items:center;justify-content:center;font-size:22px;margin:4px auto 12px}
-.step h3{font-size:14px;font-weight:700}
-.step p{font-size:12px;color:var(--sub)}
-/* campaign */
-.cp .card{padding:0;overflow:hidden}
-.cp .thumb{height:130px;background:linear-gradient(135deg,#c9d9ec,#eaf2fb);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px}
-.cp .body{padding:16px 18px 18px}
-.cp h3{font-size:14px;font-weight:700;margin-bottom:8px}
-.cond{font-size:12px;color:var(--sub);display:flex;gap:8px;margin-bottom:3px}
-.cond dt{flex:0 0 34px;color:var(--blue);font-weight:700}
-/* news */
-.news li{display:flex;gap:14px;align-items:center;flex-wrap:wrap;background:#fff;padding:14px 18px;border-radius:10px;box-shadow:var(--shadow);margin-bottom:8px;font-size:13px}
-.badge-imp{background:#fdecec;color:#c0392b;font-size:11px;font-weight:700;padding:1px 10px;border-radius:999px}
-.badge-info{background:var(--sky);color:var(--blue);font-size:11px;font-weight:700;padding:1px 10px;border-radius:999px}
-.news .date{color:var(--muted);font-size:12px}
+.dash a{font-size:12px;font-weight:700}
+.card-balance{background:linear-gradient(135deg,#0f3d78,var(--blue-500));color:#fff}
+.card-balance .label{color:rgba(255,255,255,.8)}
+.card-balance .value{color:#fff}
+.card-balance .unit{color:rgba(255,255,255,.75)}
+.card-balance a{color:#ffd671}
+.card-balance .limited{font-size:11px;background:rgba(255,255,255,.16);border-radius:8px;padding:3px 10px;display:inline-block;margin:6px 0 8px}
+.line-steps{position:relative;display:grid;grid-template-columns:repeat(4,1fr);gap:22px;padding-top:34px}
+.line-steps::before{content:"";position:absolute;top:12px;left:calc(12.5% - 10px);right:calc(12.5% - 10px);height:6px;border-radius:3px;background:linear-gradient(90deg,var(--blue-400),var(--blue-500) 60%,var(--gold));opacity:.9}
+.stn{position:absolute;top:6px;width:18px;height:18px;border-radius:50%;background:#fff;border:5px solid var(--blue-500);left:calc(12.5% - 9px)}
+.stn.s2{left:calc(37.5% - 9px)}
+.stn.s3{left:calc(62.5% - 9px)}
+.stn.s4{left:calc(87.5% - 9px);border-color:var(--gold)}
+.step-card{background:#fff;border-radius:var(--r-md);box-shadow:var(--sh-sm);padding:28px 22px 24px;text-align:center;transition:transform .3s var(--ease),box-shadow .3s var(--ease)}
+.step-card:hover{transform:translateY(-5px);box-shadow:var(--sh-md)}
+.step-card .no{font-size:11px;font-weight:900;letter-spacing:.16em;color:var(--blue-500);margin-bottom:10px}
+.step-card .icon{width:60px;height:60px;border-radius:50%;background:var(--sky-100);color:var(--blue-500);display:flex;align-items:center;justify-content:center;font-size:23px;margin:0 auto 14px}
+.step-card:last-child .icon{background:var(--gold-soft);color:var(--gold-deep)}
+.step-card h3{font-size:15px;font-weight:700;margin-bottom:4px}
+.step-card p{font-size:12.5px;color:var(--sub)}
+.cp-card{background:#fff;border-radius:var(--r-md);box-shadow:var(--sh-sm);overflow:hidden;transition:transform .3s var(--ease),box-shadow .3s var(--ease);display:flex;flex-direction:column}
+.cp-card:hover{transform:translateY(-5px);box-shadow:var(--sh-md)}
+.cp-thumb{height:140px;background:linear-gradient(135deg,var(--navy-700),var(--blue-400));position:relative;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.5);font-size:26px}
+.cp-thumb::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 80% 20%,rgba(232,160,19,.35),transparent 60%)}
+.cp-thumb.alt{background:linear-gradient(135deg,#12447f,#1e63b8)}
+.cp-thumb.alt2{background:linear-gradient(135deg,#0a2a52,#15509c)}
+.cp-body{padding:20px 22px 22px;display:flex;flex-direction:column;flex:1}
+.cp-body h3{font-size:15.5px;font-weight:700;margin:10px 0 12px;line-height:1.6}
+.cond{font-size:12.5px;color:var(--sub);display:flex;gap:10px;margin-bottom:5px}
+.cond dt{flex:0 0 38px;color:var(--blue-500);font-weight:700}
+.cp-link{margin-top:auto;padding-top:14px;font-size:12.5px;font-weight:700;display:inline-flex;align-items:center;gap:6px}
+.cp-link i{transition:transform .25s var(--ease)}
+.cp-card:hover .cp-link i{transform:translateX(4px)}
+.news li{margin-bottom:10px}
+.news a.row{display:flex;gap:16px;align-items:center;flex-wrap:wrap;background:#fff;padding:17px 22px;border-radius:var(--r-md);box-shadow:var(--sh-sm);font-size:13.5px;color:var(--ink);transition:transform .25s var(--ease),box-shadow .25s var(--ease)}
+.news a.row:hover{transform:translateX(4px);box-shadow:var(--sh-md)}
+.badge-imp{background:#fdecec;color:#c0392b;font-size:11px;font-weight:700;padding:2px 12px;border-radius:var(--r-pill)}
+.badge-info{background:var(--sky-100);color:var(--blue-500);font-size:11px;font-weight:700;padding:2px 12px;border-radius:var(--r-pill)}
+.news .date{color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
 .news .ttl{flex:1;font-weight:500}
-.news a.faq{font-size:12px;white-space:nowrap}
-/* support */
-.support-box{background:#fff;border-radius:16px;box-shadow:var(--shadow);padding:36px;text-align:center}
-.searchbar{display:flex;max-width:620px;margin:0 auto;border:1.5px solid var(--line);border-radius:999px;overflow:hidden;background:var(--bg)}
-.searchbar input{flex:1;border:0;background:transparent;padding:13px 22px;font-family:inherit;font-size:13px;outline:none}
-.searchbar button{border:0;background:var(--navy);color:#fff;padding:0 28px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer}
-.quick{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:16px}
-.quick a{background:var(--bg);border:1px solid var(--line);color:var(--ink);font-size:12px;padding:7px 16px;border-radius:999px}
-.quick a:hover{border-color:var(--blue);color:var(--blue)}
-/* footer */
-footer{background:var(--navy);color:#cdd9e8;padding:48px 0 32px;margin-top:40px}
-footer h3{font-size:13px;color:#fff;margin-bottom:12px;font-weight:700}
-footer a{color:#cdd9e8;font-size:12.5px}
-footer li{margin-bottom:8px}
-.copyright{font-size:11px;color:#8aa2c0;margin-top:36px}
-/* state switching */
+.news .faq{font-size:12px;font-weight:700;white-space:nowrap}
+.support-sec{background:linear-gradient(180deg,var(--sky-50),var(--bg));padding-bottom:100px}
+.support-box{background:#fff;border-radius:26px;box-shadow:var(--sh-lg);padding:52px 48px;text-align:center;position:relative;overflow:hidden}
+.support-box::before{content:"";position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg,var(--blue-400),var(--blue-500) 60%,var(--gold))}
+.searchbar{display:flex;max-width:640px;margin:0 auto;border-radius:var(--r-pill);overflow:hidden;background:var(--bg);border:1.5px solid var(--line);transition:border-color .2s,box-shadow .2s}
+.searchbar:focus-within{border-color:var(--blue-400);box-shadow:0 0 0 4px rgba(47,127,219,.15)}
+.searchbar input{flex:1;border:0;background:transparent;padding:15px 24px;font-family:inherit;font-size:13.5px;outline:none;color:var(--ink)}
+.searchbar button{border:0;background:var(--navy-700);color:#fff;padding:0 30px;font-family:inherit;font-size:13.5px;font-weight:700;cursor:pointer;transition:background .2s}
+.searchbar button:hover{background:var(--blue-600)}
+.quick{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:20px}
+.quick a{background:var(--bg);border:1.5px solid var(--line);color:var(--ink);font-size:12.5px;font-weight:500;padding:8px 18px;border-radius:var(--r-pill);transition:border-color .2s,color .2s,transform .25s var(--ease)}
+.quick a:hover{border-color:var(--blue-400);color:var(--blue-500);transform:translateY(-2px)}
+footer{background:var(--navy-950);color:#c2d1e4;padding:64px 0 40px}
+.f-grid{display:grid;grid-template-columns:1.3fr 1fr 1fr 1fr 1fr;gap:32px}
+footer h3{font-size:13px;color:#fff;margin-bottom:14px;font-weight:700;letter-spacing:.06em}
+footer a{color:#c2d1e4;font-size:12.5px;transition:color .2s}
+footer a:hover{color:#fff}
+footer li{margin-bottom:9px}
+.f-brand{font-weight:900;font-size:18px;color:#fff;letter-spacing:.08em;display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.f-brand .logo-mark{width:34px;height:34px;font-size:16px;border-radius:9px}
+.f-note{font-size:11.5px;color:#7e93ad;max-width:24em}
+.copyright{font-size:11px;color:#63799a;margin-top:44px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
 body.state-out .only-in{display:none}
 body.state-in .only-out{display:none}
-@media (max-width:860px){.dash,.steps{grid-template-columns:1fr 1fr}.grid{grid-template-columns:1fr!important}}
+@media (max-width:900px){
+  section{padding:64px 0}
+  .hero-grid{grid-template-columns:1fr}
+  .idcard{transform:none}
+  .dash{grid-template-columns:1fr 1fr}
+  .line-steps{grid-template-columns:1fr 1fr}
+  .line-steps::before,.stn{display:none}
+  .grid-3{grid-template-columns:1fr!important}
+  .f-grid{grid-template-columns:1fr 1fr}
+  .gnav .hide-sp{display:none}
+}
 </style>
 </head>
 <body class="state-out">
 
 <div class="mock-bar" role="group" aria-label="表示状態の切り替え">
-  <span style="padding-left:6px"><i class="fa-solid fa-eye"></i> 表示</span>
+  <span style="padding-left:8px"><i class="fa-solid fa-eye"></i> 表示</span>
   <button type="button" class="on" data-state="state-out">未ログイン</button>
   <button type="button" data-state="state-in">ログイン後</button>
 </div>
 
 <header>
   <div class="container header-inner">
-    <div class="logo"><span class="logo-mark">W</span>WESTER</div>
-    <nav class="gnav">
-      <a href="#">会員サービス</a>
+    <a href="#" class="logo" aria-label="WESTER トップ"><span class="logo-mark">W</span>WESTER</a>
+    <nav class="gnav" aria-label="グローバルナビゲーション">
+      <a href="#first" class="hide-sp">会員サービス</a>
       <a href="wester-mock-point.html">WESTERポイント</a>
       <a href="wester-mock-support.html">サポート</a>
-      <a href="#" class="btn-line only-out" style="padding:8px 20px;font-size:13px">ログイン</a>
-      <a href="#" class="btn only-out" style="padding:9px 20px;font-size:13px">会員登録（無料）</a>
-      <span class="only-in chip" style="font-size:12px;padding:6px 14px"><i class="fa-solid fa-circle-user"></i> 西田さん</span>
+      <a href="#" class="btn-line only-out">ログイン</a>
+      <a href="#" class="btn only-out" style="padding:11px 22px;font-size:13.5px"><i class="fa-solid fa-user-plus"></i> 会員登録（無料）</a>
+      <span class="only-in chip" style="font-size:12.5px;padding:7px 16px"><i class="fa-solid fa-circle-user"></i> 西田さん</span>
     </nav>
   </div>
 </header>
 
 <!-- ヒーロー：未ログイン -->
 <div class="hero-out only-out">
-  <div class="container grid" style="grid-template-columns:1.15fr 1fr;align-items:center">
+  <svg class="rail" viewBox="0 0 1200 560" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <g fill="none" stroke="rgba(255,255,255,.14)" stroke-width="2.5">
+      <path d="M-40 430 C 240 430 320 330 560 330 S 900 250 1260 250"/>
+      <path d="M-40 500 C 300 500 420 400 700 400 S 1000 340 1260 340"/>
+      <path d="M-40 360 C 200 360 360 260 620 260 S 960 160 1260 160"/>
+    </g>
+    <g fill="#fff" opacity=".55">
+      <circle cx="560" cy="330" r="5"/><circle cx="900" cy="272" r="5"/>
+      <circle cx="700" cy="400" r="5"/><circle cx="1020" cy="352" r="5"/>
+      <circle cx="620" cy="260" r="5"/><circle cx="300" cy="337" r="5"/>
+    </g>
+    <g fill="#ffd671" opacity=".9"><circle cx="820" cy="286" r="6"/></g>
+  </svg>
+  <div class="container hero-grid">
     <div>
-      <h1>電車も、買い物も、<br>ひとつのIDで、たまる。</h1>
-      <p class="lead">WESTERは、JR西日本のサービスをひとつのIDでつなぐ会員サービスです。</p>
-      <a href="#" class="btn btn-gold" style="font-size:15px;padding:15px 36px"><i class="fa-solid fa-user-plus"></i> 無料で会員登録する</a>
-      <a href="#first" class="btn-line" style="margin-left:10px;background:transparent;color:#fff;border-color:rgba(255,255,255,.6)">はじめての方へ</a>
+      <p class="hero-eyebrow">JR WEST — ONE ID, EVERY JOURNEY</p>
+      <h1>電車も、買い物も、<br>ひとつのIDで、<em>たまる。</em></h1>
+      <p class="lead">WESTERは、JR西日本のサービスをひとつのIDでつなぐ会員サービスです。毎日の移動と買い物が、そのままWESTERポイントになります。</p>
+      <div class="hero-ctas">
+        <a href="#" class="btn btn-gold" style="font-size:15.5px;padding:17px 40px"><i class="fa-solid fa-user-plus"></i> 無料で会員登録する</a>
+        <a href="#first" class="btn btn-ghost">はじめての方へ <i class="fa-solid fa-arrow-down"></i></a>
+      </div>
+      <div class="hero-services" aria-label="対象サービス">
+        <span>ICOCA</span><span>J-WESTカード</span><span>WESTERアプリ</span><span>Wesmo!</span>
+      </div>
     </div>
-    <div class="hero-visual"><i class="fa-solid fa-image" style="font-size:28px;margin-right:10px"></i> キービジュアル（サービス全体イメージ）</div>
+    <div class="idcard-wrap">
+      <div class="idcard" aria-hidden="true">
+        <div class="row1"><span class="brand">WESTER <span style="font-weight:400;font-size:11px;letter-spacing:.2em;opacity:.7">MEMBER</span></span><span class="ic"></span></div>
+        <p class="label">POINT BALANCE</p>
+        <p class="balance">9,999 <small>pt</small></p>
+        <div class="row3">
+          <span>NISHIDA<br><span style="opacity:.6;font-size:10.5px">WESTER ID 会員</span></span>
+          <span class="dots"><i></i><i></i><i></i><i></i></span>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
 <!-- ヒーロー：ログイン後 -->
 <div class="hero-in only-in">
   <div class="container">
-    <p class="hello">こんにちは、西田さん</p>
+    <p class="hello"><b>こんにちは、西田さん</b><span>最終ログイン：2026.07.14</span></p>
     <div class="dash">
-      <div class="card">
-        <p class="label"><i class="fa-solid fa-coins" style="color:var(--gold)"></i> ポイント残高</p>
+      <div class="card card-balance">
+        <p class="label"><i class="fa-solid fa-coins" style="color:#ffd671"></i> ポイント残高</p>
         <p class="value">9,999<span class="unit"> pt</span></p>
-        <p style="font-size:11px;color:var(--muted)">うち期間限定 500pt（9/30まで）</p>
+        <p class="limited"><i class="fa-regular fa-clock"></i> 期間限定 500pt（9/30まで）</p><br>
         <a href="wester-mock-point.html#history">残高・履歴を見る <i class="fa-solid fa-angle-right"></i></a>
       </div>
       <div class="card">
-        <p class="label"><i class="fa-solid fa-train" style="color:var(--blue)"></i> マイ駅：大阪駅</p>
-        <p style="font-size:13px;font-weight:700;color:#0a7a3d;margin-top:6px"><i class="fa-solid fa-circle-check"></i> 平常運転</p>
+        <p class="label"><i class="fa-solid fa-train" style="color:var(--blue-500)"></i> マイ駅：大阪駅</p>
+        <p style="font-size:14px;font-weight:700;color:#0a7a3d;margin:10px 0 6px"><i class="fa-solid fa-circle-check"></i> 平常運転</p>
         <a href="#">時刻表・運行情報 <i class="fa-solid fa-angle-right"></i></a>
       </div>
       <div class="card">
-        <p class="label"><i class="fa-solid fa-flag-checkered" style="color:var(--blue)"></i> エントリー中</p>
-        <p class="value" style="font-size:24px">2<span class="unit"> 件</span></p>
+        <p class="label"><i class="fa-solid fa-flag-checkered" style="color:var(--blue-500)"></i> エントリー中</p>
+        <p class="value" style="font-size:26px">2<span class="unit"> 件</span></p>
         <a href="#">状況を見る <i class="fa-solid fa-angle-right"></i></a>
       </div>
       <div class="card">
-        <p class="label"><i class="fa-solid fa-thumbs-up" style="color:var(--blue)"></i> おすすめ</p>
-        <p style="font-size:12px;color:var(--sub);margin-top:4px">ICOCA夏のご利用キャンペーンが対象です。</p>
+        <p class="label"><i class="fa-solid fa-thumbs-up" style="color:var(--blue-500)"></i> おすすめ</p>
+        <p style="font-size:12.5px;color:var(--sub);margin:8px 0 6px">ICOCA夏のご利用キャンペーンが対象です。</p>
         <a href="#campaign">確認する <i class="fa-solid fa-angle-right"></i></a>
       </div>
     </div>
@@ -166,77 +274,84 @@ body.state-in .only-out{display:none}
 <!-- はじめての方へ -->
 <section id="first" class="only-out">
   <div class="container">
-    <div class="sec-head"><h2>はじめての方へ</h2></div>
-    <p class="sec-lead">4つのステップで、WESTERのある毎日がはじまります。</p>
-    <div class="steps">
-      <div class="step">
+    <div class="rv"><p class="eyebrow">GUIDE</p></div>
+    <div class="sec-head rv"><h2>はじめての方へ</h2></div>
+    <p class="sec-lead rv">4つの駅を進むように。WESTERのある毎日は、この順番ではじまります。</p>
+    <div class="line-steps">
+      <span class="stn" aria-hidden="true"></span><span class="stn s2" aria-hidden="true"></span><span class="stn s3" aria-hidden="true"></span><span class="stn s4" aria-hidden="true"></span>
+      <div class="step-card rv">
+        <p class="no">STEP 01</p>
         <div class="icon"><i class="fa-solid fa-id-card"></i></div>
         <h3>WESTER会員登録</h3>
         <p>無料。すべての起点になる共通IDをつくります。</p>
       </div>
-      <div class="step">
+      <div class="step-card rv" style="transition-delay:.08s">
+        <p class="no">STEP 02</p>
         <div class="icon"><i class="fa-solid fa-train-subway"></i></div>
         <h3>ICOCAを登録してためる</h3>
         <p>電車と買い物で、WESTERポイントがたまります。</p>
       </div>
-      <div class="step">
+      <div class="step-card rv" style="transition-delay:.16s">
+        <p class="no">STEP 03</p>
         <div class="icon"><i class="fa-solid fa-mobile-screen"></i></div>
         <h3>アプリで確認する</h3>
         <p>残高・履歴・列車の運行情報をアプリで見られます。</p>
       </div>
-      <div class="step">
+      <div class="step-card rv" style="transition-delay:.24s">
+        <p class="no">STEP 04</p>
         <div class="icon"><i class="fa-solid fa-credit-card"></i></div>
         <h3>カード・Wesmo!でさらに</h3>
         <p>J-WESTカードとWesmo!で、ためる・つかうが広がります。</p>
       </div>
     </div>
-    <div style="text-align:center;margin-top:32px"><a href="#" class="btn"><i class="fa-solid fa-user-plus"></i> まずは無料で会員登録する</a></div>
+    <div style="text-align:center;margin-top:44px" class="rv"><a href="#" class="btn btn-gold" style="padding:16px 40px"><i class="fa-solid fa-user-plus"></i> まずは無料で会員登録する</a></div>
   </div>
 </section>
 
 <!-- キャンペーン -->
 <section id="campaign" style="background:#fff">
-  <div class="container cp">
-    <div class="sec-head"><h2>キャンペーン</h2><a class="more" href="#">一覧を見る <i class="fa-solid fa-angle-right"></i></a></div>
-    <p class="sec-lead">対象・条件・期間を明記しています。ご自身が対象かどうか、ひと目でわかります。</p>
-    <div class="grid" style="grid-template-columns:repeat(3,1fr)">
-      <div class="card">
-        <div class="thumb"><i class="fa-solid fa-image fa-lg"></i></div>
-        <div class="body">
+  <div class="container">
+    <div class="rv"><p class="eyebrow">CAMPAIGN</p></div>
+    <div class="sec-head rv"><h2>キャンペーン</h2><a class="more" href="#">一覧を見る <i class="fa-solid fa-arrow-right"></i></a></div>
+    <p class="sec-lead rv">対象・条件・期間を明記しています。ご自身が対象かどうか、ひと目でわかります。</p>
+    <div class="grid grid-3" style="grid-template-columns:repeat(3,1fr)">
+      <div class="cp-card rv">
+        <div class="cp-thumb"><i class="fa-solid fa-sun"></i></div>
+        <div class="cp-body">
           <span class="chip">エントリー制</span>
-          <h3 style="margin-top:8px">ICOCA夏のご利用キャンペーン</h3>
+          <h3>ICOCA夏のご利用キャンペーン</h3>
           <dl>
             <div class="cond"><dt>対象</dt><dd>WESTER会員の方</dd></div>
             <div class="cond"><dt>条件</dt><dd>エントリー＋ICOCA利用</dd></div>
-            <div class="cond"><dt>期間</dt><dd>7/1（水）〜7/31（金）</dd></div>
+            <div class="cond"><dt>期間</dt><dd>7/1(水)〜7/31(金)</dd></div>
           </dl>
-          <a href="#" style="font-size:12px;font-weight:700">自分が対象か確認する <i class="fa-solid fa-angle-right"></i></a>
+          <a href="#" class="cp-link">自分が対象か確認する <i class="fa-solid fa-arrow-right"></i></a>
         </div>
       </div>
-      <div class="card">
-        <div class="thumb"><i class="fa-solid fa-image fa-lg"></i></div>
-        <div class="body">
+      <div class="cp-card rv" style="transition-delay:.08s">
+        <div class="cp-thumb alt"><i class="fa-solid fa-credit-card"></i></div>
+        <div class="cp-body">
           <span class="chip">カード会員向け</span>
-          <h3 style="margin-top:8px">J-WESTカード ご利用特典</h3>
+          <h3>J-WESTカード ご利用特典</h3>
           <dl>
             <div class="cond"><dt>対象</dt><dd>J-WESTカード会員の方</dd></div>
             <div class="cond"><dt>条件</dt><dd>期間中のカード決済</dd></div>
-            <div class="cond"><dt>期間</dt><dd>7/1（水）〜8/31（月）</dd></div>
+            <div class="cond"><dt>期間</dt><dd>7/1(水)〜8/31(月)</dd></div>
           </dl>
-          <a href="#" style="font-size:12px;font-weight:700">自分が対象か確認する <i class="fa-solid fa-angle-right"></i></a>
+          <a href="#" class="cp-link">自分が対象か確認する <i class="fa-solid fa-arrow-right"></i></a>
         </div>
       </div>
-      <div class="card">
-        <div class="thumb"><i class="fa-solid fa-image fa-lg"></i></div>
-        <div class="body">
+      <div class="cp-card rv" style="transition-delay:.16s">
+        <div class="cp-thumb alt2"><i class="fa-solid fa-gift"></i></div>
+        <div class="cp-body">
           <span class="chip">新規の方向け</span>
-          <h3 style="margin-top:8px">はじめてのWESTER特典</h3>
+          <h3>はじめてのWESTER特典</h3>
           <dl>
             <div class="cond"><dt>対象</dt><dd>新規会員登録の方</dd></div>
             <div class="cond"><dt>条件</dt><dd>登録月内の初回利用</dd></div>
             <div class="cond"><dt>期間</dt><dd>通年</dd></div>
           </dl>
-          <a href="#" style="font-size:12px;font-weight:700">自分が対象か確認する <i class="fa-solid fa-angle-right"></i></a>
+          <a href="#" class="cp-link">自分が対象か確認する <i class="fa-solid fa-arrow-right"></i></a>
         </div>
       </div>
     </div>
@@ -246,33 +361,35 @@ body.state-in .only-out{display:none}
 <!-- お知らせ -->
 <section>
   <div class="container">
-    <div class="sec-head"><h2>お知らせ</h2><a class="more" href="#">一覧を見る <i class="fa-solid fa-angle-right"></i></a></div>
-    <ul class="news">
-      <li>
+    <div class="rv"><p class="eyebrow">NEWS</p></div>
+    <div class="sec-head rv"><h2>お知らせ</h2><a class="more" href="#">一覧を見る <i class="fa-solid fa-arrow-right"></i></a></div>
+    <ul class="news" style="margin-top:24px">
+      <li class="rv"><a class="row" href="wester-mock-support.html">
         <span class="badge-imp">重要</span><span class="date">2026.06.28</span>
         <span class="ttl">システムメンテナンスに伴うログイン停止のお知らせ</span>
-        <a class="faq" href="wester-mock-support.html"><i class="fa-solid fa-circle-question"></i> 関連FAQ</a>
-      </li>
-      <li>
+        <span class="faq" style="color:var(--blue-500)"><i class="fa-solid fa-circle-question"></i> 関連FAQ</span>
+      </a></li>
+      <li class="rv" style="transition-delay:.06s"><a class="row" href="wester-mock-support.html#otp">
         <span class="badge-info">お知らせ</span><span class="date">2026.06.20</span>
         <span class="ttl">ワンタイムパスワードの認証方式変更について</span>
-        <a class="faq" href="wester-mock-support.html#otp"><i class="fa-solid fa-circle-question"></i> 関連FAQ</a>
-      </li>
-      <li>
+        <span class="faq" style="color:var(--blue-500)"><i class="fa-solid fa-circle-question"></i> 関連FAQ</span>
+      </a></li>
+      <li class="rv" style="transition-delay:.12s"><a class="row" href="wester-mock-support.html">
         <span class="badge-info">お知らせ</span><span class="date">2026.06.12</span>
         <span class="ttl">WESTERアプリ バージョンアップのお知らせ</span>
-        <a class="faq" href="wester-mock-support.html"><i class="fa-solid fa-circle-question"></i> 関連FAQ</a>
-      </li>
+        <span class="faq" style="color:var(--blue-500)"><i class="fa-solid fa-circle-question"></i> 関連FAQ</span>
+      </a></li>
     </ul>
   </div>
 </section>
 
 <!-- サポート導線 -->
-<section style="background:linear-gradient(180deg,var(--sky),var(--bg));padding-bottom:64px">
+<section class="support-sec">
   <div class="container">
-    <div class="support-box">
-      <h2 style="margin-bottom:6px">お困りですか？</h2>
-      <p class="sec-lead" style="margin-bottom:20px">ほとんどのお手続きは、このサイト内でそのまま完了できます。</p>
+    <div class="support-box rv">
+      <p class="eyebrow" style="justify-content:center">SUPPORT</p>
+      <h2 style="margin-bottom:8px">お困りですか？</h2>
+      <p class="sec-lead" style="margin:0 auto 28px;text-align:center">ほとんどのお手続きは、このサイト内でそのまま完了できます。</p>
       <div class="searchbar">
         <input type="text" placeholder="質問をキーワードで検索（例：パスワード 再設定）" aria-label="FAQ検索">
         <button type="button"><i class="fa-solid fa-magnifying-glass"></i> 検索</button>
@@ -283,20 +400,24 @@ body.state-in .only-out{display:none}
         <a href="wester-mock-support.html#id">IDを統合したい</a>
         <a href="wester-mock-point.html">ポイントを確認したい</a>
       </div>
-      <p style="font-size:12px;color:var(--muted);margin-top:18px">FAQで解決しない場合は <a href="wester-mock-support.html#contact">お問い合わせ</a> へ</p>
+      <p style="font-size:12px;color:var(--muted);margin-top:22px">FAQで解決しない場合は <a href="wester-mock-support.html#contact" style="font-weight:700">お問い合わせ</a> へ</p>
     </div>
   </div>
 </section>
 
 <footer>
   <div class="container">
-    <div class="grid" style="grid-template-columns:repeat(4,1fr)">
+    <div class="f-grid">
+      <div>
+        <p class="f-brand"><span class="logo-mark">W</span>WESTER</p>
+        <p class="f-note">JR西日本のサービスをひとつのIDでつなぐ、会員サービスです。</p>
+      </div>
       <div><h3>会員サービス</h3><ul><li><a href="#">サービス一覧</a></li><li><a href="#">WESTERサービスとは</a></li><li><a href="#">会員登録・移行</a></li><li><a href="#">マイページ</a></li></ul></div>
       <div><h3>WESTERポイント</h3><ul><li><a href="wester-mock-point.html">ポイントとは</a></li><li><a href="wester-mock-point.html#earn">ためる</a></li><li><a href="wester-mock-point.html#use">つかう</a></li></ul></div>
       <div><h3>サポート</h3><ul><li><a href="wester-mock-support.html">よくあるご質問</a></li><li><a href="wester-mock-support.html#self">手続きの自己解決</a></li><li><a href="wester-mock-support.html#contact">お問い合わせ</a></li></ul></div>
       <div><h3>きまり</h3><ul><li><a href="#">サービス規約集</a></li><li><a href="#">プライバシー</a></li><li><a href="#">サイトマップ</a></li></ul></div>
     </div>
-    <p class="copyright">© West Japan Railway Company（モックアップ・配色は仮）</p>
+    <p class="copyright"><span>© West Japan Railway Company（モックアップ・配色は仮）</span><span>wester.jr-odekake.net</span></p>
   </div>
 </footer>
 
@@ -305,8 +426,14 @@ document.querySelectorAll('.mock-bar button').forEach(function(b){
   b.addEventListener('click',function(){
     document.body.className=b.dataset.state;
     document.querySelectorAll('.mock-bar button').forEach(function(x){x.classList.toggle('on',x===b)});
+    reveal();
   });
 });
+var io=new IntersectionObserver(function(es){
+  es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}});
+},{threshold:.12});
+function reveal(){document.querySelectorAll('.rv:not(.in)').forEach(function(el){io.observe(el)})}
+reveal();
 </script>
 </body>
 </html>
