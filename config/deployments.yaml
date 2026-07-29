@@ -1,0 +1,41 @@
+# bleflow synth が生成した設置メタデータ(合成データ用)。
+# 実データ運用時はこのファイルを手書きで置き換え、generated_by 行を削除すること。
+generated_by: bleflow-synth v0.1
+synthetic: true
+deployments:
+- sensor_id: S1
+  file: data/raw/S1_synth_20260801.csv
+  location_name: 天神橋筋商店街 北入口付近
+  lat: 34.696093
+  lon: 135.513216
+  start_time: '2026-08-01T07:00:00+09:00'
+  method: 自転車カゴ・時間貸し駐輪場
+  battery_mah: 2000
+  notes: synth 生成(ローカル座標 x=125m, y=272m)
+- sensor_id: S2
+  file: data/raw/S2_synth_20260801.csv
+  location_name: 商店街中央 交差部(協力店舗)
+  lat: 34.695069
+  lon: 135.513139
+  start_time: '2026-08-01T07:05:00+09:00'
+  method: 協力店舗に温湿度計として設置
+  battery_mah: 2000
+  notes: synth 生成(ローカル座標 x=118m, y=158m)
+- sensor_id: S3
+  file: data/raw/S3_synth_20260801.csv
+  location_name: 天神橋北詰 南入口付近
+  lat: 34.693875
+  lon: 135.513216
+  start_time: '2026-08-01T07:10:00+09:00'
+  method: サドルバッグ・時間貸し駐輪場
+  battery_mah: 2000
+  notes: synth 生成(ローカル座標 x=125m, y=25m)
+- sensor_id: S4
+  file: data/raw/S4_synth_20260801.csv
+  location_name: 東側路地 天満宮方面
+  lat: 34.694997
+  lon: 135.51409
+  start_time: '2026-08-01T07:15:00+09:00'
+  method: 自転車カゴ・時間貸し駐輪場
+  battery_mah: 2000
+  notes: synth 生成(ローカル座標 x=205m, y=150m)
