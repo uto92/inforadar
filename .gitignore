@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+dist/
+build/
+
+# ── プライバシー保護:絶対にコミットしない ──────────────
+# 生ログ(生MACを含む)とハッシュ用ソルト
+config/salt.txt
+data/raw/*
+!data/raw/.gitkeep
+
+# ── 生成物(再生成可能)──────────────────────────────
+data/synth/*
+!data/synth/.gitkeep
+data/*.duckdb
+data/*.duckdb.wal
+output/*
+!output/.gitkeep
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/

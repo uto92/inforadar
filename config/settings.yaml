@@ -1,0 +1,62 @@
+# ble-flow 全体設定。パスはリポジトリルートからの相対。
+timezone: "Asia/Tokyo"
+
+paths:
+  db: "data/bleflow.duckdb"
+  raw_dir: "data/raw"
+  synth_dir: "data/synth"
+  output_dir: "output"
+  deployments: "config/deployments.yaml"
+  salt_file: "config/salt.txt"     # gitignore 対象。無ければ ingest が自動生成
+
+ingest:
+  session_gap_sec: 30      # 検出間ギャップがこの秒数を超えたらセッション分割(ちょうど30秒は同一)
+  mac_hash_len: 16         # ソルト付き SHA-256 の先頭 16 hex(64bit)を採用
+
+analyze:
+  bin_minutes: [5, 15]     # 時系列集計のビン幅(分)
+  transit_max_sec: 60      # duration < 60s → 通過
+  dwell_min_sec: 120       # duration >= 120s → 滞留(60〜120s は不定)
+  randomization_correction: 0.9   # MAC ランダム化による過大計上の補正係数(ユニーク数に乗算)
+  od_max_gap_min: 15       # OD 突合: 前セッション last_seen → 次セッション first_seen の最大ギャップ(分)
+  expected_ios_share: 0.62 # 日本のスマホ iOS シェア想定(母集団補正の参考値)TODO: 実測で調整
+  detectable_rate: 0.35    # BLE 可視端末を持つ歩行者の割合(仮置き)TODO: 目視カウントで調整
+
+report:
+  file: "output/report.html"
+  title: "ble-flow 人流レポート — 天神橋1丁目"
+
+# ── 合成データ生成(synth)────────────────────────────────
+# 天神橋1丁目 約250m×300m を、南西角を原点とするローカル座標系(m)でモデル化。
+# 商店街の南北軸 x=125、東西の交差路 y=150 に沿って歩行者が移動する想定。
+synth:
+  seed: 20260801
+  date: "2026-08-01"
+  sim_start: "07:00"       # 歩行者発生の開始(JST)
+  sim_end: "21:00"         # 発生終了。滞留者はこの時刻で打ち切り
+  n_persons: 2200          # 1日の総来街者数(BLE 可視端末保持者のみをモデル化)
+  dwell_share: 0.12        # 滞留者(30分超)比率。残りは通過者
+  dwell_minutes: [30, 90]  # 滞留時間の一様分布範囲
+  speed_mps: [1.25, 0.2]   # 歩行速度 正規分布 [平均, SD](0.7〜2.0 にクリップ)
+  mac_rotation_min: [15, 20]        # MAC ランダム化間隔の一様分布範囲(分)
+  fixed_mac_prob: {A: 0.03, G: 0.08, S: 0.15, O: 0.60}  # 種別ごとの「ランダム化しない」確率
+  type_shares: {A: 0.55, G: 0.25, S: 0.10, O: 0.10}     # デバイス種別比率
+  rssi:
+    tx_power_1m: -55       # 1m 地点の受信強度 dBm
+    path_loss_exp: 2.8     # 伝搬損失指数(人体・建物のある市街地想定)
+    noise_sd: 3.5          # シャドウイング/フェージングノイズ SD
+    detect_threshold: -94  # スキャナ感度(これ未満は受信不可)
+  detect_prob_per_sec: 0.35  # 電波が届いた秒にスキャンへ載る確率(adv間隔×スキャン窓)
+  coverage_radius_m: 30    # ground truth の「センサー通過」判定半径(m)
+  area:                    # ローカル座標 → 緯度経度変換の基準(南西角)
+    origin_lat: 34.69365
+    origin_lon: 135.51185
+  sensors:
+    - {sensor_id: S1, x: 125, y: 272, location_name: "天神橋筋商店街 北入口付近",
+       start: "07:00", method: "自転車カゴ・時間貸し駐輪場", battery_mah: 2000}
+    - {sensor_id: S2, x: 118, y: 158, location_name: "商店街中央 交差部(協力店舗)",
+       start: "07:05", method: "協力店舗に温湿度計として設置", battery_mah: 2000}
+    - {sensor_id: S3, x: 125, y: 25, location_name: "天神橋北詰 南入口付近",
+       start: "07:10", method: "サドルバッグ・時間貸し駐輪場", battery_mah: 2000}
+    - {sensor_id: S4, x: 205, y: 150, location_name: "東側路地 天満宮方面",
+       start: "07:15", method: "自転車カゴ・時間貸し駐輪場", battery_mah: 2000}
