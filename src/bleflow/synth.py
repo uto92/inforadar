@@ -257,7 +257,7 @@ def run_synth(settings: dict, force: bool = False) -> dict:
             pos = _walk_positions(wp, speeds[pid])
 
         t_abs = arrival + np.arange(len(pos), dtype=np.int64)
-        keep = t_abs <= end_epoch
+        keep = t_abs < end_epoch  # sim_end ちょうどは含めない(端数ビン防止)
         if not keep.all():
             pos, t_abs = pos[keep], t_abs[keep]
         if len(t_abs) == 0:

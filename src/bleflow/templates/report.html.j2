@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ data.title }}</title>
+{% if data.map %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css"
+      onerror="window.__leafletCssFailed=true">
+{% endif %}
+<style>
+:root {
+  color-scheme: light;
+  --page:          #f9f9f7;
+  --surface-1:     #fcfcfb;
+  --text-primary:  #0b0b0b;
+  --text-secondary:#52514e;
+  --text-muted:    #898781;
+  --grid:          #e1e0d9;
+  --baseline:      #c3c2b7;
+  --border:        rgba(11,11,11,0.10);
+  --series-1: #2a78d6;  /* blue   : S1 / transit / A */
+  --series-2: #eb6834;  /* orange : S2 / dwell   / G */
+  --series-3: #1baf7a;  /* aqua   : S3 / S(type) */
+  --series-4: #eda100;  /* yellow : S4 / O(type) */
+  --neutral-seg: #898781; /* uncertain(不定)は中立グレー */
+  --seq-strong: #256abf;  /* ヒートマップ最大値側 */
+  --status-good: #0ca30c;
+  --status-critical: #d03b3b;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --page:          #0d0d0d;
+    --surface-1:     #1a1a19;
+    --text-primary:  #ffffff;
+    --text-secondary:#c3c2b7;
+    --text-muted:    #898781;
+    --grid:          #2c2c2a;
+    --baseline:      #383835;
+    --border:        rgba(255,255,255,0.10);
+    --series-1: #3987e5;
+    --series-2: #d95926;
+    --series-3: #199e70;
+    --series-4: #c98500;
+    --seq-strong: #3987e5;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--page);
+  color: var(--text-primary);
+  font-family: system-ui, -apple-system, "Segoe UI", "Hiragino Sans", "Noto Sans JP", sans-serif;
+  font-size: 14px;
+  line-height: 1.55;
+}
+.wrap { max-width: 1080px; margin: 0 auto; padding: 24px 20px 48px; }
+header.page { margin-bottom: 20px; }
+h1 { font-size: 22px; margin: 0 0 4px; }
+.sub { color: var(--text-secondary); font-size: 13px; }
+.badge {
+  display: inline-block; padding: 1px 10px; border-radius: 999px;
+  font-size: 12px; font-weight: 600; border: 1px solid var(--border);
+  vertical-align: 2px; margin-left: 8px;
+}
+.badge.synth { background: color-mix(in srgb, var(--series-4) 18%, var(--surface-1)); }
+.badge.real  { background: color-mix(in srgb, var(--series-3) 18%, var(--surface-1)); }
+section { margin: 26px 0; }
+h2 { font-size: 16px; margin: 0 0 4px; }
+h2 .anno { font-weight: 400; color: var(--text-muted); font-size: 12px; margin-left: 8px; }
+.desc { color: var(--text-secondary); font-size: 12.5px; margin: 0 0 10px; }
+.card {
+  background: var(--surface-1); border: 1px solid var(--border);
+  border-radius: 10px; padding: 14px 16px;
+}
+.grid { display: grid; gap: 14px; }
+.kpis { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+.kpi .v { font-size: 24px; font-weight: 650; letter-spacing: -0.01em; }
+.kpi .u { font-size: 12px; font-weight: 400; color: var(--text-muted); }
+.kpi .l { font-size: 12px; color: var(--text-secondary); }
+.kpi .s { font-size: 11.5px; color: var(--text-muted); }
+.cols-2 { grid-template-columns: 1fr 1fr; }
+@media (max-width: 760px) { .cols-2 { grid-template-columns: 1fr; } }
+.chart-box { position: relative; height: 300px; }
+.chart-box.tall { height: 340px; }
+.chart-box.short { height: 250px; }
+.controls { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+.seg { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.seg button {
+  border: 0; background: transparent; color: var(--text-secondary);
+  padding: 4px 12px; font-size: 12.5px; cursor: pointer; font-family: inherit;
+}
+.seg button.on { background: color-mix(in srgb, var(--series-1) 14%, var(--surface-1)); color: var(--text-primary); font-weight: 600; }
+table.data { border-collapse: collapse; width: 100%; font-size: 12.5px; }
+table.data th, table.data td { padding: 5px 8px; text-align: right; border-bottom: 1px solid var(--grid); }
+table.data th { color: var(--text-secondary); font-weight: 600; }
+table.data th:first-child, table.data td:first-child { text-align: left; }
+table.data td { font-variant-numeric: tabular-nums; }
+.scroll-x { overflow-x: auto; }
+#heatmap table { border-collapse: separate; border-spacing: 2px; font-size: 11.5px; }
+#heatmap td, #heatmap th { padding: 4px 6px; border-radius: 4px; text-align: center; min-width: 40px; }
+#heatmap th { color: var(--text-secondary); font-weight: 600; background: transparent; }
+#heatmap td { font-variant-numeric: tabular-nums; }
+.verdict {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-weight: 700; font-size: 15px; padding: 6px 14px; border-radius: 8px;
+}
+.verdict.pass { color: var(--status-good); background: color-mix(in srgb, var(--status-good) 12%, var(--surface-1)); }
+.verdict.fail { color: var(--status-critical); background: color-mix(in srgb, var(--status-critical) 12%, var(--surface-1)); }
+.warn-banner {
+  display: none; margin: 10px 0; padding: 10px 14px; border-radius: 8px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--series-4) 15%, var(--surface-1)); font-size: 13px;
+}
+#map { height: 430px; border-radius: 10px; border: 1px solid var(--border); }
+details summary { cursor: pointer; color: var(--text-secondary); font-size: 12.5px; margin: 8px 0; }
+footer { margin-top: 36px; color: var(--text-muted); font-size: 12px; border-top: 1px solid var(--grid); padding-top: 14px; }
+footer code { font-size: 11.5px; }
+.legend-inline { color: var(--text-secondary); font-size: 12px; }
+.chip { display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:4px; vertical-align:-1px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="page">
+  <h1>{{ data.title }}
+    {% if data.mode == "synthetic" %}<span class="badge synth">合成データ</span>
+    {% else %}<span class="badge real">実データ</span>{% endif %}
+  </h1>
+  <div class="sub">
+    計測期間: <b>{{ data.period.start[:16].replace("T", " ") }} 〜 {{ data.period.end[:16].replace("T", " ") }}</b>(JST)
+    ・ センサー {{ data.sensors | length }} 台
+    ・ 生成: {{ data.generated_at[:16].replace("T", " ") }}
+  </div>
+</header>
+
+<div id="cdn-warn" class="warn-banner">
+  ⚠ チャートライブラリ(CDN)を読み込めませんでした。オフライン環境では表とヒートマップのみ表示されます。
+</div>
+
+{% if data.accuracy %}
+<section class="card" id="accuracy">
+  <h2>精度検証 <span class="anno">ground truth との比較(時間帯×センサー・補正後ユニーク数)</span></h2>
+  <div class="grid kpis" style="margin-top:10px;">
+    <div class="kpi">
+      {% if data.accuracy.pass_15 %}
+      <span class="verdict pass">✓ PASS</span>
+      {% else %}
+      <span class="verdict fail">✕ FAIL</span>
+      {% endif %}
+      <div class="s" style="margin-top:6px;">Phase 1 目標: 誤差 ±15% 以内</div>
+    </div>
+    <div class="kpi"><div class="v">{{ "%.1f" | format(data.accuracy.weighted_mape_pct) }}<span class="u"> %</span></div>
+      <div class="l">真値加重 MAPE</div></div>
+    <div class="kpi"><div class="v">{{ "%+.1f" | format(data.accuracy.total_err_pct) }}<span class="u"> %</span></div>
+      <div class="l">日合計誤差</div>
+      <div class="s">真値 {{ "{:,}".format(data.accuracy.total_true) }} / 推定 {{ "{:,.0f}".format(data.accuracy.total_corrected) }}</div></div>
+    <div class="kpi"><div class="v">{{ "{:,}".format(data.accuracy.total_raw) }}</div>
+      <div class="l">補正前ユニーク合計</div>
+      <div class="s">×{{ data.params.randomization_correction }} 補正で推定値に</div></div>
+  </div>
+  <div class="chart-box short" style="margin-top:14px;"><canvas id="ch-acc"></canvas></div>
+  <details>
+    <summary>時間帯×センサーの誤差テーブルを表示</summary>
+    <div class="scroll-x">
+    <table class="data">
+      <thead><tr><th>時間帯</th><th>センサー</th><th>真値</th><th>計測(生)</th><th>補正後</th><th>誤差%</th></tr></thead>
+      <tbody>
+      {% for r in data.accuracy.hourly %}
+        <tr><td>{{ r.hour_start[11:16] }}</td><td>{{ r.sensor_id }}</td>
+            <td>{{ r.true }}</td><td>{{ r.raw }}</td><td>{{ "%.0f" | format(r.corrected) }}</td>
+            <td>{{ "%+.1f" | format(r.err_pct) if r.err_pct is not none else "—" }}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    </div>
+  </details>
+</section>
+{% endif %}
+
+<section>
+  <div class="grid kpis">
+    <div class="card kpi"><div class="v" id="k-unique"></div><div class="l">推定ユニークデバイス(補正後)</div>
+      <div class="s">補正前 <span id="k-unique-raw"></span> ・ 補正係数 {{ data.params.randomization_correction }}</div></div>
+    <div class="card kpi"><div class="v" id="k-det"></div><div class="l">延べ検出イベント</div></div>
+    <div class="card kpi"><div class="v" id="k-ses"></div><div class="l">セッション数</div>
+      <div class="s">通過率 <span id="k-transit-share"></span>(セッション基準)</div></div>
+    <div class="card kpi"><div class="v" id="k-peak"></div><div class="l">ピーク時間帯</div>
+      <div class="s">全センサー合算ユニーク</div></div>
+    <div class="card kpi"><div class="v" id="k-pop"></div><div class="l">参考: 推定歩行者数</div>
+      <div class="s">可視端末率 {{ data.population.detectable_rate }} 仮定(要較正)</div></div>
+  </div>
+</section>
+
+<section class="card">
+  <h2>ユニークデバイス数の時系列 <span class="anno">センサー別</span></h2>
+  <p class="desc">ビン内に1回以上検出されたハッシュMACのユニーク数。MACランダム化(15〜20分周期)の影響が小さい短時間ビンでの比較に適する。</p>
+  <div class="controls">
+    <span class="seg" id="seg-bin">
+      <button data-bin="5" class="on">5分ビン</button>
+      <button data-bin="15">15分ビン</button>
+    </span>
+    <span class="seg" id="seg-metric">
+      <button data-metric="unique" class="on">ユニーク数</button>
+      <button data-metric="detections">延べ検出数</button>
+    </span>
+  </div>
+  <div class="chart-box tall"><canvas id="ch-ts"></canvas></div>
+</section>
+
+<section class="card">
+  <h2>時間帯 × センサー ヒートマップ <span class="anno">1時間ごとのユニークデバイス数(補正前)</span></h2>
+  <div class="scroll-x" id="heatmap"></div>
+</section>
+
+<div class="grid cols-2">
+  <section class="card">
+    <h2>通過 / 滞留の構成 <span class="anno">セッション分類</span></h2>
+    <p class="desc">通過: &lt;{{ data.params.transit_max_sec }}秒 ・ 滞留: ≥{{ data.params.dwell_min_sec }}秒 ・ 中間は不定。1人が複数セッションを持つ場合がある。</p>
+    <div class="chart-box"><canvas id="ch-class"></canvas></div>
+  </section>
+  <section class="card">
+    <h2>デバイス種別内訳 <span class="anno">ユニークデバイス基準</span></h2>
+    <p class="desc">Manufacturer ID による推定(A=Apple / G=Google / S=Samsung / O=その他)。
+      観測 iOS シェア {{ data.population.observed_ios_share if data.population.observed_ios_share is not none else "—" }}
+      / 想定 {{ data.population.expected_ios_share }}。</p>
+    <div class="chart-box"><canvas id="ch-types"></canvas></div>
+  </section>
+</div>
+
+<div class="grid cols-2">
+  <section class="card">
+    <h2>RSSI 分布 <span class="anno">検出イベント基準・5dBm刻み</span></h2>
+    <p class="desc">-45dBm≈近接、-80dBm≈遠方。設置環境ごとの届き方の違いを確認する。</p>
+    <div class="chart-box"><canvas id="ch-rssi"></canvas></div>
+  </section>
+  <section class="card">
+    <h2>セッション長分布 <span class="anno">セッション基準</span></h2>
+    <p class="desc">ギャップ&gt;{{ data.params.session_gap_sec }}秒で分割した連続検出のまとまりの長さ。</p>
+    <div class="chart-box"><canvas id="ch-dur"></canvas></div>
+  </section>
+</div>
+
+<section class="card">
+  <h2>センサー間 OD フロー <span class="anno">Phase 2 先行実装・同一ハッシュの{{ data.params.od_max_gap_min }}分以内の隣接遷移</span></h2>
+  <p class="desc">MACランダム化により長い移動チェーンは途切れるため、絶対数は実流動の下限値。行=起点、列=終点。</p>
+  <div class="grid cols-2">
+    <div>
+      <h3 style="font-size:13px;margin:4px 0 6px;">計測 OD 行列(セッション突合)</h3>
+      <div class="scroll-x" id="od-measured"></div>
+    </div>
+    {% if data.od.truth %}
+    <div>
+      <h3 style="font-size:13px;margin:4px 0 6px;">真の OD 行列(ground truth)</h3>
+      <div class="scroll-x" id="od-truth"></div>
+      <p class="desc" style="margin-top:8px;">捕捉率:
+        <b>{{ "%.1f" | format(100 * data.od.total / data.od.truth_total) if data.od.truth_total else "—" }}%</b>
+        ({{ "{:,}".format(data.od.total) }} / {{ "{:,}".format(data.od.truth_total) }})</p>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+{% if data.map %}
+<section class="card">
+  <h2>センサー位置と OD フロー <span class="anno">Leaflet / OpenStreetMap・円=coverage目安30m・線幅=流動量</span></h2>
+  <div id="map"></div>
+</section>
+{% endif %}
+
+<section class="card">
+  <h2>センサーサマリー</h2>
+  <div class="scroll-x">
+  <table class="data">
+    <thead><tr><th>ID</th><th>設置場所</th><th>設置方法</th><th>開始時刻</th>
+      <th>検出</th><th>セッション</th><th>ユニーク</th><th>補正後</th></tr></thead>
+    <tbody>
+    {% for s in data.sensors %}
+      <tr><td><span class="chip" style="background:var(--series-{{ loop.index }})"></span><b>{{ s.sensor_id }}</b></td>
+          <td style="text-align:left;">{{ s.location_name }}</td>
+          <td style="text-align:left;">{{ s.method }}</td>
+          <td>{{ s.start_time[11:16] if s.start_time else "—" }}</td>
+          <td>{{ "{:,}".format(s.n_detections) }}</td>
+          <td>{{ "{:,}".format(s.n_sessions) }}</td>
+          <td>{{ "{:,}".format(s.unique_devices) }}</td>
+          <td>{{ "{:,.0f}".format(s.unique_corrected) }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<footer>
+  <p><b>集計パラメータ</b>: セッション分割ギャップ &gt;{{ data.params.session_gap_sec }}s ・
+    通過 &lt;{{ data.params.transit_max_sec }}s / 滞留 ≥{{ data.params.dwell_min_sec }}s ・
+    ランダム化補正 ×{{ data.params.randomization_correction }} ・
+    OD 突合ギャップ ≤{{ data.params.od_max_gap_min }}分</p>
+  <p><b>プライバシー</b>: MAC アドレスは取り込み時にソルト付き SHA-256 でハッシュ化済み。本レポートに個人を特定できる情報は含まれない。
+    出力はすべて集計統計であり、個人の追跡を目的としない。</p>
+  <p>Generated by <code>bleflow report</code></p>
+</footer>
+
+</div><!-- /wrap -->
+
+<script>const DATA = {{ data_json | safe }};</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"
+        onerror="window.__chartFailed=true"></script>
+{% if data.map %}
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"
+        onerror="window.__leafletFailed=true"></script>
+{% endif %}
+<script>
+"use strict";
+const $ = (sel) => document.querySelector(sel);
+const cssVar = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+const fmt = (n) => Number(n).toLocaleString("ja-JP");
+const SENSORS = DATA.sensors.map((s) => s.sensor_id);
+const state = { bin: "5", metric: "unique" };
+let charts = [];
+
+// ── パレット(CSS変数から読む。ライト/ダーク両対応)────────────
+function palette() {
+  const series = ["--series-1", "--series-2", "--series-3", "--series-4"].map(cssVar);
+  return {
+    series,
+    bySensor: Object.fromEntries(SENSORS.map((sid, i) => [sid, series[i % series.length]])),
+    neutral: cssVar("--neutral-seg"),
+    ink: cssVar("--text-primary"),
+    inkMuted: cssVar("--text-muted"),
+    inkSecondary: cssVar("--text-secondary"),
+    grid: cssVar("--grid"),
+    baseline: cssVar("--baseline"),
+    surface: cssVar("--surface-1"),
+    seqStrong: cssVar("--seq-strong"),
+  };
+}
+
+// ── KPI ──────────────────────────────────────────────────
+(function kpis() {
+  const t = DATA.totals;
+  $("#k-unique").textContent = fmt(Math.round(t.unique_corrected));
+  $("#k-unique-raw").textContent = fmt(t.unique_devices);
+  $("#k-det").textContent = fmt(t.detections);
+  $("#k-ses").textContent = fmt(t.sessions);
+  const c = DATA.classes;
+  const total = ["transit", "uncertain", "dwell"].reduce(
+    (a, k) => a + c[k].reduce((x, y) => x + y, 0), 0);
+  const transit = c.transit.reduce((x, y) => x + y, 0);
+  $("#k-transit-share").textContent = total ? (100 * transit / total).toFixed(0) + "%" : "—";
+  const sums = DATA.hourly.hours.map((_, i) =>
+    SENSORS.reduce((a, sid) => a + (DATA.hourly.raw[sid][i] || 0), 0));
+  const peak = sums.indexOf(Math.max(...sums));
+  $("#k-peak").textContent = peak >= 0 ? DATA.hourly.hours[peak].slice(11, 16) + "〜" : "—";
+  const pop = DATA.population.est_total_pedestrians;
+  $("#k-pop").textContent = pop == null ? "—" : "約" + fmt(pop);
+})();
+
+// ── ユーティリティ ────────────────────────────────────────
+function hhmm(iso) { return iso.slice(11, 16); }
+function mix(hexA, hexB, t) { // hexA→hexB を t(0..1) で線形補間
+  const p = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+  const [a, b] = [p(hexA), p(hexB)];
+  return "rgb(" + a.map((v, i) => Math.round(v + (b[i] - v) * t)).join(",") + ")";
+}
+function relLum(rgbStr) {
+  const m = rgbStr.match(/\d+/g).map(Number).map((v) => {
+    v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+  });
+  return 0.2126 * m[0] + 0.7152 * m[1] + 0.0722 * m[2];
+}
+
+// ── ヒートマップ / OD 行列(チャートライブラリ不要)──────────
+function renderHeatmap() {
+  const P = palette();
+  const hours = DATA.hourly.hours;
+  const max = Math.max(1, ...SENSORS.flatMap((sid) => DATA.hourly.raw[sid]));
+  let html = "<table><tr><th></th>" +
+    hours.map((h) => `<th>${hhmm(h)}</th>`).join("") + "</tr>";
+  for (const sid of SENSORS) {
+    html += `<tr><th>${sid}</th>`;
+    for (let i = 0; i < hours.length; i++) {
+      const v = DATA.hourly.raw[sid][i] || 0;
+      const bg = mix(P.surface.startsWith("#") ? P.surface : "#fcfcfb", P.seqStrong, v / max);
+      const ink = relLum(bg) > 0.35 ? "#0b0b0b" : "#ffffff";
+      html += `<td style="background:${bg};color:${ink}" title="${sid} ${hhmm(hours[i])}〜: ${v}">${v}</td>`;
+    }
+    html += "</tr>";
+  }
+  $("#heatmap").innerHTML = html + "</table>";
+}
+
+function renderOdTable(el, matrix) {
+  if (!el) return;
+  const P = palette();
+  const max = Math.max(1, ...matrix.flat());
+  let html = "<table class='data'><tr><th>from\\to</th>" +
+    SENSORS.map((s) => `<th>${s}</th>`).join("") + "</tr>";
+  matrix.forEach((row, i) => {
+    html += `<tr><td><b>${SENSORS[i]}</b></td>`;
+    row.forEach((v, j) => {
+      if (i === j) { html += "<td style='color:var(--text-muted)'>—</td>"; return; }
+      const bg = v ? mix(P.surface.startsWith("#") ? P.surface : "#fcfcfb", P.seqStrong, v / max) : "transparent";
+      const ink = v && relLum(bg) <= 0.35 ? "#ffffff" : "inherit";
+      html += `<td style="background:${bg};color:${ink}">${fmt(v)}</td>`;
+    });
+    html += "</tr>";
+  });
+  el.innerHTML = html + "</table>";
+}
+
+renderHeatmap();
+renderOdTable($("#od-measured"), DATA.od.matrix);
+if (DATA.od.truth) renderOdTable($("#od-truth"), DATA.od.truth);
+
+// ── Chart.js チャート ─────────────────────────────────────
+function baseOptions(P) {
+  return {
+    responsive: true,
+    maintainAspectRatio: false,
+    animation: false,
+    interaction: { mode: "index", intersect: false },
+    plugins: {
+      legend: {
+        labels: { color: P.inkSecondary, boxWidth: 12, boxHeight: 12, borderRadius: 3, useBorderRadius: true },
+      },
+      tooltip: { backgroundColor: P.surface, titleColor: P.ink, bodyColor: P.inkSecondary,
+                 borderColor: P.grid, borderWidth: 1 },
+    },
+    scales: {
+      x: { ticks: { color: P.inkMuted, maxRotation: 0, autoSkip: true, autoSkipPadding: 12 },
+           grid: { display: false }, border: { color: P.baseline } },
+      y: { ticks: { color: P.inkMuted }, grid: { color: P.grid }, border: { display: false },
+           beginAtZero: true },
+    },
+  };
+}
+
+// 折れ線の終端に系列名を直接ラベルする(凡例の補助)
+const endLabelPlugin = {
+  id: "endLabel",
+  afterDatasetsDraw(chart) {
+    const { ctx } = chart;
+    ctx.save();
+    ctx.font = "600 11px system-ui, sans-serif";
+    ctx.fillStyle = palette().inkSecondary;
+    chart.data.datasets.forEach((ds, i) => {
+      if (chart.getDatasetMeta(i).hidden) return;
+      const meta = chart.getDatasetMeta(i);
+      const last = meta.data.filter((p) => p && !isNaN(p.y)).at(-1);
+      if (last) ctx.fillText(ds.label, last.x + 5, last.y + 3);
+    });
+    ctx.restore();
+  },
+};
+
+function makeCharts() {
+  if (window.__chartFailed || typeof Chart === "undefined") {
+    $("#cdn-warn").style.display = "block";
+    return;
+  }
+  const P = palette();
+  charts.forEach((c) => c.destroy());
+  charts = [];
+  Chart.defaults.font.family = 'system-ui, -apple-system, "Segoe UI", "Hiragino Sans", sans-serif';
+
+  // 時系列(5分/15分 × ユニーク/延べ検出)
+  const bin = DATA.bins[state.bin];
+  const ts = new Chart($("#ch-ts"), {
+    type: "line",
+    data: {
+      labels: bin.labels.map(hhmm),
+      datasets: SENSORS.map((sid) => ({
+        label: sid,
+        data: bin[state.metric][sid],
+        borderColor: P.bySensor[sid],
+        backgroundColor: P.bySensor[sid],
+        borderWidth: 2, pointRadius: 0, pointHitRadius: 8, pointHoverRadius: 4, tension: 0.25,
+      })),
+    },
+    options: (() => { const o = baseOptions(P);
+      o.layout = { padding: { right: 34 } };
+      o.scales.y.title = { display: true, color: P.inkMuted,
+        text: state.metric === "unique" ? "ユニークデバイス/ビン" : "検出イベント/ビン" };
+      return o; })(),
+    plugins: [endLabelPlugin],
+  });
+  charts.push(ts);
+
+  // 精度: 時間帯別誤差
+  if (DATA.accuracy && $("#ch-acc")) {
+    const hours = [...new Set(DATA.accuracy.hourly.map((r) => r.hour_start))].sort();
+    const acc = new Chart($("#ch-acc"), {
+      type: "line",
+      data: {
+        labels: hours.map(hhmm),
+        datasets: SENSORS.map((sid) => ({
+          label: sid,
+          data: hours.map((h) => {
+            const row = DATA.accuracy.hourly.find((r) => r.hour_start === h && r.sensor_id === sid);
+            return row ? row.err_pct : null;
+          }),
+          borderColor: P.bySensor[sid], backgroundColor: P.bySensor[sid],
+          borderWidth: 2, pointRadius: 0, pointHitRadius: 8, pointHoverRadius: 4, tension: 0.25,
+        })),
+      },
+      options: (() => { const o = baseOptions(P);
+        o.scales.y.beginAtZero = false;
+        o.scales.y.suggestedMin = -20; o.scales.y.suggestedMax = 20;
+        o.scales.y.title = { display: true, color: P.inkMuted, text: "誤差 %(補正後 vs 真値)" };
+        o.plugins.tooltip.callbacks = { label: (c) => `${c.dataset.label}: ${c.parsed.y == null ? "—" : c.parsed.y.toFixed(1) + "%"}` };
+        return o; })(),
+    });
+    charts.push(acc);
+  }
+
+  // 通過/滞留 100%積み上げ横棒
+  const cls = DATA.classes;
+  const clsDefs = [
+    ["transit", "通過", P.series[0]],
+    ["uncertain", "不定", P.neutral],
+    ["dwell", "滞留", P.series[1]],
+  ];
+  charts.push(new Chart($("#ch-class"), {
+    type: "bar",
+    data: {
+      labels: cls.sensors,
+      datasets: clsDefs.map(([key, label, color]) => ({
+        label, data: cls[key], backgroundColor: color,
+        borderColor: P.surface, borderWidth: 2, borderRadius: 4, borderSkipped: false,
+      })),
+    },
+    options: (() => { const o = baseOptions(P);
+      o.indexAxis = "y";
+      o.scales.x = { stacked: true, ticks: { color: P.inkMuted }, grid: { color: P.grid }, border: { display: false } };
+      o.scales.y = { stacked: true, ticks: { color: P.inkMuted }, grid: { display: false }, border: { color: P.baseline } };
+      o.plugins.tooltip.callbacks = { label: (c) => {
+        const tot = clsDefs.reduce((a, [k]) => a + cls[k][c.dataIndex], 0);
+        return `${c.dataset.label}: ${fmt(c.parsed.x)}(${(100 * c.parsed.x / tot).toFixed(1)}%)`; } };
+      return o; })(),
+  }));
+
+  // デバイス種別ドーナツ
+  const typeLabels = { A: "Apple", G: "Google", S: "Samsung", O: "その他" };
+  const overall = DATA.device_types.overall;
+  charts.push(new Chart($("#ch-types"), {
+    type: "doughnut",
+    data: {
+      labels: Object.keys(typeLabels).map((k) => `${typeLabels[k]} (${k})`),
+      datasets: [{
+        data: Object.keys(typeLabels).map((k) => overall[k] || 0),
+        backgroundColor: P.series, borderColor: P.surface, borderWidth: 2,
+      }],
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, animation: false, cutout: "58%",
+      plugins: {
+        legend: { position: "right", labels: { color: P.inkSecondary, boxWidth: 12, boxHeight: 12, borderRadius: 3, useBorderRadius: true } },
+        tooltip: { backgroundColor: P.surface, titleColor: P.ink, bodyColor: P.inkSecondary,
+          borderColor: P.grid, borderWidth: 1,
+          callbacks: { label: (c) => {
+            const tot = c.dataset.data.reduce((a, b) => a + b, 0);
+            return ` ${fmt(c.parsed)}(${(100 * c.parsed / tot).toFixed(1)}%)`; } } },
+      },
+    },
+  }));
+
+  // RSSI 分布(センサー別・折れ線)
+  const edges = DATA.rssi_hist.edges;
+  const rssiLabels = edges.slice(0, -1).map((e, i) => `${e}〜${edges[i + 1]}`);
+  charts.push(new Chart($("#ch-rssi"), {
+    type: "line",
+    data: {
+      labels: rssiLabels,
+      datasets: SENSORS.map((sid) => ({
+        label: sid, data: DATA.rssi_hist.per_sensor[sid],
+        borderColor: P.bySensor[sid], backgroundColor: P.bySensor[sid],
+        borderWidth: 2, pointRadius: 0, pointHitRadius: 8, pointHoverRadius: 4, tension: 0.3,
+      })),
+    },
+    options: (() => { const o = baseOptions(P);
+      o.scales.x.title = { display: true, color: P.inkMuted, text: "RSSI (dBm)" };
+      o.scales.y.title = { display: true, color: P.inkMuted, text: "検出イベント数" };
+      return o; })(),
+  }));
+
+  // セッション長分布(センサー別・グループ棒)
+  charts.push(new Chart($("#ch-dur"), {
+    type: "bar",
+    data: {
+      labels: DATA.duration_hist.labels,
+      datasets: SENSORS.map((sid) => ({
+        label: sid, data: DATA.duration_hist.per_sensor[sid],
+        backgroundColor: P.bySensor[sid], borderRadius: 4, borderSkipped: "start",
+        categoryPercentage: 0.78, barPercentage: 0.9,
+      })),
+    },
+    options: (() => { const o = baseOptions(P);
+      o.scales.y.type = "logarithmic";
+      o.scales.y.title = { display: true, color: P.inkMuted, text: "セッション数(対数)" };
+      return o; })(),
+  }));
+}
+
+// トグル
+document.querySelectorAll("#seg-bin button").forEach((b) =>
+  b.addEventListener("click", () => {
+    state.bin = b.dataset.bin;
+    document.querySelectorAll("#seg-bin button").forEach((x) => x.classList.toggle("on", x === b));
+    makeCharts();
+  }));
+document.querySelectorAll("#seg-metric button").forEach((b) =>
+  b.addEventListener("click", () => {
+    state.metric = b.dataset.metric;
+    document.querySelectorAll("#seg-metric button").forEach((x) => x.classList.toggle("on", x === b));
+    makeCharts();
+  }));
+
+makeCharts();
+if (window.matchMedia) {
+  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
+    makeCharts(); renderHeatmap();
+    renderOdTable($("#od-measured"), DATA.od.matrix);
+    if (DATA.od.truth) renderOdTable($("#od-truth"), DATA.od.truth);
+  });
+}
+
+// ── マップ(Leaflet)────────────────────────────────────────
+(function renderMap() {
+  if (!DATA.map || !$("#map")) return;
+  if (window.__leafletFailed || typeof L === "undefined") {
+    $("#map").outerHTML = "<p class='desc'>⚠ 地図ライブラリ(CDN)を読み込めなかったため、マップは省略します。</p>";
+    return;
+  }
+  const P = palette();
+  const pts = DATA.map.sensors;
+  const byId = Object.fromEntries(pts.map((s) => [s.sensor_id, s]));
+  const map = L.map("map", { scrollWheelZoom: false });
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19, attribution: "&copy; OpenStreetMap contributors",
+  }).addTo(map);
+  map.fitBounds(L.latLngBounds(pts.map((s) => [s.lat, s.lon])).pad(0.35));
+
+  for (const s of pts) {
+    L.circle([s.lat, s.lon], { radius: 30, color: P.bySensor[s.sensor_id], weight: 1,
+      dashArray: "4 4", fillOpacity: 0.08 }).addTo(map);
+    L.circleMarker([s.lat, s.lon], { radius: 7, color: P.surface, weight: 2,
+      fillColor: P.bySensor[s.sensor_id], fillOpacity: 1 })
+      .addTo(map)
+      .bindTooltip(`<b>${s.sensor_id}</b>`, { permanent: true, direction: "top", offset: [0, -8], className: "sensor-tip" })
+      .bindPopup(`<b>${s.sensor_id}</b> ${s.location_name}`);
+  }
+
+  // OD フロー(線幅=流動量、双方向は左右にオフセット)
+  const M = DATA.od.matrix, ids = DATA.od.sensors;
+  const maxFlow = Math.max(1, ...M.flat());
+  for (let i = 0; i < ids.length; i++) {
+    for (let j = 0; j < ids.length; j++) {
+      const v = M[i][j];
+      if (!v || !byId[ids[i]] || !byId[ids[j]]) continue;
+      const a = byId[ids[i]], b = byId[ids[j]];
+      const dx = b.lon - a.lon, dy = b.lat - a.lat;
+      const len = Math.hypot(dx, dy) || 1;
+      const off = 0.000045;                  // 進行方向右側に ≈5m オフセット
+      const ox = (dy / len) * off, oy = (-dx / len) * off;
+      const p1 = [a.lat + oy, a.lon + ox], p2 = [b.lat + oy, b.lon + ox];
+      const w = 1.5 + 8 * (v / maxFlow);
+      L.polyline([p1, p2], { color: P.seqStrong, weight: w, opacity: 0.65 })
+        .addTo(map)
+        .bindTooltip(`${ids[i]} → ${ids[j]}: ${fmt(v)}`, { sticky: true });
+      // 矢頭: 線の 62% 地点に進行方向の三角形
+      const t = 0.62;
+      const mid = [p1[0] + (p2[0] - p1[0]) * t, p1[1] + (p2[1] - p1[1]) * t];
+      const ang = (Math.atan2(dx, dy) * 180) / Math.PI;  // 北基準の方位角
+      L.marker(mid, {
+        interactive: false,
+        icon: L.divIcon({ className: "", iconSize: [14, 14], iconAnchor: [7, 7],
+          html: `<div style="transform:rotate(${ang}deg);width:0;height:0;` +
+                `border-left:5px solid transparent;border-right:5px solid transparent;` +
+                `border-bottom:9px solid ${P.seqStrong};opacity:.85"></div>` }),
+      }).addTo(map);
+    }
+  }
+})();
+</script>
+</body>
+</html>
