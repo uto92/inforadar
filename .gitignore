@@ -1,0 +1,13 @@
+# macOS
+.DS_Store
+
+# Xcode
+xcuserdata/
+*.xcuserstate
+DerivedData/
+build/
+
+# Node / Wrangler
+node_modules/
+server/.wrangler/
+server/.dev.vars
