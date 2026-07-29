@@ -27,7 +27,7 @@ struct HomeView: View {
                     } label: {
                         Label("記録一覧・CSV書き出し", systemImage: "list.bullet.rectangle")
                     }
-                    .badge(sync.unsyncedCount > 0 ? "未同期 \(sync.unsyncedCount)" : nil)
+                    .badge(sync.unsyncedCount > 0 ? Text("未同期 \(sync.unsyncedCount)") : nil)
                     Button {
                         sync.syncNow()
                     } label: {
