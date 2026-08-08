@@ -1,9 +1,25 @@
+import { verifyAccessJwt } from "./accessAuth";
 import { handlePull, handlePush } from "./webappSync";
 
 export interface Env {
   DB: D1Database;
-  /** `wrangler secret put API_KEY` で設定する Bearer トークン */
+  /** `wrangler secret put API_KEY` で設定する Bearer トークン（iOSアプリ用） */
   API_KEY: string;
+  /** Cloudflare Access のチームドメイン 例: your-team.cloudflareaccess.com */
+  ACCESS_TEAM_DOMAIN?: string;
+  /** Access アプリケーションの Audience (AUD) タグ */
+  ACCESS_AUD?: string;
+  /**
+   * ローカル開発でのみ "1" にする。webapp同期を無認証で通す。
+   * 本番では絶対に設定しないこと（.dev.vars にのみ書く）
+   */
+  DEV_OPEN_WC_SYNC?: string;
+  /**
+   * webapp同期を許可するオリジン（カンマ区切り）。
+   * 例: https://wester-checkin.pages.dev,http://localhost:4180
+   * 資格情報付きリクエストのためワイルドカードは使えず、明示指定が必要。
+   */
+  ALLOWED_ORIGINS?: string;
 }
 
 // サーバ側でも会員IDを再検証する（数字ちょうど12桁。違反レコードは破棄）。
@@ -31,6 +47,20 @@ export default {
     if (url.pathname === "/v1/health") {
       return json({ ok: true });
     }
+    // webapp（来場チェックイン）の同期。ブラウザは資格情報を持たないため
+    // Cloudflare Access のJWTで認証する。iOS用の /v1/* とは認証方式が異なる
+    if (url.pathname === "/v1/wc/sync") {
+      const cors = corsHeaders(request, env);
+      if (request.method === "OPTIONS") {
+        return new Response(null, { status: 204, headers: cors });
+      }
+      if (!(await isWebappAuthorized(request, env))) {
+        return withHeaders(json({ error: "unauthorized" }, 401), cors);
+      }
+      if (request.method === "POST") return withHeaders(await handlePush(request, env), cors);
+      if (request.method === "GET") return withHeaders(await handlePull(url, env), cors);
+      return withHeaders(json({ error: "method not allowed" }, 405), cors);
+    }
     if (!isAuthorized(request, env)) {
       return json({ error: "unauthorized" }, 401);
     }
@@ -46,15 +76,39 @@ export default {
       }
       return handleExportCsv(url, env);
     }
-    // webapp（来場チェックイン）の同期。ハッシュのみを扱うため別系統
-    if (url.pathname === "/v1/wc/sync") {
-      if (request.method === "POST") return handlePush(request, env);
-      if (request.method === "GET") return handlePull(url, env);
-      return json({ error: "method not allowed" }, 405);
-    }
     return json({ error: "not found" }, 404);
   },
 } satisfies ExportedHandler<Env>;
+
+// ---------------------------------------------------------------- CORS
+
+/**
+ * 資格情報付き(credentials: include)のリクエストでは
+ * Access-Control-Allow-Origin にワイルドカードを使えない。
+ * 許可リストと一致したオリジンだけをそのまま返す。
+ * 未設定・不一致の場合はCORSヘッダを付けない（ブラウザ側で遮断される）。
+ */
+function corsHeaders(request: Request, env: Env): Record<string, string> {
+  const origin = request.headers.get("Origin");
+  if (!origin || !env.ALLOWED_ORIGINS) return {};
+  const allowed = env.ALLOWED_ORIGINS.split(",").map((s) => s.trim()).filter(Boolean);
+  if (!allowed.includes(origin)) return {};
+  return {
+    "Access-Control-Allow-Origin": origin,
+    "Access-Control-Allow-Credentials": "true",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    "Access-Control-Max-Age": "86400",
+    Vary: "Origin",
+  };
+}
+
+function withHeaders(res: Response, headers: Record<string, string>): Response {
+  if (Object.keys(headers).length === 0) return res;
+  const merged = new Headers(res.headers);
+  for (const [k, v] of Object.entries(headers)) merged.set(k, v);
+  return new Response(res.body, { status: res.status, headers: merged });
+}
 
 // ---------------------------------------------------------------- 認証
 
@@ -65,6 +119,27 @@ function isAuthorized(request: Request, env: Env): boolean {
   const token = match?.[1];
   if (!token) return false;
   return timingSafeEqualStr(token, env.API_KEY);
+}
+
+/**
+ * webapp同期の認可。次のいずれかで通す。
+ * 1. Cloudflare Access のJWTが有効（本番の想定経路）
+ * 2. Bearer API_KEY（管理ツール等からの直接利用）
+ * 3. DEV_OPEN_WC_SYNC=1（ローカル開発のみ。本番では未設定）
+ *
+ * Accessが未設定(ACCESS_* が無い)かつ 2,3 も無ければ、すべて拒否する。
+ * 「設定漏れで全公開」にならないよう、既定は拒否側に倒す。
+ */
+async function isWebappAuthorized(request: Request, env: Env): Promise<boolean> {
+  if (env.DEV_OPEN_WC_SYNC === "1") return true;
+  if (env.ACCESS_TEAM_DOMAIN && env.ACCESS_AUD) {
+    const email = await verifyAccessJwt(request, {
+      teamDomain: env.ACCESS_TEAM_DOMAIN,
+      aud: env.ACCESS_AUD,
+    });
+    if (email !== null) return true;
+  }
+  return isAuthorized(request, env);
 }
 
 function timingSafeEqualStr(a: string, b: string): boolean {

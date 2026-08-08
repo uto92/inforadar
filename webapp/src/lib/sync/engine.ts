@@ -18,6 +18,16 @@ export interface SyncState {
 }
 
 const BATCH_SIZE = 100;
+/** 取得位置の保存先。端末ごとに持つ */
+const SINCE_KEY = "wester-checkin.sync.since";
+/** 1回のrunで行うpullの最大回数（hasMore時の追従。無限ループ防止） */
+const MAX_PULL_PAGES = 20;
+/**
+ * 定期同期の間隔。
+ * 送るものが無い端末（他端末の記録を見るだけの端末や管理画面）は
+ * 未同期件数の変化で起動しないため、定期的に自分から取りに行く必要がある。
+ */
+const POLL_INTERVAL_MS = 20_000;
 
 class SyncEngine {
   private backend: SyncBackend | null = resolveBackend();
@@ -58,7 +68,14 @@ class SyncEngine {
       this.kick();
     });
     window.addEventListener("offline", () => this.refreshMode());
+    // 画面に戻ってきたときは即座に最新化する（他端末の記録を反映）
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") this.kick();
+    });
     this.refreshMode();
+    // 起動直後に一度取りに行く。送るものが無くても他端末ぶんを取り込むため
+    this.kick();
+    window.setInterval(() => this.kick(), POLL_INTERVAL_MS);
   }
 
   get hasBackend(): boolean {
@@ -115,6 +132,8 @@ class SyncEngine {
         }
         break;
       }
+      // pushを終えてからpull。他端末ぶんを取り込む
+      await this.pull(backend);
       this.failures = 0;
       this.patch({ mode: "idle", lastError: null, lastSyncedAt: new Date().toISOString() });
     } catch (e) {
@@ -128,6 +147,62 @@ class SyncEngine {
       }, delaySec * 1000);
     } finally {
       this.running = false;
+    }
+  }
+
+  /**
+   * 他端末ぶんの取り込み。
+   * 取り込んだ行は synced: 1 で保存する（自分が送り返す必要はないため）。
+   * 既に同じidがある場合は上書きしない。ローカルが常に正で、
+   * 自端末の記録がサーバ由来のデータで書き換わることを避ける。
+   */
+  private async pull(backend: SyncBackend): Promise<void> {
+    if (!backend.pull) return;
+    let since = localStorage.getItem(SINCE_KEY);
+    for (let page = 0; page < MAX_PULL_PAGES; page += 1) {
+      const result = await backend.pull(since);
+      const newEvents = result.events.filter((r) => r.id);
+      const newCheckins = result.checkins.filter((r) => r.id);
+      const newErrors = result.scanErrors.filter((r) => r.id);
+
+      if (newEvents.length > 0) {
+        // salt はサーバに無い。他端末が作ったイベントは、そのままでは
+        // ハッシュ照合ができないため空文字を入れて「読み取り不可」を明示する。
+        // （同一イベントを複数端末で回す運用はソルト共有が前提。別途対応）
+        const existing = new Set(
+          (await db.events.where("id").anyOf(newEvents.map((r) => r.id)).toArray()).map((r) => r.id)
+        );
+        const toAdd = newEvents
+          .filter((r) => !existing.has(r.id))
+          .map((r) => ({ ...r, salt: "", synced: 1 as const }));
+        if (toAdd.length > 0) await db.events.bulkAdd(toAdd);
+      }
+      if (newCheckins.length > 0) {
+        const existing = new Set(
+          (await db.checkins.where("id").anyOf(newCheckins.map((r) => r.id)).toArray()).map(
+            (r) => r.id
+          )
+        );
+        const toAdd = newCheckins
+          .filter((r) => !existing.has(r.id))
+          .map((r) => ({ ...r, synced: 1 as const }));
+        if (toAdd.length > 0) await db.checkins.bulkAdd(toAdd);
+      }
+      if (newErrors.length > 0) {
+        const existing = new Set(
+          (await db.scanErrors.where("id").anyOf(newErrors.map((r) => r.id)).toArray()).map(
+            (r) => r.id
+          )
+        );
+        const toAdd = newErrors
+          .filter((r) => !existing.has(r.id))
+          .map((r) => ({ ...r, synced: 1 as const }));
+        if (toAdd.length > 0) await db.scanErrors.bulkAdd(toAdd);
+      }
+
+      since = result.nextSince;
+      localStorage.setItem(SINCE_KEY, since);
+      if (!result.hasMore) return;
     }
   }
 
