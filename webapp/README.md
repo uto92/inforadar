@@ -32,6 +32,33 @@ npm run dev        # http://localhost:5173 （PCのブラウザ + Webカメラ�
 npm run build      # 型チェック + 本番ビルド（dist/）
 ```
 
+## 公開範囲とアクセス制限（デプロイ前に必ず読む）
+
+**`https://xxx.pages.dev` はインターネット上に公開される。** URLを知っている人は誰でも開ける。
+かつ、TLS証明書の透明性ログ（crt.sh 等）にホスト名が記録されるため、
+「URLを教えなければ見つからない」とは考えないこと。検索エンジン除けは
+`public/robots.txt` と `<meta name="robots" content="noindex">` で入れてあるが、
+これはアクセス制限ではない。
+
+段階ごとの実際のリスクは次のとおり:
+
+| 段階 | 第三者がURLを開くと何が見えるか |
+|---|---|
+| Supabase未設定（カメラ実機テスト） | **空のアプリだけ。**記録は各端末のブラウザ内(IndexedDB)にしかないため、来場データは一切見えない |
+| Supabase設定後 | anonキーがJSバンドルに含まれるため、**パイロットRLSでは来場データ(ハッシュ値)を読み取れる。** 書換・削除は不可 |
+
+したがって **Supabaseを繋ぐ前に Cloudflare Access をかける**のが実務上の分岐点になる。
+
+### Cloudflare Access で関係者だけに限定する（無料枠50ユーザーまで）
+
+1. Cloudflareダッシュボード → Zero Trust → Access → Applications → Add an application → Self-hosted
+2. Application domain に Pages のドメイン（例 `wester-checkin.pages.dev`）を指定
+3. Policy: Action=Allow、Include に受付スタッフのメールアドレス（または
+   `Emails ending in @自社ドメイン`）を指定
+4. 保存後にURLを開くと、メール宛のワンタイムPINによる認証が入るようになる
+
+スタッフの初回だけメール認証が必要になるが、セッションは維持されるので当日の運用は妨げない。
+
 ## 実機検証（スマホでの確認）
 
 TestFlight等は不要。カメラ（getUserMedia）は `localhost` 以外では **HTTPS必須** のため、
