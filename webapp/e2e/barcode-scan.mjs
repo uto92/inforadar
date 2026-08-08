@@ -1,15 +1,31 @@
+// 実バーコードの読取総合テスト。
+// Codabarバーコードから Y4M 映像を生成し、Chromium の仮想カメラに流し込んで
+// アプリが実際にチェックインを成立させるところまで検証する。
+// html5-qrcode が Codabar を読めずスキャンが全く動かなかった不具合の再発防止。
+//
+// 使い方:
+//   npm run build:pages
+//   (別ターミナルで) docs/ を /inforadar/ 配下に配信する静的サーバを起動
+//   BASE_URL=http://localhost:4180/inforadar/ node e2e/barcode-scan.mjs
 import { chromium } from "playwright-core";
 import { writeFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const HERE = dirname(fileURLToPath(import.meta.url));
+const BASE_URL = process.env.BASE_URL ?? "http://localhost:4180/inforadar/";
+const CHROMIUM = process.env.CHROMIUM_PATH ?? "/opt/pw-browsers/chromium";
+const JSBARCODE = resolve(HERE, "../node_modules/jsbarcode/dist/JsBarcode.all.min.js");
 
 const W = 640, H = 480, FRAMES = 90;
 const CODE = "A328913579881A";           // ガード除去後 328913579881 = 12桁
 const EXPECT_SUFFIX = "579881";
 
 // 1) バーコード画像をブラウザで生成し、生のRGBAを取り出す
-const gen = await chromium.launch({ executablePath: "/opt/pw-browsers/chromium" });
+const gen = await chromium.launch({ executablePath: CHROMIUM });
 const gp = await gen.newPage();
 await gp.setContent("<canvas id='c'></canvas><canvas id='bar'></canvas>");
-await gp.addScriptTag({ path: "/home/user/inforadar/webapp/node_modules/jsbarcode/dist/JsBarcode.all.min.js" });
+await gp.addScriptTag({ path: JSBARCODE });
 const rgbaB64 = await gp.evaluate(
   ({ W, H, CODE }) => {
     const bar = document.getElementById("bar");
@@ -46,22 +62,22 @@ for (let y = 0; y < H; y++) {
 }
 const parts = [Buffer.from(`YUV4MPEG2 W${W} H${H} F30:1 Ip A1:1 C420\n`)];
 for (let f = 0; f < FRAMES; f++) parts.push(Buffer.from("FRAME\n"), yP, uP, vP);
-writeFileSync("card.y4m", Buffer.concat(parts));
+writeFileSync(resolve(HERE, "card.y4m"), Buffer.concat(parts));
 console.log("バーコード映像を生成:", CODE);
 
 // 3) その映像を仮想カメラとしてアプリを動かす
 const browser = await chromium.launch({
-  executablePath: "/opt/pw-browsers/chromium",
+  executablePath: CHROMIUM,
   args: [
     "--use-fake-ui-for-media-stream",
     "--use-fake-device-for-media-stream",
-    `--use-file-for-fake-video-capture=${process.cwd()}/card.y4m`,
+    `--use-file-for-fake-video-capture=${resolve(HERE, "card.y4m")}`,
   ],
 });
 const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, permissions: ["camera"] });
 const page = await ctx.newPage();
 page.on("pageerror", (e) => console.log("PAGEERROR:", e.message.slice(0, 120)));
-await page.goto("http://localhost:4180/inforadar/");
+await page.goto(BASE_URL);
 await page.getByRole("button", { name: "＋ 新規イベント登録" }).click();
 await page.locator("#ev-name").fill("実読取テスト");
 await page.locator("#ev-venue").fill("社内");
@@ -71,23 +87,21 @@ await page.getByRole("link", { name: "スキャン開始" }).click();
 await page.getByRole("button", { name: "カメラを開始" }).click();
 
 let ok = false;
-for (let i = 0; i < 20; i++) {
-  await page.waitForTimeout(1000);
-  const line = await page.locator(".scan-diagline").innerText().catch(() => "");
-  const cnt = await page.locator(".scan-count-num").innerText().catch(() => "?");
-  if (!line.includes("最終読取 なし")) {
-    console.log(`${i + 1}秒後: ${line}`);
-    console.log(`カウンタ: ${cnt} 人`);
+let sawSuffix = false;
+// 成功表示は900msで自動的に消えるため、細かい間隔で監視する
+for (let i = 0; i < 100; i++) {
+  const body = await page.locator("body").innerText().catch(() => "");
+  if (body.includes(EXPECT_SUFFIX)) sawSuffix = true;
+  const cnt = await page.locator(".scan-count-num").innerText().catch(() => "0");
+  if (cnt !== "0") {
+    console.log(`${((i + 1) * 0.2).toFixed(1)}秒以内に読取成功 → カウンタ ${cnt} 人`);
     ok = true;
     break;
   }
-  if (i === 19) console.log(`20秒経過も読取なし: ${line}`);
+  await page.waitForTimeout(200);
 }
-if (ok) {
-  await page.waitForTimeout(1500);
-  console.log("最終カウンタ:", await page.locator(".scan-count-num").innerText());
-  const body = await page.locator("body").innerText();
-  console.log("末尾6桁の表示:", body.includes(EXPECT_SUFFIX) ? `${EXPECT_SUFFIX} を表示 → 成功` : "未表示");
-}
-await page.screenshot({ path: "e2e-barcode.png" });
+if (!ok) console.log("FAIL: 20秒経過しても読み取れなかった");
+else console.log(`末尾6桁 ${EXPECT_SUFFIX} の表示: ${sawSuffix ? "確認" : "未確認（表示は900msで消えるため取りこぼす場合あり）"}`);
+process.exitCode = ok ? 0 : 1;
+await page.screenshot({ path: resolve(HERE, "barcode-scan.png") });
 await browser.close();

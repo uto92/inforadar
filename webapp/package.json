@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "deploy:init": "npx -y wrangler pages project create wester-checkin --production-branch main",
     "deploy": "npm run build && npx -y wrangler pages deploy dist --project-name wester-checkin",
-    "build:pages": "tsc --noEmit && vite build --base=/inforadar/ --outDir ../docs --emptyOutDir"
+    "build:pages": "tsc --noEmit && vite build --base=/inforadar/ --outDir ../docs --emptyOutDir",
+    "test:scan": "node e2e/barcode-scan.mjs"
   },
   "dependencies": {
     "@fontsource/noto-sans-jp": "^5.1.0",
@@ -27,6 +28,7 @@
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.1",
     "jsbarcode": "^3.12.3",
+    "playwright-core": "^1.62.1",
     "typescript": "^5.5.4",
     "vite": "^5.4.0"
   }

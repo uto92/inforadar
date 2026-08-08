@@ -71,15 +71,6 @@ export default function ScanPage() {
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [manualOpen, setManualOpen] = useState(false);
   const [feedback, setFeedbackState] = useState<Feedback | null>(null);
-  // 読み取れないときの原因切り分け用。カメラが動いているか / 何を読んだか を可視化する
-  const [diag, setDiag] = useState({
-    frames: 0,
-    videoSize: "—",
-    lastRaw: "",
-    lastFormat: "",
-  });
-  const frameCountRef = useRef(0);
-  const lastDiagPushRef = useRef(0);
 
   const startedRef = useRef(false);
   // 誤読対策: 同じ値を連続2回読めたときだけ確定する
@@ -261,8 +252,6 @@ export default function ScanPage() {
       const code = r?.codeResult?.code;
       if (!code) return;
       const symbology = r?.codeResult?.format ?? "UNKNOWN";
-      // 診断表示は1回目の検出から反映する（何を読んでいるかを確認できるように）
-      setDiag((d) => ({ ...d, lastRaw: code, lastFormat: symbology }));
       // 記録は連続2回同じ値が読めてから。1回の誤読で誤ったチェックインを作らない
       if (pendingCodeRef.current !== code) {
         pendingCodeRef.current = code;
@@ -271,25 +260,9 @@ export default function ScanPage() {
       pendingCodeRef.current = null;
       void onDetectedRef.current(code, symbology);
     };
-    // 各フレームの処理ごとに呼ばれる。増えていればカメラも読取処理も動いている
-    const handleProcessed = () => {
-      frameCountRef.current += 1;
-      const now = Date.now();
-      if (now - lastDiagPushRef.current > 500) {
-        lastDiagPushRef.current = now;
-        const video = document.querySelector<HTMLVideoElement>(`#${SCANNER_ELEMENT_ID} video`);
-        setDiag((d) => ({
-          ...d,
-          frames: frameCountRef.current,
-          videoSize: video ? `${video.videoWidth}×${video.videoHeight}` : "—",
-        }));
-      }
-    };
     Quagga.onDetected(handleDetected);
-    Quagga.onProcessed(handleProcessed);
     return () => {
       Quagga.offDetected(handleDetected);
-      Quagga.offProcessed(handleProcessed);
     };
   }, []);
 
@@ -350,14 +323,6 @@ export default function ScanPage() {
         <div className="scan-substats">
           チェックイン済の再読取 {dupCount} 件・対象外 {invalidCount} 件
         </div>
-        {/* 読み取れないときの切り分け用。実機ではフッタが端末のツールバーに
-            隠れて操作できない場合があるため、タップ不要で常時表示する */}
-        {running && (
-          <div className="scan-diagline">
-            読取処理 {diag.frames} 回・映像 {diag.videoSize}・最終読取{" "}
-            {diag.lastRaw ? `${diag.lastRaw}（${diag.lastFormat}）` : "なし"}
-          </div>
-        )}
       </header>
 
       <div className="scan-camera-wrap">
