@@ -368,6 +368,27 @@ a {
   border-top: 1px solid var(--color-border-light);
 }
 
+/* ---- 診断パネル（読み取れないときの原因切り分け） ---- */
+.diag {
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius);
+  background: var(--color-bg-secondary);
+  padding: 12px;
+  font-size: 14px;
+  line-height: 1.7;
+  word-break: break-all;
+}
+
+.diag strong {
+  font-variant-numeric: tabular-nums;
+}
+
+.diag-note {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
 /* ---- 全画面フィードバック（2m先からの視認性優先） ---- */
 .feedback-overlay {
   position: fixed;

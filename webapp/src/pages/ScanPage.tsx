@@ -1,4 +1,4 @@
-import { Html5Qrcode, Html5QrcodeScannerState, Html5QrcodeSupportedFormats } from "html5-qrcode";
+import { Html5Qrcode, Html5QrcodeScannerState } from "html5-qrcode";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
@@ -55,6 +55,16 @@ export default function ScanPage() {
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [manualOpen, setManualOpen] = useState(false);
   const [feedback, setFeedbackState] = useState<Feedback | null>(null);
+  // 読み取れないときの原因切り分け用。カメラが動いているか / 何を読んだか を可視化する
+  const [diagOpen, setDiagOpen] = useState(false);
+  const [diag, setDiag] = useState({
+    frames: 0,
+    videoSize: "—",
+    lastRaw: "",
+    lastFormat: "",
+  });
+  const frameCountRef = useRef(0);
+  const lastDiagPushRef = useRef(0);
 
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const unmountedRef = useRef(false);
@@ -172,19 +182,11 @@ export default function ScanPage() {
     setCameraError(null);
     initAudio(); // ユーザー操作起点でAudioContextを初期化（iOS対策）
     try {
-      const scanner =
-        scannerRef.current ??
-        new Html5Qrcode(SCANNER_ELEMENT_ID, {
-          formatsToSupport: [
-            Html5QrcodeSupportedFormats.QR_CODE,
-            Html5QrcodeSupportedFormats.CODE_128,
-            Html5QrcodeSupportedFormats.CODABAR,
-          ],
-          // 対応環境（Android Chrome等）ではOS標準のBarcodeDetectorを使う。
-          // iOS Safariは非対応のため自動的にJS実装へフォールバックする
-          experimentalFeatures: { useBarCodeDetectorIfSupported: true },
-          verbose: false,
-        });
+      // formatsToSupport は指定しない = 全形式を読取対象にする。
+      // 形式を絞ると対象外のコードでは一切コールバックが返らず「完全な無音」に
+      // なり、カメラが動いているかすら分からない。全形式を受け取ったうえで
+      // normalizeScan で判定し、対象外は赤表示で明確に返す
+      const scanner = scannerRef.current ?? new Html5Qrcode(SCANNER_ELEMENT_ID, { verbose: false });
       scannerRef.current = scanner;
       // 第1引数は html5-qrcode の仕様上キーを1つしか渡せない。
       // 解像度指定は configuration.videoConstraints 側で行う
@@ -206,9 +208,25 @@ export default function ScanPage() {
           const format = (
             result as { result?: { format?: { formatName?: unknown } } } | undefined
           )?.result?.format?.formatName;
-          void onDetected(decodedText, typeof format === "string" ? format : "UNKNOWN");
+          const symbology = typeof format === "string" ? format : "UNKNOWN";
+          setDiag((d) => ({ ...d, lastRaw: decodedText, lastFormat: symbology }));
+          void onDetected(decodedText, symbology);
         },
-        undefined
+        // 各フレームで何も見つからないたびに呼ばれる。
+        // これが増えていれば「カメラは動いていて読取処理も回っている」ことの証拠になる
+        () => {
+          frameCountRef.current += 1;
+          const now = Date.now();
+          if (now - lastDiagPushRef.current > 500) {
+            lastDiagPushRef.current = now;
+            const video = document.querySelector<HTMLVideoElement>(`#${SCANNER_ELEMENT_ID} video`);
+            setDiag((d) => ({
+              ...d,
+              frames: frameCountRef.current,
+              videoSize: video ? `${video.videoWidth}×${video.videoHeight}` : "—",
+            }));
+          }
+        }
       );
       // カメラ起動中に画面を離れた場合の後始末
       if (unmountedRef.current) {
@@ -364,6 +382,34 @@ export default function ScanPage() {
           >
             カメラを再起動
           </button>
+        )}
+        <button
+          type="button"
+          className="btn btn-ghost btn-block"
+          style={{ minHeight: 40, fontSize: 14 }}
+          onClick={() => setDiagOpen((v) => !v)}
+        >
+          {diagOpen ? "診断を閉じる" : "読み取れないとき（診断）"}
+        </button>
+        {diagOpen && (
+          <div className="diag">
+            <div>
+              カメラ映像: <strong>{diag.videoSize}</strong>
+            </div>
+            <div>
+              読取処理の実行回数: <strong>{diag.frames}</strong>
+              {diag.frames > 0 ? "（増えていれば正常に動作中）" : "（0のままなら停止中）"}
+            </div>
+            <div>
+              最後に読めたコード:{" "}
+              <strong>{diag.lastRaw ? `${diag.lastRaw}（${diag.lastFormat}）` : "まだ1件もなし"}</strong>
+            </div>
+            <p className="diag-note">
+              数字が増えているのにコードが読めない場合は、カメラは動いていて
+              バーコードを認識できていない状態です。カードを画面いっぱいに近づける／
+              少し離す／明るい場所で試してください。
+            </p>
+          </div>
         )}
       </footer>
 
