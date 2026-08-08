@@ -56,7 +56,6 @@ export default function ScanPage() {
   const [manualOpen, setManualOpen] = useState(false);
   const [feedback, setFeedbackState] = useState<Feedback | null>(null);
   // 読み取れないときの原因切り分け用。カメラが動いているか / 何を読んだか を可視化する
-  const [diagOpen, setDiagOpen] = useState(false);
   const [diag, setDiag] = useState({
     frames: 0,
     videoSize: "—",
@@ -322,6 +321,14 @@ export default function ScanPage() {
         <div className="scan-substats">
           チェックイン済の再読取 {dupCount} 件・対象外 {invalidCount} 件
         </div>
+        {/* 読み取れないときの切り分け用。実機ではフッタが端末のツールバーに
+            隠れて操作できない場合があるため、タップ不要で常時表示する */}
+        {running && (
+          <div className="scan-diagline">
+            読取処理 {diag.frames} 回・映像 {diag.videoSize}・最終読取{" "}
+            {diag.lastRaw ? `${diag.lastRaw}（${diag.lastFormat}）` : "なし"}
+          </div>
+        )}
       </header>
 
       <div className="scan-camera-wrap">
@@ -382,34 +389,6 @@ export default function ScanPage() {
           >
             カメラを再起動
           </button>
-        )}
-        <button
-          type="button"
-          className="btn btn-ghost btn-block"
-          style={{ minHeight: 40, fontSize: 14 }}
-          onClick={() => setDiagOpen((v) => !v)}
-        >
-          {diagOpen ? "診断を閉じる" : "読み取れないとき（診断）"}
-        </button>
-        {diagOpen && (
-          <div className="diag">
-            <div>
-              カメラ映像: <strong>{diag.videoSize}</strong>
-            </div>
-            <div>
-              読取処理の実行回数: <strong>{diag.frames}</strong>
-              {diag.frames > 0 ? "（増えていれば正常に動作中）" : "（0のままなら停止中）"}
-            </div>
-            <div>
-              最後に読めたコード:{" "}
-              <strong>{diag.lastRaw ? `${diag.lastRaw}（${diag.lastFormat}）` : "まだ1件もなし"}</strong>
-            </div>
-            <p className="diag-note">
-              数字が増えているのにコードが読めない場合は、カメラは動いていて
-              バーコードを認識できていない状態です。カードを画面いっぱいに近づける／
-              少し離す／明るい場所で試してください。
-            </p>
-          </div>
         )}
       </footer>
 
