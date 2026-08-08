@@ -16,6 +16,8 @@ JR西日本の社員が、イベント会場や駅で来場者の WESTER 会員�
 │   ├── WesterVisitScan/          # アプリ本体
 │   └── WesterVisitScanTests/     # classifyBarcode / transformID の単体テスト
 ├── server/     # Cloudflare Workers + D1（TypeScript, wrangler）
+├── webapp/     # Web版チェックインツール（Vite + React, IndexedDB + Supabase同期）
+│               # → 詳細は webapp/README.md
 └── README.md
 ```
 

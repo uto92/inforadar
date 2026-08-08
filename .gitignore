@@ -11,3 +11,8 @@ build/
 node_modules/
 server/.wrangler/
 server/.dev.vars
+
+# Vite
+dist/
+webapp/.env.local
+webapp/.env

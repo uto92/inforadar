@@ -1,0 +1,34 @@
+/* デジタル庁デザインシステム（DADS β）由来のデザイントークン。
+   白背景＋濃色テキストが基本。ダーク/ネイビー背景は使わない。 */
+:root {
+  /* カラー */
+  --color-text: #1a1a1c;
+  --color-text-secondary: #626264;
+  --color-bg: #ffffff;
+  --color-bg-secondary: #f2f2f5;
+  --color-border: #949497;
+  --color-border-light: #d8d8db;
+
+  --color-primary: #0017c1; /* DADS blue-900 */
+  --color-primary-hover: #00118f;
+  --color-primary-bg: #e8f1fe;
+
+  --color-success: #197a4b;
+  --color-success-bg: #e6f5ec;
+  --color-warning-text: #6e5300;
+  --color-warning: #ffc700; /* 全画面フィードバック用の強い黄 */
+  --color-warning-bg: #fbf5cc;
+  --color-error: #ec0000;
+  --color-error-bg: #fdeeee;
+
+  --color-focus: #fbf500; /* DADSのフォーカスインジケータ黄 */
+
+  /* タイポグラフィ: Noto Sans JP系のみ（Inter/Roboto/Arialは使わない） */
+  --font-sans: "Noto Sans JP", "Hiragino Kaku Gothic ProN", "Hiragino Sans",
+    "BIZ UDPGothic", "Yu Gothic", sans-serif;
+
+  /* サイズ */
+  --tap-min: 56px; /* 片手・屋外運用のための最小タップ領域 */
+  --radius: 8px;
+  --radius-large: 12px;
+}
