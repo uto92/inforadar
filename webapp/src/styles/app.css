@@ -294,13 +294,17 @@ a {
   font-size: 14px;
 }
 
+/* 映像を上下中央に置く。html5-qrcode は映像のアスペクト比を保ったまま
+   サイズを決めるため、上下中央に揃えることで、同じく中央に重ねる目安枠
+   (.scan-guide) が必ず映像の内側に収まる。
+   （枠が映像の外にはみ出すと、そこにカードを合わせても永久に読めない） */
 .scan-camera-wrap {
   position: relative;
   flex: 1;
   min-height: 280px;
   background: var(--color-bg-secondary);
   display: flex;
-  align-items: stretch;
+  align-items: center;
   justify-content: center;
   overflow: hidden;
 }
@@ -309,8 +313,39 @@ a {
   width: 100%;
 }
 
-.scan-camera video {
-  object-fit: cover;
+.scan-camera-wrap video {
+  display: block;
+}
+
+/* 読み取り位置の目安。判定は映像全体で行うためあくまで目安であり、
+   映像と同じく上下中央に配置して必ず映像の内側に収まるようにする */
+.scan-guide {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(84%, 440px);
+  aspect-ratio: 2.4 / 1;
+  border: 4px solid rgba(255, 255, 255, 0.95);
+  border-radius: 10px;
+  pointer-events: none;
+}
+
+.scan-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 12px;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: 92%;
+  text-align: center;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(26, 26, 28, 0.75);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  pointer-events: none;
 }
 
 .scan-start-panel {

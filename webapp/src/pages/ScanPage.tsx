@@ -180,17 +180,27 @@ export default function ScanPage() {
             Html5QrcodeSupportedFormats.CODE_128,
             Html5QrcodeSupportedFormats.CODABAR,
           ],
+          // 対応環境（Android Chrome等）ではOS標準のBarcodeDetectorを使う。
+          // iOS Safariは非対応のため自動的にJS実装へフォールバックする
+          experimentalFeatures: { useBarCodeDetectorIfSupported: true },
           verbose: false,
         });
       scannerRef.current = scanner;
+      // 第1引数は html5-qrcode の仕様上キーを1つしか渡せない。
+      // 解像度指定は configuration.videoConstraints 側で行う
       await scanner.start(
         { facingMode: "environment" },
         {
           fps: 10,
-          qrbox: (viewfinderWidth, viewfinderHeight) => ({
-            width: Math.floor(Math.min(viewfinderWidth * 0.9, 480)),
-            height: Math.floor(Math.min(viewfinderHeight * 0.45, 240)),
-          }),
+          // qrbox は指定しない = 映像全体を判定対象にする。
+          // 枠を指定すると判定領域と映像の位置がずれた場合に永久に読めなくなるため、
+          // 画面上の枠（.scan-guide）はあくまで位置合わせの目安として表示する
+          videoConstraints: {
+            facingMode: "environment",
+            // Codabar等の1Dバーコードは細いバーの解像度が要るため高解像度を要求する
+            width: { ideal: 1920 },
+            height: { ideal: 1080 },
+          },
         },
         (decodedText, result) => {
           const format = (
@@ -298,6 +308,14 @@ export default function ScanPage() {
 
       <div className="scan-camera-wrap">
         <div id={SCANNER_ELEMENT_ID} className="scan-camera" />
+        {running && (
+          <>
+            <div className="scan-guide" aria-hidden="true" />
+            <p className="scan-hint">
+              枠に合わせるだけで自動で読み取ります（ボタン操作は不要）
+            </p>
+          </>
+        )}
         {!running && (
           <div className="scan-start-panel">
             {cameraError ? (
