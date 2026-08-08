@@ -7,7 +7,7 @@ import AdminPage from "./pages/AdminPage";
 import EventsPage from "./pages/EventsPage";
 import NoticePage from "./pages/NoticePage";
 
-// html5-qrcode が大きいため、スキャン画面のみコード分割して遅延ロード
+// 読取ライブラリ(Quagga2)が大きいため、スキャン画面のみコード分割して遅延ロード
 const ScanPage = lazy(() => import("./pages/ScanPage"));
 
 export default function App() {

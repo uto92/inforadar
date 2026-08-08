@@ -1,4 +1,4 @@
-import { Html5Qrcode, Html5QrcodeScannerState } from "html5-qrcode";
+import Quagga, { type QuaggaJSCodeReader } from "@ericblade/quagga2";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
@@ -19,6 +19,22 @@ import { formatTime } from "../lib/format";
 const SCANNER_ELEMENT_ID = "scanner-region";
 /** 同一デコード文字列のクールダウン（連写抑止） */
 const COOLDOWN_MS = 2500;
+/**
+ * 読み取り対象の1Dバーコード。WESTER会員証はCodabar想定。
+ * html5-qrcode(ZXing系)はCodabarを読めなかったため Quagga2 に移行した
+ * （検証: 同一のCodabar画像で html5-qrcode=失敗 / Quagga2=成功）。
+ * 想定外の形式でも読めれば「対象外」と明示できるよう広めに有効化する
+ */
+const READERS: QuaggaJSCodeReader[] = [
+  "codabar_reader",
+  "code_128_reader",
+  "code_39_reader",
+  "ean_reader",
+  "ean_8_reader",
+  "i2of5_reader",
+  "upc_reader",
+  "upc_e_reader",
+];
 
 export default function ScanPage() {
   const { eventId = "" } = useParams();
@@ -65,7 +81,9 @@ export default function ScanPage() {
   const frameCountRef = useRef(0);
   const lastDiagPushRef = useRef(0);
 
-  const scannerRef = useRef<Html5Qrcode | null>(null);
+  const startedRef = useRef(false);
+  // 誤読対策: 同じ値を連続2回読めたときだけ確定する
+  const pendingCodeRef = useRef<string | null>(null);
   const unmountedRef = useRef(false);
   const eventRef = useRef<EventRow | undefined>(undefined);
   const lastSeenRef = useRef(new Map<string, number>());
@@ -181,74 +199,49 @@ export default function ScanPage() {
     setCameraError(null);
     initAudio(); // ユーザー操作起点でAudioContextを初期化（iOS対策）
     try {
-      // formatsToSupport は指定しない = 全形式を読取対象にする。
-      // 形式を絞ると対象外のコードでは一切コールバックが返らず「完全な無音」に
-      // なり、カメラが動いているかすら分からない。全形式を受け取ったうえで
-      // normalizeScan で判定し、対象外は赤表示で明確に返す
-      const scanner = scannerRef.current ?? new Html5Qrcode(SCANNER_ELEMENT_ID, { verbose: false });
-      scannerRef.current = scanner;
-      // 第1引数は html5-qrcode の仕様上キーを1つしか渡せない。
-      // 解像度指定は configuration.videoConstraints 側で行う
-      await scanner.start(
-        { facingMode: "environment" },
-        {
-          fps: 10,
-          // qrbox は指定しない = 映像全体を判定対象にする。
-          // 枠を指定すると判定領域と映像の位置がずれた場合に永久に読めなくなるため、
-          // 画面上の枠（.scan-guide）はあくまで位置合わせの目安として表示する
-          videoConstraints: {
-            facingMode: "environment",
-            // Codabar等の1Dバーコードは細いバーの解像度が要るため高解像度を要求する
-            width: { ideal: 1920 },
-            height: { ideal: 1080 },
+      const target = document.getElementById(SCANNER_ELEMENT_ID);
+      if (!target) throw new Error("カメラの表示先が見つかりません");
+      await new Promise<void>((resolve, reject) => {
+        Quagga.init(
+          {
+            inputStream: {
+              type: "LiveStream",
+              target: target as HTMLElement,
+              constraints: {
+                facingMode: "environment",
+                // 1Dバーコードは細いバーの解像度が要るため高解像度を要求する
+                width: { ideal: 1920 },
+                height: { ideal: 1080 },
+              },
+            },
+            decoder: { readers: READERS },
+            locate: true,
+            // iOS Safari ではWorkerが不安定なためメインスレッドで処理する
+            numOfWorkers: 0,
+            frequency: 10,
           },
-        },
-        (decodedText, result) => {
-          const format = (
-            result as { result?: { format?: { formatName?: unknown } } } | undefined
-          )?.result?.format?.formatName;
-          const symbology = typeof format === "string" ? format : "UNKNOWN";
-          setDiag((d) => ({ ...d, lastRaw: decodedText, lastFormat: symbology }));
-          void onDetected(decodedText, symbology);
-        },
-        // 各フレームで何も見つからないたびに呼ばれる。
-        // これが増えていれば「カメラは動いていて読取処理も回っている」ことの証拠になる
-        () => {
-          frameCountRef.current += 1;
-          const now = Date.now();
-          if (now - lastDiagPushRef.current > 500) {
-            lastDiagPushRef.current = now;
-            const video = document.querySelector<HTMLVideoElement>(`#${SCANNER_ELEMENT_ID} video`);
-            setDiag((d) => ({
-              ...d,
-              frames: frameCountRef.current,
-              videoSize: video ? `${video.videoWidth}×${video.videoHeight}` : "—",
-            }));
-          }
-        }
-      );
+          (err) => (err ? reject(err instanceof Error ? err : new Error(String(err))) : resolve())
+        );
+      });
       // カメラ起動中に画面を離れた場合の後始末
       if (unmountedRef.current) {
-        await scanner.stop().catch(() => {});
+        Quagga.stop();
         return;
       }
+      Quagga.start();
+      startedRef.current = true;
       setRunning(true);
     } catch (e) {
       setCameraError(e instanceof Error ? e.message : String(e));
     } finally {
       setStarting(false);
     }
-  }, [onDetected, running, starting]);
+  }, [running, starting]);
 
   const stopCamera = useCallback(async () => {
-    const scanner = scannerRef.current;
-    if (!scanner) return;
-    const state = scanner.getState();
-    if (
-      state === Html5QrcodeScannerState.SCANNING ||
-      state === Html5QrcodeScannerState.PAUSED
-    ) {
-      await scanner.stop().catch(() => {});
+    if (startedRef.current) {
+      Quagga.stop();
+      startedRef.current = false;
     }
     setRunning(false);
   }, []);
@@ -258,19 +251,55 @@ export default function ScanPage() {
     await startCamera();
   }, [startCamera, stopCamera]);
 
+  // 読取結果とフレーム処理のハンドラ登録（マウント中は付けっぱなしにする）
+  const onDetectedRef = useRef(onDetected);
+  onDetectedRef.current = onDetected;
+
+  useEffect(() => {
+    const handleDetected = (result: unknown) => {
+      const r = result as { codeResult?: { code?: string; format?: string } } | undefined;
+      const code = r?.codeResult?.code;
+      if (!code) return;
+      const symbology = r?.codeResult?.format ?? "UNKNOWN";
+      // 診断表示は1回目の検出から反映する（何を読んでいるかを確認できるように）
+      setDiag((d) => ({ ...d, lastRaw: code, lastFormat: symbology }));
+      // 記録は連続2回同じ値が読めてから。1回の誤読で誤ったチェックインを作らない
+      if (pendingCodeRef.current !== code) {
+        pendingCodeRef.current = code;
+        return;
+      }
+      pendingCodeRef.current = null;
+      void onDetectedRef.current(code, symbology);
+    };
+    // 各フレームの処理ごとに呼ばれる。増えていればカメラも読取処理も動いている
+    const handleProcessed = () => {
+      frameCountRef.current += 1;
+      const now = Date.now();
+      if (now - lastDiagPushRef.current > 500) {
+        lastDiagPushRef.current = now;
+        const video = document.querySelector<HTMLVideoElement>(`#${SCANNER_ELEMENT_ID} video`);
+        setDiag((d) => ({
+          ...d,
+          frames: frameCountRef.current,
+          videoSize: video ? `${video.videoWidth}×${video.videoHeight}` : "—",
+        }));
+      }
+    };
+    Quagga.onDetected(handleDetected);
+    Quagga.onProcessed(handleProcessed);
+    return () => {
+      Quagga.offDetected(handleDetected);
+      Quagga.offProcessed(handleProcessed);
+    };
+  }, []);
+
   // 画面離脱時にカメラを確実に停止
   useEffect(() => {
     return () => {
       unmountedRef.current = true;
-      const scanner = scannerRef.current;
-      if (scanner) {
-        const state = scanner.getState();
-        if (
-          state === Html5QrcodeScannerState.SCANNING ||
-          state === Html5QrcodeScannerState.PAUSED
-        ) {
-          scanner.stop().catch(() => {});
-        }
+      if (startedRef.current) {
+        Quagga.stop();
+        startedRef.current = false;
       }
       window.clearTimeout(feedbackTimerRef.current);
     };

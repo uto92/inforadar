@@ -17,15 +17,16 @@
     "@supabase/supabase-js": "^2.45.0",
     "dexie": "^4.0.8",
     "dexie-react-hooks": "^1.1.7",
-    "html5-qrcode": "^2.3.8",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.26.0"
   },
   "devDependencies": {
+    "@ericblade/quagga2": "^1.12.1",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.1",
+    "jsbarcode": "^3.12.3",
     "typescript": "^5.5.4",
     "vite": "^5.4.0"
   }
