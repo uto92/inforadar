@@ -64,7 +64,26 @@ npm run build      # 型チェック + 本番ビルド（dist/）
 TestFlight等は不要。カメラ（getUserMedia）は `localhost` 以外では **HTTPS必須** のため、
 HTTPSのURLを用意してiPhoneのSafariで開くだけでよい。
 
-**最短ルート: Cloudflare Pagesへ直接アップロード**（Git連携不要・Supabase未設定でも動く）
+**公開先: GitHub Pages（`main` の `docs/` を配信）**
+
+```
+https://uto92.github.io/inforadar/
+```
+
+ビルド済みの成果物を `docs/` にコミットしてある（`npm run build:pages` で生成）。
+リポジトリ設定で一度だけ次を設定すると公開される:
+
+  Settings → Pages → Source: `Deploy from a branch` / Branch: `main` / Folder: `/docs`
+
+※ Actions から Pages を自動有効化する方法も試したが、Pagesサイトの新規作成は
+   リポジトリ管理者の操作が必要で `GITHUB_TOKEN` では実行できない
+   （`Create Pages site failed: Resource not accessible by integration`）。
+   このため初回の有効化だけは手動になる。
+
+アプリを更新したときは `npm run build:pages` で `docs/` を再生成してコミットすれば、
+push と同時に再公開される。
+
+**別ルート: Cloudflare Pagesへ直接アップロード**（Git連携不要・Supabase未設定でも動く）
 
 ```bash
 cd webapp
