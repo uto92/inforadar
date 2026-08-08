@@ -32,9 +32,45 @@ npm run dev        # http://localhost:5173 （PCのブラウザ + Webカメラ�
 npm run build      # 型チェック + 本番ビルド（dist/）
 ```
 
-**スマホ実機での確認について**: カメラ（getUserMedia）は `localhost` 以外では **HTTPS必須**。
-`npm run dev -- --host` のHTTP越しLANアクセスではカメラが起動しないため、
-実機確認は Cloudflare Pages のプレビューデプロイを使うのが最も簡単。
+## 実機検証（スマホでの確認）
+
+TestFlight等は不要。カメラ（getUserMedia）は `localhost` 以外では **HTTPS必須** のため、
+HTTPSのURLを用意してiPhoneのSafariで開くだけでよい。
+
+**最短ルート: Cloudflare Pagesへ直接アップロード**（Git連携不要・Supabase未設定でも動く）
+
+```bash
+cd webapp
+npx -y wrangler login      # 未ログインの場合のみ
+npm run deploy:init        # 初回のみ（Pagesプロジェクト作成）
+npm run deploy             # ビルド + アップロード
+```
+
+出力される `https://wester-checkin.pages.dev` をiPhoneのSafariで開く。
+プロジェクト名を変えたい場合は package.json の `deploy` スクリプトの
+`--project-name` を変更する。
+
+**開発ループ（コードを直しながら実機で見る）**
+
+```bash
+cd webapp && npm run dev
+# 別ターミナルで（cloudflaredは brew install cloudflared 等で導入）
+cloudflared tunnel --url http://localhost:5173
+```
+
+表示される `https://xxx.trycloudflare.com` をiPhoneで開く（HMR有効）。
+トンネルドメインのHost許可は `vite.config.ts` の `allowedHosts` で設定済み。
+
+**実機での確認ポイント**
+
+1. 実カードのCodabar読取（最重要）。赤「対象外」= デコードは成功して12桁規則で弾かれた
+   （管理画面のエラーログCSVの `symbology` 列で追える）／無反応 = デコード失敗
+   （距離10〜15cm・明るさ・横長枠への位置合わせを調整）
+2. 読取音はマナーモード解除が必要。バイブはiOS Safariでは動かない（仕様）
+3. 機内モードでチェックイン → 復帰 → 未送信バッジが消える（Supabase設定時）
+4. 直射日光下での視認性とカメラ露出
+5. 「ホーム画面に追加」で運用する場合はSafari本体とストレージが別になるため、
+   どちらか一方に統一して使う
 
 ## Supabase 設定（同期を有効にする場合）
 
