@@ -86,6 +86,20 @@ await page.getByText("実読取テスト").first().waitFor();
 await page.getByRole("link", { name: "スキャン開始" }).click();
 await page.getByRole("button", { name: "カメラを開始" }).click();
 
+// 「読み取り」を押さない限り記録されないこと（勝手に読み続けない）
+await page.getByRole("button", { name: "読み取り", exact: true }).waitFor({ timeout: 20000 });
+await page.waitForTimeout(4000);
+const idleCount = await page.locator(".scan-count-num").innerText().catch(() => "?");
+if (idleCount !== "0") {
+  console.log(`FAIL: ボタン未押下で ${idleCount} 件記録された（自動読取が止まっていない）`);
+  await browser.close();
+  process.exit(1);
+}
+console.log("ボタン未押下では記録なし → PASS");
+
+// ここから「読み取り」押下で読む
+await page.getByRole("button", { name: "読み取り", exact: true }).click();
+
 let ok = false;
 let sawSuffix = false;
 // 成功表示は900msで自動的に消えるため、細かい間隔で監視する

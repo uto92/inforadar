@@ -313,8 +313,18 @@ a {
   width: 100%;
 }
 
-.scan-camera-wrap video {
+/* Quagga2 は映像の原寸(例 1920x1080)で video と canvas を挿入するため、
+   CSSで表示幅に収める。指定しないと撮影領域が画面をはるかに超えて広がり、
+   フッタの操作ボタンが画面外に押し出される */
+.scan-camera video {
+  width: 100%;
+  height: auto;
   display: block;
+}
+
+/* Quagga2 のデバッグ描画用キャンバス。読み取り枠は自前で描くため表示しない */
+.scan-camera canvas.drawingBuffer {
+  display: none;
 }
 
 /* 読み取り位置の目安。判定は映像全体で行うためあくまで目安であり、
@@ -329,6 +339,12 @@ a {
   border: 4px solid rgba(255, 255, 255, 0.95);
   border-radius: 10px;
   pointer-events: none;
+}
+
+/* 「読み取り」待機中であることを枠の色で示す */
+.scan-guide-active {
+  border-color: var(--color-success);
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.6);
 }
 
 .scan-hint {

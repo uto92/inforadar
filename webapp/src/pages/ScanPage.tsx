@@ -19,6 +19,8 @@ import { formatTime } from "../lib/format";
 const SCANNER_ELEMENT_ID = "scanner-region";
 /** 同一デコード文字列のクールダウン（連写抑止） */
 const COOLDOWN_MS = 2500;
+/** 「読み取り」押下後、読取を受け付ける時間 */
+const ARM_WINDOW_MS = 5000;
 /**
  * 読み取り対象の1Dバーコード。WESTER会員証はCodabar想定。
  * html5-qrcode(ZXing系)はCodabarを読めなかったため Quagga2 に移行した
@@ -70,11 +72,16 @@ export default function ScanPage() {
   const [starting, setStarting] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [manualOpen, setManualOpen] = useState(false);
+  const [arming, setArming] = useState(false);
   const [feedback, setFeedbackState] = useState<Feedback | null>(null);
 
   const startedRef = useRef(false);
   // 誤読対策: 同じ値を連続2回読めたときだけ確定する
   const pendingCodeRef = useRef<string | null>(null);
+  // 「読み取り」を押している間だけ記録する。押していない間の読取は無視するため、
+  // 意図しないタイミングで勝手にチェックインが積み上がらない
+  const armedRef = useRef(false);
+  const armTimerRef = useRef<number | undefined>(undefined);
   const unmountedRef = useRef(false);
   const eventRef = useRef<EventRow | undefined>(undefined);
   const lastSeenRef = useRef(new Map<string, number>());
@@ -162,6 +169,38 @@ export default function ScanPage() {
     [forceRecord, setFeedback]
   );
 
+  /** 読み取り待機の解除。成功時・失敗時どちらからも呼ぶ */
+  const disarm = useCallback(() => {
+    window.clearTimeout(armTimerRef.current);
+    armedRef.current = false;
+    pendingCodeRef.current = null;
+    setArming(false);
+  }, []);
+
+  /** 「読み取り」押下。この待機中に読めたものだけを記録する */
+  const arm = useCallback(() => {
+    if (!startedRef.current) return;
+    initAudio();
+    window.clearTimeout(armTimerRef.current);
+    pendingCodeRef.current = null;
+    armedRef.current = true;
+    setArming(true);
+    armTimerRef.current = window.setTimeout(() => {
+      if (!armedRef.current) return;
+      disarm();
+      playError();
+      vibrate(200);
+      setFeedback(
+        {
+          kind: "invalid",
+          title: "読み取れませんでした",
+          sub: "バーコードを枠に合わせて、もう一度お試しください",
+        },
+        1600
+      );
+    }, ARM_WINDOW_MS);
+  }, [disarm, setFeedback]);
+
   const onDetected = useCallback(
     async (text: string, symbology: string) => {
       const ev = eventRef.current;
@@ -174,6 +213,7 @@ export default function ScanPage() {
       if (lastSeenRef.current.size > 200) lastSeenRef.current.clear();
       lastSeenRef.current.set(text, now);
       busyRef.current = true;
+      disarm();
       try {
         const outcome = await recordScan(ev, text, symbology);
         presentOutcome(outcome);
@@ -181,7 +221,7 @@ export default function ScanPage() {
         busyRef.current = false;
       }
     },
-    [presentOutcome]
+    [disarm, presentOutcome]
   );
 
   const startCamera = useCallback(async () => {
@@ -248,6 +288,8 @@ export default function ScanPage() {
 
   useEffect(() => {
     const handleDetected = (result: unknown) => {
+      // 「読み取り」を押していない間の検出は捨てる
+      if (!armedRef.current) return;
       const r = result as { codeResult?: { code?: string; format?: string } } | undefined;
       const code = r?.codeResult?.code;
       if (!code) return;
@@ -275,6 +317,7 @@ export default function ScanPage() {
         startedRef.current = false;
       }
       window.clearTimeout(feedbackTimerRef.current);
+      window.clearTimeout(armTimerRef.current);
     };
   }, []);
 
@@ -329,9 +372,11 @@ export default function ScanPage() {
         <div id={SCANNER_ELEMENT_ID} className="scan-camera" />
         {running && (
           <>
-            <div className="scan-guide" aria-hidden="true" />
+            <div className={`scan-guide${arming ? " scan-guide-active" : ""}`} aria-hidden="true" />
             <p className="scan-hint">
-              枠に合わせるだけで自動で読み取ります（ボタン操作は不要）
+              {arming
+                ? "読み取り中… バーコードを枠に合わせてください"
+                : "バーコードを枠に合わせて「読み取り」を押してください"}
             </p>
           </>
         )}
@@ -368,6 +413,16 @@ export default function ScanPage() {
       </div>
 
       <footer className="scan-footer">
+        {running && (
+          <button
+            type="button"
+            className="btn btn-primary btn-xl btn-block scan-read-btn"
+            onClick={arm}
+            disabled={arming}
+          >
+            {arming ? "読み取り中…" : "読み取り"}
+          </button>
+        )}
         <button
           type="button"
           className="btn btn-secondary btn-block"
