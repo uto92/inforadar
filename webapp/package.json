@@ -12,13 +12,15 @@
     "deploy": "npm run build && npx -y wrangler pages deploy dist --project-name wester-checkin",
     "build:pages": "tsc --noEmit && vite build --base=/inforadar/ --outDir ../docs --emptyOutDir",
     "test:scan": "node e2e/barcode-scan.mjs",
-    "test:sync": "node e2e/two-device-sync.mjs"
+    "test:sync": "node e2e/two-device-sync.mjs",
+    "test:join": "node e2e/join-handoff.mjs"
   },
   "dependencies": {
     "@fontsource/noto-sans-jp": "^5.1.0",
     "@supabase/supabase-js": "^2.45.0",
     "dexie": "^4.0.8",
     "dexie-react-hooks": "^1.1.7",
+    "qrcode-generator": "^2.0.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.26.0"

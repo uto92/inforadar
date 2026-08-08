@@ -1,15 +1,20 @@
 import { useLiveQuery } from "dexie-react-hooks";
-import { useSyncExternalStore } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { Link, useParams } from "react-router-dom";
+import QrCode from "../components/QrCode";
 import Histogram from "../components/Histogram";
 import SyncBadge from "../components/SyncBadge";
 import { downloadCsv, sanitizeFilename, toCsv } from "../lib/csv";
 import { db, type CheckinRow, type ScanErrorRow } from "../lib/db";
 import { formatDateJa, formatDateTime } from "../lib/format";
+import { buildJoinUrl } from "../lib/joinLink";
 import { syncEngine } from "../lib/sync/engine";
 
 export default function AdminPage() {
   const { eventId = "" } = useParams();
+  // 他端末へイベント（とソルト）を引き渡すQRの表示切替
+  const [shareOpen, setShareOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
   // undefined = 読み込み中 / null = 該当なし（読込中に「見つかりません」を出さない）
   const event = useLiveQuery(async () => (await db.events.get(eventId)) ?? null, [eventId]);
   const checkins = useLiveQuery(
@@ -185,7 +190,7 @@ export default function AdminPage() {
         {syncEngine.hasBackend ? (
           <>
             <p className="muted">
-              電波のある場所で自動送信されます。未送信分が残る場合は手動で実行してください。
+              電波のある場所で自動送信され、他の端末の記録も自動で取り込まれます（20秒ごと）。
               {syncState.lastSyncedAt && ` 最終同期: ${formatDateTime(syncState.lastSyncedAt)}`}
             </p>
             {syncState.lastError && (
@@ -197,16 +202,71 @@ export default function AdminPage() {
               type="button"
               className="btn btn-secondary btn-block"
               onClick={() => syncEngine.kick(true)}
-              disabled={syncState.mode === "syncing" || syncState.pending === 0}
+              disabled={syncState.mode === "syncing"}
             >
-              今すぐ同期（未送信 {syncState.pending} 件）
+              {/* 受け取るだけの端末は未送信が常に0件。取得のためにも押せる必要がある */}
+              {syncState.pending > 0 ? `今すぐ同期（未送信 ${syncState.pending} 件）` : "今すぐ同期"}
             </button>
           </>
         ) : (
           <p className="muted">
-            Supabaseは未設定です。データはこの端末のブラウザ内（IndexedDB）にのみ保存されています。
-            当日中にCSVエクスポートで退避することを推奨します。設定方法はREADMEを参照してください。
+            同期先が未設定です。データはこの端末のブラウザ内（IndexedDB）にのみ保存され、
+            他の端末とは合算されません。当日中にCSVエクスポートで退避することを推奨します。
+            設定方法は DEPLOY.md を参照してください。
           </p>
+        )}
+      </section>
+
+      <section className="card">
+        <h2 className="section-title" style={{ marginTop: 0 }}>
+          受付を増やす
+        </h2>
+        {shareOpen ? (
+          <>
+            <p className="muted">
+              2台目のスマホの<strong>標準のカメラアプリ</strong>でこのQRを写し、
+              表示されるリンクを開いてください。読み取りに必要な設定が引き継がれます。
+            </p>
+            <div style={{ display: "flex", justifyContent: "center", padding: "12px 0" }}>
+              <QrCode text={buildJoinUrl(event)} />
+            </div>
+            <p className="muted">
+              このリンクには読み取りに必要な鍵が含まれます。関係者以外に共有しないでください。
+            </p>
+            <button
+              type="button"
+              className="btn btn-secondary btn-block"
+              onClick={() => {
+                void navigator.clipboard
+                  ?.writeText(buildJoinUrl(event))
+                  .then(() => setCopied(true))
+                  .catch(() => setCopied(false));
+              }}
+            >
+              {copied ? "コピーしました" : "リンクをコピー"}
+            </button>
+            <button
+              type="button"
+              className="btn btn-ghost btn-block"
+              onClick={() => setShareOpen(false)}
+            >
+              閉じる
+            </button>
+          </>
+        ) : (
+          <>
+            <p className="muted">
+              同じイベントを他のスマホでも受付する場合に使います。
+              集計は自動で合算され、同じ来場者を2台で読んでも二重には数えません。
+            </p>
+            <button
+              type="button"
+              className="btn btn-secondary btn-block"
+              onClick={() => setShareOpen(true)}
+            >
+              他の端末を追加する
+            </button>
+          </>
         )}
       </section>
 

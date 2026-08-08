@@ -5,6 +5,7 @@ import { HashRouter, Route, Routes } from "react-router-dom";
 import { syncEngine } from "./lib/sync/engine";
 import AdminPage from "./pages/AdminPage";
 import EventsPage from "./pages/EventsPage";
+import JoinPage from "./pages/JoinPage";
 import NoticePage from "./pages/NoticePage";
 
 // 読取ライブラリ(Quagga2)が大きいため、スキャン画面のみコード分割して遅延ロード
@@ -35,6 +36,8 @@ export default function App() {
         />
         <Route path="/admin/:eventId" element={<AdminPage />} />
         <Route path="/notice/:eventId" element={<NoticePage />} />
+        {/* 別端末から渡されたリンクの受け口 */}
+        <Route path="/join" element={<JoinPage />} />
       </Routes>
     </HashRouter>
   );
