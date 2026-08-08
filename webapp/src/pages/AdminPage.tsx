@@ -10,7 +10,8 @@ import { syncEngine } from "../lib/sync/engine";
 
 export default function AdminPage() {
   const { eventId = "" } = useParams();
-  const event = useLiveQuery(() => db.events.get(eventId), [eventId]);
+  // undefined = 読み込み中 / null = 該当なし（読込中に「見つかりません」を出さない）
+  const event = useLiveQuery(async () => (await db.events.get(eventId)) ?? null, [eventId]);
   const checkins = useLiveQuery(
     () => db.checkins.where("eventId").equals(eventId).sortBy("checkedInAt"),
     [eventId],
@@ -23,7 +24,14 @@ export default function AdminPage() {
   );
   const syncState = useSyncExternalStore(syncEngine.subscribe, syncEngine.getSnapshot);
 
-  if (!event) {
+  if (event === undefined) {
+    return (
+      <main className="page">
+        <p className="muted">読み込み中…</p>
+      </main>
+    );
+  }
+  if (event === null) {
     return (
       <main className="page">
         <p>

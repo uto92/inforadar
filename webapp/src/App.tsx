@@ -1,5 +1,7 @@
 import { Suspense, lazy, useEffect } from "react";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+// HashRouter: GitHub Pages のようにSPA用のリライト設定ができない
+// ホスティングでも、サーバ設定なしでそのまま動かすため。
+import { HashRouter, Route, Routes } from "react-router-dom";
 import { syncEngine } from "./lib/sync/engine";
 import AdminPage from "./pages/AdminPage";
 import EventsPage from "./pages/EventsPage";
@@ -14,7 +16,7 @@ export default function App() {
   }, []);
 
   return (
-    <BrowserRouter>
+    <HashRouter>
       <Routes>
         <Route path="/" element={<EventsPage />} />
         <Route
@@ -34,6 +36,6 @@ export default function App() {
         <Route path="/admin/:eventId" element={<AdminPage />} />
         <Route path="/notice/:eventId" element={<NoticePage />} />
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   );
 }

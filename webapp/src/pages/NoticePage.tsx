@@ -38,10 +38,18 @@ function noticeLines(event: EventRow): { heading: string; body: string }[] {
 
 export default function NoticePage() {
   const { eventId = "" } = useParams();
-  const event = useLiveQuery(() => db.events.get(eventId), [eventId]);
+  // undefined = 読み込み中 / null = 該当なし（読込中に「見つかりません」を出さない）
+  const event = useLiveQuery(async () => (await db.events.get(eventId)) ?? null, [eventId]);
   const [copied, setCopied] = useState(false);
 
-  if (!event) {
+  if (event === undefined) {
+    return (
+      <main className="page">
+        <p className="muted">読み込み中…</p>
+      </main>
+    );
+  }
+  if (event === null) {
     return (
       <main className="page">
         <p>

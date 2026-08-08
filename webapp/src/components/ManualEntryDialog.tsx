@@ -2,12 +2,13 @@ import { useEffect, useRef, useState } from "react";
 import { SUFFIX_LEN } from "../lib/normalize";
 
 /** カメラ不調時の手入力フォールバック（会員ID末尾6桁） */
+/// 開いている間だけ親がマウントする（`{open && <ManualEntryDialog … />}`）。
+/// 入力値のクリアをマウント時の初期値に任せることで、開いた直後に
+/// 値を書き換えてしまう初期化処理をなくしている。
 export default function ManualEntryDialog({
-  open,
   onSubmit,
   onClose,
 }: {
-  open: boolean;
   onSubmit: (digits: string) => void;
   onClose: () => void;
 }) {
@@ -15,13 +16,9 @@ export default function ManualEntryDialog({
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (open) {
-      setValue("");
-      window.setTimeout(() => inputRef.current?.focus(), 50);
-    }
-  }, [open]);
-
-  if (!open) return null;
+    const timer = window.setTimeout(() => inputRef.current?.focus(), 50);
+    return () => window.clearTimeout(timer);
+  }, []);
 
   const valid = value.length === SUFFIX_LEN;
 

@@ -350,11 +350,12 @@ export default function ScanPage() {
       </footer>
 
       <FeedbackOverlay feedback={feedback} onClose={() => setFeedback(null, null)} />
-      <ManualEntryDialog
-        open={manualOpen}
-        onSubmit={(digits) => void submitManual(digits)}
-        onClose={() => setManualOpen(false)}
-      />
+      {manualOpen && (
+        <ManualEntryDialog
+          onSubmit={(digits) => void submitManual(digits)}
+          onClose={() => setManualOpen(false)}
+        />
+      )}
     </div>
   );
 }

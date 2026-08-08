@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "deploy:init": "npx -y wrangler pages project create wester-checkin --production-branch main",
-    "deploy": "npm run build && npx -y wrangler pages deploy dist --project-name wester-checkin"
+    "deploy": "npm run build && npx -y wrangler pages deploy dist --project-name wester-checkin",
+    "build:pages": "tsc --noEmit && vite build --base=/inforadar/ --outDir ../docs --emptyOutDir"
   },
   "dependencies": {
     "@fontsource/noto-sans-jp": "^5.1.0",
