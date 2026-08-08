@@ -1,3 +1,5 @@
+import { handlePull, handlePush } from "./webappSync";
+
 export interface Env {
   DB: D1Database;
   /** `wrangler secret put API_KEY` で設定する Bearer トークン */
@@ -43,6 +45,12 @@ export default {
         return json({ error: "method not allowed" }, 405);
       }
       return handleExportCsv(url, env);
+    }
+    // webapp（来場チェックイン）の同期。ハッシュのみを扱うため別系統
+    if (url.pathname === "/v1/wc/sync") {
+      if (request.method === "POST") return handlePush(request, env);
+      if (request.method === "GET") return handlePull(url, env);
+      return json({ error: "method not allowed" }, 405);
     }
     return json({ error: "not found" }, 404);
   },
