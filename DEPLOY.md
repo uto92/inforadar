@@ -5,6 +5,21 @@
 
 前提: Cloudflareアカウント（無料枠で足りる）、Node.js 18+。
 
+## 現在の状態（2026-08-09 時点）
+
+| 手順 | 状態 | 実際の値 |
+| --- | --- | --- |
+| 1. D1 | 完了 | `wester-visit-scanner`（APAC/東京）。マイグレーション 0001・0002 適用済み |
+| 2. Worker | 完了 | `https://wester-visit-scanner.kikkaku.workers.dev`（`API_KEY` 設定済み） |
+| 3. Pages | 完了 | `https://wester-checkin.pages.dev` |
+| 4. ALLOWED_ORIGINS | 完了 | `https://wester-checkin.pages.dev` |
+| 5. Access | **未実施** | これが済むまでアプリは誰でも開ける状態 |
+| 6. 動作確認 | 未実施 | 手順5の完了後に行う |
+
+**手順5が終わるまで同期は動かない。** Worker は Access も `API_KEY` も無いリクエストを
+拒否するため（`isWebappAuthorized`）、ブラウザからの同期は 401 になる。アプリは
+ローカル保存のみで動作する。設定漏れで全公開にならないよう、既定を拒否側に倒してある。
+
 構成は次のとおり。
 
 ```
@@ -43,7 +58,18 @@ npm run deploy
 ```
 
 デプロイ後に表示される URL（例 `https://wester-visit-scanner.<account>.workers.dev`）を控える。
-以降これを **WORKER_URL** と呼ぶ。
+以降これを **WORKER_URL** と呼ぶ。現在の値は
+`https://wester-visit-scanner.kikkaku.workers.dev`。
+
+> 初回は `You need to register a workers.dev subdomain` で失敗する。
+> アカウントに workers.dev のサブドメインがまだ無いため。取得済みなら不要だが、
+> 未取得なら先に一度だけ次を実行する（このアカウントは `kikkaku` を取得済み）。
+>
+> ```bash
+> curl -X PUT "https://api.cloudflare.com/client/v4/accounts/$ACCOUNT_ID/workers/subdomain" \
+>   -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+>   -H "Content-Type: application/json" --data '{"subdomain":"kikkaku"}'
+> ```
 
 疎通確認:
 
@@ -59,14 +85,18 @@ curl "$WORKER_URL/v1/wc/sync"          # {"error":"unauthorized"} が返れば�
 ```bash
 cd webapp
 npm run deploy:init                    # 初回のみ（プロジェクト作成）
-VITE_SYNC_URL="$WORKER_URL" npm run deploy
+VITE_SYNC_URL="$WORKER_URL" npm run deploy -- --branch main
 ```
 
 表示される URL（例 `https://wester-checkin.pages.dev`）を控える。
-以降これを **APP_URL** と呼ぶ。
+以降これを **APP_URL** と呼ぶ。現在の値は `https://wester-checkin.pages.dev`。
 
 > `VITE_SYNC_URL` を付け忘れるとローカル保存のみのアプリになる。
 > 画面右上のバッジが「ローカル保存のみ」でないことで確認できる。
+
+> `--branch main` を付けないと、チェックアウト中のGitブランチ名がそのまま使われ、
+> `https://<hash>.wester-checkin.pages.dev` のプレビュー環境に出る。
+> 本番URL（**APP_URL**）は更新されないので注意する。
 
 ## 4. Worker に許可オリジンを設定する
 
@@ -78,10 +108,19 @@ npx wrangler secret put ALLOWED_ORIGINS
 # 入力例: https://wester-checkin.pages.dev
 ```
 
+設定済みの値は `https://wester-checkin.pages.dev`（本番のみ）。プレビュー環境の
+`https://<hash>.wester-checkin.pages.dev` は含めていないため、プレビューからは同期できない。
+
 ## 5. Cloudflare Access で関係者に限定する
+
+**ここが未実施の残作業。** 済むまでアプリは URL を知る誰でも開ける。
 
 Zero Trust ダッシュボード（`one.dash.cloudflare.com`）で、**アプリとWorkerの両方**に
 同じポリシーをかける。片方だけだと素通しの経路が残る。
+
+APIトークンで自動化する場合は `Access: Apps and Policies` の Edit 権限が要る。
+Workers系の権限だけのトークンでは `/access/organizations` が 10000 Authentication error
+になり、この手順は実行できない。
 
 ### 5-1. アプリ側
 
