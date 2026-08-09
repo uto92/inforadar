@@ -117,6 +117,10 @@ export default function EventsPage() {
           </button>
         )}
       </div>
+
+      <Link to="/key" className="btn btn-ghost btn-block" style={{ marginTop: 24 }}>
+        プロジェクト鍵（控え・引き継ぎ）
+      </Link>
     </main>
   );
 }

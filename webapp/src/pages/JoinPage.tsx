@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { db } from "../lib/db";
+import { adoptProjectSalt, db } from "../lib/db";
 import { getDeviceId } from "../lib/deviceId";
 import { parseJoinParams } from "../lib/joinLink";
 
@@ -51,6 +51,18 @@ export default function JoinPage() {
         if (!cancelled) {
           setState({ kind: "done", eventId: payload.id, name: payload.name, updated: false });
         }
+        return;
+      }
+      // 引き継いだソルトをプロジェクト共通ソルトとしても採用する。
+      // これにより、この端末で新規作成するイベントも同じソルトになり、
+      // イベントをまたいだ再訪の判定が成立する
+      const adopted = await adoptProjectSalt(payload.salt);
+      if (!adopted) {
+        setState({
+          kind: "error",
+          message:
+            "この端末には別のプロジェクト鍵が保存されています。取り込むとイベントをまたいだ集計が合わなくなるため中止しました。管理画面の「プロジェクト鍵」を確認してください。",
+        });
         return;
       }
       await db.events.add({

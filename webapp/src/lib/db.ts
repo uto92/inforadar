@@ -40,10 +40,17 @@ export interface ScanErrorRow {
   synced: 0 | 1;
 }
 
+/** 端末に保存する設定値（プロジェクト共通ソルト等） */
+export interface MetaRow {
+  key: string;
+  value: string;
+}
+
 export const db = new Dexie("wester-checkin") as Dexie & {
   events: EntityTable<EventRow, "id">;
   checkins: EntityTable<CheckinRow, "id">;
   scanErrors: EntityTable<ScanErrorRow, "id">;
+  meta: EntityTable<MetaRow, "key">;
 };
 
 db.version(1).stores({
@@ -51,6 +58,52 @@ db.version(1).stores({
   checkins: "id, eventId, synced, checkedInAt, [eventId+memberHash], [eventId+suffixHash]",
   scanErrors: "id, eventId, synced, occurredAt",
 });
+
+// v2: プロジェクト共通ソルトを保持する meta を追加。
+// 既存イベントのソルトは書き換えない（記録済みのハッシュと照合できなくなるため）
+db.version(2).stores({
+  events: "id, synced, createdAt",
+  checkins: "id, eventId, synced, checkedInAt, [eventId+memberHash], [eventId+suffixHash]",
+  scanErrors: "id, eventId, synced, occurredAt",
+  meta: "key",
+});
+
+/// プロジェクト共通ソルト。
+///
+/// イベントごとに別のソルトを使うと、同じ来場者でもイベントが変わると
+/// 別のハッシュになり、イベントをまたいだ再訪を判定できない。
+/// 横断分析を行うため、全イベントで同一のソルトを使う。
+///
+/// 代償として、このソルトが漏れると全イベントのハッシュが一度に
+/// 逆引き可能になる（12桁は全探索できるため）。取り扱いは鍵と同じ。
+
+const PROJECT_SALT_KEY = "projectSalt";
+
+export async function getProjectSalt(): Promise<string | null> {
+  const row = await db.meta.get(PROJECT_SALT_KEY);
+  return row?.value ?? null;
+}
+
+/** 既存の値があればそれを返し、無ければ生成して保存する */
+export async function ensureProjectSalt(): Promise<string> {
+  const existing = await getProjectSalt();
+  if (existing) return existing;
+  const salt = newSalt();
+  await db.meta.put({ key: PROJECT_SALT_KEY, value: salt });
+  return salt;
+}
+
+/**
+ * 別端末から引き継いだソルトを採用する。
+ * 既に別の値が入っている場合は上書きしない（記録済みのハッシュと
+ * 照合できなくなるため）。採用したかどうかを返す。
+ */
+export async function adoptProjectSalt(salt: string): Promise<boolean> {
+  const existing = await getProjectSalt();
+  if (existing && existing !== salt) return false;
+  if (!existing) await db.meta.put({ key: PROJECT_SALT_KEY, value: salt });
+  return true;
+}
 
 // ---------------------------------------------------------------- イベント
 
@@ -64,7 +117,7 @@ export async function createEvent(input: {
     name: input.name.trim(),
     eventDate: input.eventDate,
     venue: input.venue.trim(),
-    salt: newSalt(),
+    salt: await ensureProjectSalt(),
     deviceId: getDeviceId(),
     createdAt: new Date().toISOString(),
     synced: 0,
