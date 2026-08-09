@@ -1,0 +1,2 @@
+# ローカル開発用。cp .dev.vars.example .dev.vars して使う
+API_TOKEN=devtoken123

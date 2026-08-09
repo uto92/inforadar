@@ -18,8 +18,14 @@ JR西日本の社員が、イベント会場や駅で来場者の WESTER 会員�
 ├── server/     # Cloudflare Workers + D1（TypeScript, wrangler）
 ├── webapp/     # Web版チェックインツール（Vite + React, IndexedDB + Supabase同期）
 │               # → 詳細は webapp/README.md
+├── platform/   # 交通行動データ収集基盤（別プロジェクト。Workers + Hono + D1）
+│               # → 詳細は platform/README.md
 └── README.md
 ```
+
+※ `platform/` は上記の来訪スキャナとは別プロジェクトです。交通系ICカードの利用履歴を
+第一のデータソースとして、将来 HealthKit・GPS・アンケート等を同一の
+participant_id × timestamp 系に統合するための研究用データ基盤です。
 
 ## バーコード仕様（実測に基づく）
 

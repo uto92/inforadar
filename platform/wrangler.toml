@@ -1,0 +1,12 @@
+name = "mobility-datahub"
+main = "src/index.ts"
+compatibility_date = "2026-01-01"
+
+# `npx wrangler d1 create mobility-datahub` の出力にある database_id を貼り付ける
+[[d1_databases]]
+binding = "DB"
+database_name = "mobility-datahub"
+database_id = "REPLACE_WITH_D1_DATABASE_ID"
+
+[observability]
+enabled = true

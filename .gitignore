@@ -11,6 +11,8 @@ build/
 node_modules/
 server/.wrangler/
 server/.dev.vars
+platform/.wrangler/
+platform/.dev.vars
 
 # Vite
 dist/
