@@ -2,12 +2,12 @@ name = "wester-visit-scanner"
 main = "src/index.ts"
 compatibility_date = "2025-11-01"
 
-# `wrangler d1 create wester-visit-scanner` の出力にある database_id を
-# 下の REPLACE_WITH_D1_DATABASE_ID に貼り付けてからデプロイすること（README参照）
+# 作成済み（APAC/東京）。再作成する場合は `wrangler d1 create wester-visit-scanner`
+# の出力にある database_id に差し替える
 [[d1_databases]]
 binding = "DB"
 database_name = "wester-visit-scanner"
-database_id = "REPLACE_WITH_D1_DATABASE_ID"
+database_id = "ce7e5c2b-6bfd-4749-ba42-f1f4fe8891ab"
 
 [observability]
 enabled = true
