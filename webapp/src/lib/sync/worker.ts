@@ -1,11 +1,10 @@
 /// Cloudflare Worker + D1 を同期先にするアダプタ。
 ///
-/// 認証は合言葉（Bearerトークン）。バンドルには埋め込まず、受付スタッフが
-/// 端末ごとに1回入力したものを localStorage から読む。
-/// 埋め込むとURLを知る第三者が同期先のデータを読めてしまうため。
+/// 認証は Cloudflare Access。アプリ自体もこのWorkerから配信しているため、
+/// APIとアプリは同一オリジンであり、Accessのセッションcookieがそのまま届く。
+/// 資格情報をJSバンドルに埋め込まないので、URLを知る第三者がデータを読むことはない。
 
 import type { CheckinRow, EventRow, ScanErrorRow } from "../db";
-import { getSyncToken } from "../syncToken";
 import type { PullResult, SyncBackend } from "./backend";
 
 interface PushResponse {
@@ -19,17 +18,12 @@ function endpoint(base: string): string {
 }
 
 async function request(url: string, init: RequestInit): Promise<Response> {
-  const token = getSyncToken();
-  if (!token) {
-    // 合言葉が未設定。エンジンはこれをエラーとして扱い、画面に案内が出る
-    throw new Error("同期の合言葉が未設定です。設定すると他の端末と集計が合算されます");
-  }
-  const headers = new Headers(init.headers);
-  headers.set("Authorization", `Bearer ${token}`);
-  const res = await fetch(url, { ...init, headers });
+  // Cloudflare Access のセッションcookieを送る（同一オリジン）
+  const res = await fetch(url, { ...init, credentials: "include" });
   if (!res.ok) {
+    // Accessの認証切れ。再読み込みでログイン画面に飛ぶ
     if (res.status === 401 || res.status === 403) {
-      throw new Error("同期の合言葉が違います。設定を確認してください");
+      throw new Error("認証が切れました。ページを再読み込みしてログインし直してください");
     }
     throw new Error(`同期先がエラーを返しました (HTTP ${res.status})`);
   }

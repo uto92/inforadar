@@ -7,7 +7,7 @@ export interface Env {
   API_KEY: string;
   /** Cloudflare Access のチームドメイン 例: your-team.cloudflareaccess.com */
   ACCESS_TEAM_DOMAIN?: string;
-  /** Access アプリケーションの Audience (AUD) タグ */
+  /** Access アプリケーションの Audience (AUD) タグ。任意（アプリが複数になる場合は必須） */
   ACCESS_AUD?: string;
   /**
    * ローカル開発でのみ "1" にする。webapp同期を無認証で通す。
@@ -132,7 +132,8 @@ function isAuthorized(request: Request, env: Env): boolean {
  */
 async function isWebappAuthorized(request: Request, env: Env): Promise<boolean> {
   if (env.DEV_OPEN_WC_SYNC === "1") return true;
-  if (env.ACCESS_TEAM_DOMAIN && env.ACCESS_AUD) {
+  // ACCESS_AUD は任意（未設定ならチームドメイン・署名・有効期限のみで検証）
+  if (env.ACCESS_TEAM_DOMAIN) {
     const email = await verifyAccessJwt(request, {
       teamDomain: env.ACCESS_TEAM_DOMAIN,
       aud: env.ACCESS_AUD,

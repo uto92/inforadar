@@ -68,8 +68,15 @@ async function loadKeys(teamDomain: string): Promise<Map<string, CryptoKey>> {
 export interface AccessConfig {
   /** 例: your-team.cloudflareaccess.com */
   teamDomain: string;
-  /** Access アプリケーションの Audience (AUD) タグ */
-  aud: string;
+  /**
+   * Access アプリケーションの Audience (AUD) タグ。省略可。
+   *
+   * AUDの役割は「同一チーム内の別アプリ向けに発行されたトークンを弾く」こと。
+   * アプリが1つだけなら実質的な差は無いため、未設定でも動くようにしている
+   * （新しい管理画面ではAUDが表示されず、取得できない場合があるため）。
+   * アプリを増やす場合は必ず設定すること。
+   */
+  aud?: string;
 }
 
 /**
@@ -122,9 +129,11 @@ export async function verifyAccessJwt(
   if (exp <= now) return null;
   if (nbf > now + 60) return null;
   if (payload.iss !== `https://${config.teamDomain}`) return null;
-  const aud = payload.aud;
-  const audOk = Array.isArray(aud) ? aud.includes(config.aud) : aud === config.aud;
-  if (!audOk) return null;
+  if (config.aud) {
+    const aud = payload.aud;
+    const audOk = Array.isArray(aud) ? aud.includes(config.aud) : aud === config.aud;
+    if (!audOk) return null;
+  }
 
   return typeof payload.email === "string" ? payload.email : "";
 }
