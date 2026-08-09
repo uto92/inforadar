@@ -2,6 +2,7 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import SyncBadge from "../components/SyncBadge";
+import SyncTokenCard from "../components/SyncTokenCard";
 import { createEvent, db, type EventRow } from "../lib/db";
 import { formatDateJa, todayIsoDate } from "../lib/format";
 
@@ -35,9 +36,11 @@ export default function EventsPage() {
   return (
     <main className="page">
       <header className="page-header">
-        <h1 className="page-title">WESTER来場チェックイン</h1>
+        <h1 className="page-title">来場チェックイン</h1>
         <SyncBadge />
       </header>
+
+      <SyncTokenCard />
 
       {todays.length > 0 && (
         <>

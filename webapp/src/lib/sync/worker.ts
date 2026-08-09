@@ -1,11 +1,11 @@
 /// Cloudflare Worker + D1 を同期先にするアダプタ。
 ///
-/// Supabase版と違い anonキー相当をJSバンドルに埋め込まない。
-/// 資格情報はWorker側にあり、ブラウザからは Cloudflare Access の
-/// セッションCookieで到達する（credentials: "include"）。
-/// このため「URLを知る第三者が来場データを読める」問題が構造的に発生しない。
+/// 認証は合言葉（Bearerトークン）。バンドルには埋め込まず、受付スタッフが
+/// 端末ごとに1回入力したものを localStorage から読む。
+/// 埋め込むとURLを知る第三者が同期先のデータを読めてしまうため。
 
 import type { CheckinRow, EventRow, ScanErrorRow } from "../db";
+import { getSyncToken } from "../syncToken";
 import type { PullResult, SyncBackend } from "./backend";
 
 interface PushResponse {
@@ -19,15 +19,17 @@ function endpoint(base: string): string {
 }
 
 async function request(url: string, init: RequestInit): Promise<Response> {
-  const res = await fetch(url, {
-    ...init,
-    // Cloudflare Access のセッションCookieを送る
-    credentials: "include",
-  });
+  const token = getSyncToken();
+  if (!token) {
+    // 合言葉が未設定。エンジンはこれをエラーとして扱い、画面に案内が出る
+    throw new Error("同期の合言葉が未設定です。設定すると他の端末と集計が合算されます");
+  }
+  const headers = new Headers(init.headers);
+  headers.set("Authorization", `Bearer ${token}`);
+  const res = await fetch(url, { ...init, headers });
   if (!res.ok) {
-    // Accessの認証切れはログインし直しが必要。原因が分かる文言にする
     if (res.status === 401 || res.status === 403) {
-      throw new Error("同期先の認証が切れました。ページを再読み込みしてログインし直してください");
+      throw new Error("同期の合言葉が違います。設定を確認してください");
     }
     throw new Error(`同期先がエラーを返しました (HTTP ${res.status})`);
   }
