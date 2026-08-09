@@ -9,5 +9,14 @@ binding = "DB"
 database_name = "wester-visit-scanner"
 database_id = "ce7e5c2b-6bfd-4749-ba42-f1f4fe8891ab"
 
+# アプリ本体(webapp)も同じWorkerから配信する。
+# 理由: Cloudflare Access は *.pages.dev / *.workers.dev をホスト名では保護できず
+# （自社ドメインのゾーンが必要）、Workerを直接指定する方式なら保護できるため。
+# 同一オリジンになることで、SafariのサードパーティCookie制限も回避できる。
+# /v1/* は Worker が処理し、それ以外は静的ファイルを返す。
+[assets]
+directory = "../webapp/dist"
+not_found_handling = "single-page-application"
+
 [observability]
 enabled = true
