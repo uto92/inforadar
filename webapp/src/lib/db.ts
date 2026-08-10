@@ -1,7 +1,7 @@
 import Dexie, { type EntityTable } from "dexie";
 import { getDeviceId } from "./deviceId";
 import { memberHash, newSalt, suffixHash } from "./hash";
-import { SUFFIX_LEN, normalizeScan } from "./normalize";
+import { SUFFIX_LEN, normalizeScan, type CardMode } from "./normalize";
 
 /// IndexedDB（Dexie）。ローカルが常に正で、Supabaseは後付けの同期先。
 /// synced は 0/1（IndexedDBはbooleanをインデックスできないため）。
@@ -11,7 +11,9 @@ export interface EventRow {
   name: string;
   eventDate: string; // YYYY-MM-DD
   venue: string;
-  salt: string; // イベントごとのハッシュソルト
+  salt: string; // ハッシュソルト（プロジェクト共通）
+  /** 受け付けるカード。未設定は "any"（発行元を問わない） */
+  cardMode?: CardMode;
   deviceId: string;
   createdAt: string; // ISO8601
   synced: 0 | 1;
@@ -111,6 +113,7 @@ export async function createEvent(input: {
   name: string;
   eventDate: string;
   venue: string;
+  cardMode?: CardMode;
 }): Promise<EventRow> {
   const row: EventRow = {
     id: crypto.randomUUID(),
@@ -118,6 +121,7 @@ export async function createEvent(input: {
     eventDate: input.eventDate,
     venue: input.venue.trim(),
     salt: await ensureProjectSalt(),
+    cardMode: input.cardMode ?? "any",
     deviceId: getDeviceId(),
     createdAt: new Date().toISOString(),
     synced: 0,
@@ -148,7 +152,7 @@ export async function recordScan(
   symbology: string
 ): Promise<CheckinOutcome> {
   const now = new Date().toISOString();
-  const normalized = normalizeScan(rawText);
+  const normalized = normalizeScan(rawText, event.cardMode ?? "any");
   if (!normalized.ok) {
     await db.scanErrors.add({
       id: crypto.randomUUID(),

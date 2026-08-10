@@ -3,6 +3,7 @@ import { useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import SyncBadge from "../components/SyncBadge";
 import { createEvent, db, type EventRow } from "../lib/db";
+import type { CardMode } from "../lib/normalize";
 import { formatDateJa, todayIsoDate } from "../lib/format";
 
 export default function EventsPage() {
@@ -12,6 +13,7 @@ export default function EventsPage() {
     [] as EventRow[]
   );
   const [formOpen, setFormOpen] = useState(false);
+  const [cardMode, setCardMode] = useState<CardMode>("any");
   const [name, setName] = useState("");
   const [eventDate, setEventDate] = useState(todayIsoDate());
   const [venue, setVenue] = useState("");
@@ -25,7 +27,7 @@ export default function EventsPage() {
   async function submit(e: FormEvent) {
     e.preventDefault();
     if (!name.trim() || !venue.trim() || !eventDate) return;
-    await createEvent({ name, eventDate, venue });
+    await createEvent({ name, eventDate, venue, cardMode });
     setName("");
     setVenue("");
     setEventDate(todayIsoDate());
@@ -93,6 +95,33 @@ export default function EventsPage() {
                 placeholder="例: ○○駅 改札前広場"
                 required
               />
+            </div>
+            <div className="field">
+              <label htmlFor="ev-cardmode">受け付けるカード</label>
+              <select
+                id="ev-cardmode"
+                value={cardMode}
+                onChange={(e) => setCardMode(e.target.value as CardMode)}
+                style={{
+                  width: "100%",
+                  minHeight: "var(--tap-min)",
+                  padding: "8px 12px",
+                  fontFamily: "inherit",
+                  fontSize: 18,
+                  color: "var(--color-text)",
+                  background: "var(--color-bg)",
+                  border: "2px solid var(--color-border)",
+                  borderRadius: "var(--radius)",
+                }}
+              >
+                <option value="any">すべて（発行元を問わない）</option>
+                <option value="wester12">WESTER会員証のみ（数字12桁）</option>
+              </select>
+              <p className="muted" style={{ marginTop: 4 }}>
+                {cardMode === "any"
+                  ? "来場者が持っている任意の会員証・ポイントカードを受け付けます。どの会社のカードかは記録しません。"
+                  : "数字12桁のIDのみ受け付けます。それ以外は「対象外」として弾きます。"}
+              </p>
             </div>
             <div style={{ display: "grid", gap: 8 }}>
               <button type="submit" className="btn btn-primary btn-block">

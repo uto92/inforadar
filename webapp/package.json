@@ -14,14 +14,15 @@
     "test:scan": "node e2e/barcode-scan.mjs",
     "test:sync": "node e2e/two-device-sync.mjs",
     "test:join": "node e2e/join-handoff.mjs",
-    "test:salt": "node e2e/cross-event-salt.mjs"
+    "test:salt": "node e2e/cross-event-salt.mjs",
+    "test:formats": "node e2e/multi-format-scan.mjs"
   },
   "dependencies": {
     "@fontsource/noto-sans-jp": "^5.1.0",
     "@supabase/supabase-js": "^2.45.0",
     "dexie": "^4.0.8",
     "dexie-react-hooks": "^1.1.7",
-    "qrcode-generator": "^2.0.4",
+    "jsqr": "^1.4.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.26.0"
@@ -33,6 +34,7 @@
     "@vitejs/plugin-react": "^4.3.1",
     "jsbarcode": "^3.12.3",
     "playwright-core": "^1.62.1",
+    "qrcode-generator": "^2.0.4",
     "typescript": "^5.5.4",
     "vite": "^5.4.0"
   }

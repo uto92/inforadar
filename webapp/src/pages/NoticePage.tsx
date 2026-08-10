@@ -17,7 +17,7 @@ function noticeLines(event: EventRow): { heading: string; body: string }[] {
       heading: "読み取りの目的",
       body:
         `本イベント「${event.name}」（${formatDateJa(event.eventDate)}・${event.venue}）では、` +
-        "来場状況の把握と施策の効果測定のため、WESTER会員証のバーコードを読み取らせていただきます。",
+        "来場状況の把握と施策の効果測定のため、お手持ちの会員証・ポイントカードのバーコードを読み取らせていただきます。",
     },
     {
       heading: "取得する情報",
@@ -61,7 +61,7 @@ export default function NoticePage() {
 
   const sections = noticeLines(event);
   const plainText = [
-    "お客様へ ― WESTER会員証の読み取りについて",
+    "お客様へ ― 会員証の読み取りについて",
     "",
     ...sections.flatMap((s) => [`■ ${s.heading}`, s.body, ""]),
     "読み取りをご希望されない場合は、お近くのスタッフへお申し出ください。",
@@ -97,7 +97,7 @@ export default function NoticePage() {
         <h2>
           お客様へ
           <br />
-          WESTER会員証の読み取りについて
+          会員証の読み取りについて
         </h2>
         {sections.map((section) => (
           <div key={section.heading}>

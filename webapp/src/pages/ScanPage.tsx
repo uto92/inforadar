@@ -1,4 +1,5 @@
 import Quagga, { type QuaggaJSCodeReader } from "@ericblade/quagga2";
+import jsQR from "jsqr";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
@@ -31,12 +32,19 @@ const READERS: QuaggaJSCodeReader[] = [
   "codabar_reader",
   "code_128_reader",
   "code_39_reader",
+  "code_93_reader",
   "ean_reader",
   "ean_8_reader",
   "i2of5_reader",
+  "2of5_reader",
   "upc_reader",
   "upc_e_reader",
 ];
+/**
+ * QRの解析間隔。Quagga2は1次元専用のため、同じ映像から別途QRを解析する。
+ * 会員証をQRで表示するサービスが多く、これが無いと全く反応しない。
+ */
+const QR_INTERVAL_MS = 250;
 
 export default function ScanPage() {
   const { eventId = "" } = useParams();
@@ -82,6 +90,10 @@ export default function ScanPage() {
   // 意図しないタイミングで勝手にチェックインが積み上がらない
   const armedRef = useRef(false);
   const armTimerRef = useRef<number | undefined>(undefined);
+  const qrTimerRef = useRef<number | undefined>(undefined);
+  const qrCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  // 読取ハンドラは Quagga とQRループの両方から使う。最新の関数を ref で参照する
+  const onDetectedRef = useRef<(text: string, symbology: string) => void>(() => {});
   const unmountedRef = useRef(false);
   const eventRef = useRef<EventRow | undefined>(undefined);
   const lastSeenRef = useRef(new Map<string, number>());
@@ -161,7 +173,7 @@ export default function ScanPage() {
         {
           kind: "invalid",
           title: "対象外のコードです",
-          sub: "WESTER会員証のバーコードを読み取ってください",
+          sub: "会員証・ポイントカードのバーコードを読み取ってください",
         },
         1600
       );
@@ -224,6 +236,33 @@ export default function ScanPage() {
     [disarm, presentOutcome]
   );
 
+  /**
+   * QRの解析ループ。Quagga2が描画している映像から自前でフレームを取り出し、
+   * jsQRにかける。1次元の読み取りと同じく「読み取り」押下中のみ記録する。
+   */
+  const startQrLoop = useCallback(() => {
+    window.clearInterval(qrTimerRef.current);
+    qrTimerRef.current = window.setInterval(() => {
+      if (!armedRef.current || busyRef.current) return;
+      const video = document.querySelector<HTMLVideoElement>(`#${SCANNER_ELEMENT_ID} video`);
+      if (!video || !video.videoWidth) return;
+      // 解析用に縮小する。等倍だと処理が重く、フレーム落ちで読み取り率が下がる
+      const w = 640;
+      const h = Math.round((video.videoHeight / video.videoWidth) * w);
+      const canvas = (qrCanvasRef.current ??= document.createElement("canvas"));
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext("2d", { willReadFrequently: true });
+      if (!ctx) return;
+      ctx.drawImage(video, 0, 0, w, h);
+      const image = ctx.getImageData(0, 0, w, h);
+      const found = jsQR(image.data, w, h, { inversionAttempts: "attemptBoth" });
+      if (found?.data) void onDetectedRef.current(found.data, "QR_CODE");
+    }, QR_INTERVAL_MS);
+  }, []);
+
+  onDetectedRef.current = onDetected;
+
   const startCamera = useCallback(async () => {
     if (starting || running) return;
     setStarting(true);
@@ -261,6 +300,7 @@ export default function ScanPage() {
       }
       Quagga.start();
       startedRef.current = true;
+      startQrLoop();
       setRunning(true);
     } catch (e) {
       setCameraError(e instanceof Error ? e.message : String(e));
@@ -270,6 +310,8 @@ export default function ScanPage() {
   }, [running, starting]);
 
   const stopCamera = useCallback(async () => {
+    window.clearInterval(qrTimerRef.current);
+    qrTimerRef.current = undefined;
     if (startedRef.current) {
       Quagga.stop();
       startedRef.current = false;
@@ -281,10 +323,6 @@ export default function ScanPage() {
     await stopCamera();
     await startCamera();
   }, [startCamera, stopCamera]);
-
-  // 読取結果とフレーム処理のハンドラ登録（マウント中は付けっぱなしにする）
-  const onDetectedRef = useRef(onDetected);
-  onDetectedRef.current = onDetected;
 
   useEffect(() => {
     const handleDetected = (result: unknown) => {
@@ -318,6 +356,7 @@ export default function ScanPage() {
       }
       window.clearTimeout(feedbackTimerRef.current);
       window.clearTimeout(armTimerRef.current);
+      window.clearInterval(qrTimerRef.current);
     };
   }, []);
 
@@ -397,7 +436,7 @@ export default function ScanPage() {
               </>
             ) : (
               <p className="muted">
-                「カメラを開始」を押して、WESTER会員証のバーコードを枠内にかざしてください。
+                「カメラを開始」を押して、会員証のバーコードやQRコードを枠内にかざしてください。
               </p>
             )}
             <button
