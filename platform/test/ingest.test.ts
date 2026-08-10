@@ -106,6 +106,40 @@ describe("POST /v1/ingest", () => {
     expect(body.derived.derived).toBe(1);
   });
 
+  it("iOSクライアントの camelCase + records 形式をそのまま受け付ける", async () => {
+    // Swift の JSONEncoder は既定で camelCase を吐く。キー名の違いで
+    // 生データを落とさないよう、受信側で別名を吸収する。
+    const sessionId = crypto.randomUUID().toUpperCase(); // 実機は大文字UUID
+    const { status, body } = await postJson("/v1/ingest", {
+      sessionId,
+      deviceId: "ios-A9E5AEBF",
+      cardPseudonym: "627b3f262d73c0df3cac1b2a31d1f2c9a061ffad6f82af5fd1eade0f681679eb",
+      readAt: "2026-08-11T08:50:03+09:00",
+      records: [block(90, 1926), block(91, 1806)],
+      clientVersion: "ios-probe/0.1.0",
+    });
+
+    expect(status).toBe(200);
+    expect(body.session_id).toBe(sessionId);
+    expect(body.stored_blocks).toBe(2);
+    expect(body.derived.derived).toBe(2);
+
+    const sessions = await getJson("/v1/sessions");
+    expect(sessions.body.sessions[0].device_id).toBe("ios-A9E5AEBF");
+    expect(sessions.body.sessions[0].client_version).toBe("ios-probe/0.1.0");
+  });
+
+  it("snake_case と camelCase が混在していても受け付ける", async () => {
+    const { status, body } = await postJson("/v1/ingest", {
+      session_id: crypto.randomUUID(),
+      cardPseudonym: "mockcard-c-00000000000000000000000000000000",
+      read_at: "2026-08-11T08:50:03+09:00",
+      records: [block(95, 500)],
+    });
+    expect(status).toBe(200);
+    expect(body.stored_blocks).toBe(1);
+  });
+
   it("空ペイロードは 400", async () => {
     const { status } = await postJson("/v1/ingest", { session_id: "short" });
     expect(status).toBe(400);

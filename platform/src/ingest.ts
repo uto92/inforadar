@@ -22,6 +22,36 @@ export interface IngestPayload {
   blocks: (string | { raw_hex: string })[];
 }
 
+/**
+ * キー名の別名。Swift の JSONEncoder は既定で camelCase を吐くため、
+ * iOS クライアントは snake_case へ変換せずに送ってくることがある。
+ * 受信側で吸収しておく（キー名の違いで生データを落とすのは本末転倒なので）。
+ * 履歴ブロックの配列名も `records` を受け付ける。
+ */
+const KEY_ALIASES = {
+  session_id: ["session_id", "sessionId"],
+  card_pseudonym: ["card_pseudonym", "cardPseudonym"],
+  device_id: ["device_id", "deviceId"],
+  read_at: ["read_at", "readAt"],
+  client_version: ["client_version", "clientVersion"],
+  participant_id: ["participant_id", "participantId"],
+  blocks: ["blocks", "records"],
+} as const;
+
+/** 別名を吸収して正規のキー名に寄せる。値の検証はしない */
+function canonicalize(body: Record<string, unknown>): Partial<IngestPayload> {
+  const out: Record<string, unknown> = {};
+  for (const [canonical, aliases] of Object.entries(KEY_ALIASES)) {
+    for (const alias of aliases) {
+      if (body[alias] !== undefined && body[alias] !== null) {
+        out[canonical] = body[alias];
+        break;
+      }
+    }
+  }
+  return out as Partial<IngestPayload>;
+}
+
 export interface RejectedBlock {
   index: number;
   reason: string;
@@ -55,7 +85,7 @@ export function validateIngest(body: unknown): ValidationResult {
   if (typeof body !== "object" || body === null) {
     return { ok: false, error: "body must be a JSON object" };
   }
-  const p = body as Partial<IngestPayload>;
+  const p = canonicalize(body as Record<string, unknown>);
 
   if (typeof p.session_id !== "string" || !SESSION_ID_RE.test(p.session_id)) {
     return { ok: false, error: "session_id must be a client-generated id (8-64 chars, [A-Za-z0-9_-])" };
