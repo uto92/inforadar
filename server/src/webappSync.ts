@@ -28,8 +28,8 @@ interface CleanCheckin {
   id: string;
   event_id: string;
   member_hash: string | null;
-  suffix_hash: string;
-  method: "scan" | "manual";
+  suffix_hash: string | null;
+  method: "scan" | "manual" | "nfc";
   checked_in_at: string;
   device_id: string;
 }
@@ -85,27 +85,38 @@ export function validateEvent(raw: unknown): CleanEvent | null {
   };
 }
 
+/**
+ * チェックインの検証。
+ *
+ * ここは「保存してよい項目」のホワイトリストでもある。
+ * 未知のフィールド（例: NFCプローブが送りうる交通系ICの利用履歴 `records`）は
+ * 読み取らないため、D1に入る余地が構造的に無い。
+ * 来場記録の目的に対して過剰な情報を持たないための境界。
+ */
 export function validateCheckin(raw: unknown): CleanCheckin | null {
   if (typeof raw !== "object" || raw === null) return null;
   const r = raw as Record<string, unknown>;
   const id = typeof r.id === "string" ? r.id.toLowerCase() : "";
   const eventId = typeof r.eventId === "string" ? r.eventId.toLowerCase() : "";
   if (!UUID_RE.test(id) || !UUID_RE.test(eventId)) return null;
-  const method = r.method === "scan" || r.method === "manual" ? r.method : null;
+  const method =
+    r.method === "scan" || r.method === "manual" || r.method === "nfc" ? r.method : null;
   if (!method) return null;
   const suffixHash = optionalHash(r.suffixHash);
-  if (!suffixHash) return null;
-  // scan は必ず memberHash を伴う。生値や短い文字列が来た場合は弾く
+  // scan / manual は末尾6桁の照合キーを伴う。
+  // NFCには相当する概念が無いため suffix_hash は持たない
+  if (method !== "nfc" && !suffixHash) return null;
+  // scan / nfc は必ず本体ハッシュを伴う。生値や短い文字列が来た場合は弾く
   const memberHash = optionalHash(r.memberHash);
-  if (method === "scan" && !memberHash) return null;
+  if ((method === "scan" || method === "nfc") && !memberHash) return null;
   if (!isIso(r.checkedInAt)) return null;
   const deviceId = str(r.deviceId, 64);
   if (!deviceId) return null;
   return {
     id,
     event_id: eventId,
-    member_hash: method === "scan" ? memberHash : null,
-    suffix_hash: suffixHash,
+    member_hash: method === "manual" ? null : memberHash,
+    suffix_hash: method === "nfc" ? null : suffixHash,
     method,
     checked_in_at: r.checkedInAt,
     device_id: deviceId,

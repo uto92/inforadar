@@ -24,7 +24,8 @@ export interface CheckinRow {
   eventId: string;
   memberHash: string | null; // scan時のみ。manual時はnull
   suffixHash: string; // 末尾6桁の照合キー（scan/manual共通）
-  method: "scan" | "manual";
+  /** nfc は外部のNFCプローブ由来（同期で取り込む。この画面では作らない） */
+  method: "scan" | "manual" | "nfc";
   checkedInAt: string; // ISO8601
   deviceId: string;
   synced: 0 | 1;

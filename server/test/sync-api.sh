@@ -58,6 +58,33 @@ r=$(curl -s --noproxy '*' "$API?eventId=$EV" -H "$H")
 check "このイベントのチェックインは2件" "$(echo "$r" | grep -o "\"id\":\"[0-9a-f-]*\",\"eventId\"" | wc -l | tr -d ' ')" "2"
 check "nextSinceが返る" "$(echo "$r" | grep -c 'nextSince')" "1"
 
+
+
+# ---- NFC由来のチェックイン（0003以降） ----
+echo "7) NFC"
+NFC1="66666666-6666-4666-8666-6666${R}"
+NFC2="77777777-7777-4777-8777-7777${R}"
+PSEUDO=$(printf 'd%.0s' {1..56})${R}
+r=$(curl -s --noproxy '*' -X POST "$API" -H "$H" -H 'Content-Type: application/json' -d "{
+  \"checkins\":[{\"id\":\"$NFC1\",\"eventId\":\"$EV\",\"memberHash\":\"$PSEUDO\",\"method\":\"nfc\",\"checkedInAt\":\"2026-08-11T08:50:03.000Z\",\"deviceId\":\"ios-A9E5AEBF\"}]}")
+check "NFCのチェックインが登録される（suffixHash無しでよい）" "$(echo "$r" | grep -o '"checkins":[0-9]*' | head -1 | grep -o '[0-9]*$')" "1"
+
+# 交通系ICの利用履歴が混入しても保存されないこと（保存項目のホワイトリスト）
+r=$(curl -s --noproxy '*' -X POST "$API" -H "$H" -H 'Content-Type: application/json' -d "{
+  \"checkins\":[{\"id\":\"$NFC2\",\"eventId\":\"$EV\",\"memberHash\":\"$(printf 'e%.0s' {1..56})${R}\",\"method\":\"nfc\",\"checkedInAt\":\"2026-08-11T08:51:00.000Z\",\"deviceId\":\"ios-A9E5AEBF\",\"records\":[\"C846000034E14E046C40860700002900\",\"1B023F0032A360FB0000080800002800\"],\"balance\":1926}]}")
+check "履歴付きでも登録は成功する" "$(echo "$r" | grep -o '"checkins":[0-9]*' | head -1 | grep -o '[0-9]*$')" "1"
+r=$(curl -s --noproxy '*' "$API?eventId=$EV" -H "$H")
+# 先に「NFCの記録がちゃんと取得できている」ことを確認する。
+# これが無いと、サーバ無応答（空レスポンス）でも下の2件が通ってしまう
+check "NFCの記録が取得できる" "$(echo "$r" | grep -c '"method":"nfc"')" "1"
+check "利用履歴がサーバに保存されていない" "$(echo "$r" | grep -c 'C846000034E14E')" "0"
+check "残額がサーバに保存されていない" "$(echo "$r" | grep -c '1926')" "0"
+
+# 本体ハッシュの無いNFCは弾く
+r=$(curl -s --noproxy '*' -X POST "$API" -H "$H" -H 'Content-Type: application/json' -d "{
+  \"checkins\":[{\"id\":\"88888888-8888-4888-8888-8888${R}\",\"eventId\":\"$EV\",\"method\":\"nfc\",\"checkedInAt\":\"2026-08-11T08:52:00.000Z\",\"deviceId\":\"ios-A9E5AEBF\"}]}")
+check "仮名の無いNFCは破棄される" "$(echo "$r" | grep -o '"rejected":{"events":[0-9]*,"checkins":[0-9]*' | grep -o '[0-9]*$')" "1"
+
 echo
 echo "結果: PASS $pass / FAIL $fail"
 [ "$fail" -eq 0 ]
