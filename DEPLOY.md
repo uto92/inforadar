@@ -54,19 +54,18 @@ curl "$WORKER_URL/v1/wc/sync"          # {"error":"unauthorized"} が返れば�
 
 2つ目が `unauthorized` にならず中身が返る場合は設定が誤っている。**先に進まないこと。**
 
-## 3. アプリを Cloudflare Pages に載せる
+## 3. アプリの公開（Workerに統合済み）
+
+アプリ本体はWorkerの静的アセットとして同じURLから配信される
+（`server/wrangler.toml` の `[assets]`）。個別のホスティングは不要で、
+更新は次の1コマンド:
 
 ```bash
-cd webapp
-npm run deploy:init                    # 初回のみ（プロジェクト作成）
-VITE_SYNC_URL="$WORKER_URL" npm run deploy
+cd webapp && npm run deploy    # ビルドしてWorkerごとデプロイ
 ```
 
-表示される URL（例 `https://wester-checkin.pages.dev`）を控える。
-以降これを **APP_URL** と呼ぶ。
-
-> `VITE_SYNC_URL` を付け忘れるとローカル保存のみのアプリになる。
-> 画面右上のバッジが「ローカル保存のみ」でないことで確認できる。
+> 旧構成の Cloudflare Pages（wester-checkin.pages.dev）は削除済み。
+> Accessで保護できないURLのため、再作成しないこと。
 
 ## 4. Worker に許可オリジンを設定する
 
