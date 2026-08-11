@@ -822,6 +822,7 @@ function setView(v) {
 }
 viewMapBtn.addEventListener("click", () => setView("map"));
 viewGraphBtn.addEventListener("click", () => setView("graph"));
+if (window.__DEFAULT_VIEW__ === "graph") setView("graph");
 
 // スクリーンショット・デバッグ用フック
 window.__setTime = m => { setPlaying(false); render(m); };
