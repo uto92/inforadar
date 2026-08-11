@@ -67,6 +67,64 @@ const STATIONS = [
   { name: "松江",             lat: 35.4630, lon: 133.0636, passengers:   5500, spread: 260, profile: { regional: 0.85, tourist: 0.15 } },
   { name: "出雲市",           lat: 35.3620, lon: 132.7570, passengers:   4000, spread: 260, profile: { regional: 0.70, tourist: 0.30 } },
 
+  // ===== 琵琶湖線 追加駅(米原→京都) =====
+  { name: "米原",             lat: 35.3145, lon: 136.2897, passengers:   6000, spread: 280, profile: { regional: 0.70, terminal: 0.30 } },
+  { name: "彦根",             lat: 35.2726, lon: 136.2596, passengers:  10000, spread: 300, profile: { commuter: 0.60, regional: 0.25, tourist: 0.15 } },
+  { name: "南彦根",           lat: 35.2519, lon: 136.2378, passengers:   5000, spread: 260, profile: { commuter: 1.0 } },
+  { name: "河瀬",             lat: 35.2242, lon: 136.2136, passengers:   4000, spread: 250, profile: { commuter: 1.0 } },
+  { name: "稲枝",             lat: 35.1907, lon: 136.1955, passengers:   3000, spread: 250, profile: { commuter: 1.0 } },
+  { name: "能登川",           lat: 35.1567, lon: 136.1657, passengers:   6000, spread: 260, profile: { commuter: 1.0 } },
+  { name: "安土",             lat: 35.1435, lon: 136.1391, passengers:   2500, spread: 250, profile: { commuter: 0.85, tourist: 0.15 } },
+  { name: "近江八幡",         lat: 35.1284, lon: 136.0888, passengers:  17000, spread: 320, profile: { commuter: 0.85, tourist: 0.15 } },
+  { name: "篠原",             lat: 35.1075, lon: 136.0353, passengers:   2500, spread: 250, profile: { commuter: 1.0 } },
+  { name: "野洲",             lat: 35.0655, lon: 136.0257, passengers:  13000, spread: 300, profile: { commuter: 1.0 } },
+  { name: "守山",             lat: 35.0546, lon: 135.9983, passengers:  14000, spread: 300, profile: { commuter: 1.0 } },
+  { name: "栗東",             lat: 35.0208, lon: 135.9891, passengers:   6000, spread: 260, profile: { commuter: 1.0 } },
+  { name: "瀬田",             lat: 34.9711, lon: 135.9251, passengers:  17000, spread: 320, profile: { commuter: 1.0 } },
+  { name: "膳所",             lat: 34.9950, lon: 135.8890, passengers:  11000, spread: 290, profile: { commuter: 1.0 } },
+  { name: "山科",             lat: 34.9925, lon: 135.8180, passengers:  17000, spread: 320, profile: { commuter: 0.90, tourist: 0.10 } },
+
+  // ===== JR京都線 追加駅(京都→大阪) =====
+  { name: "西大路",           lat: 34.9815, lon: 135.7308, passengers:  15000, spread: 300, profile: { commuter: 1.0 } },
+  { name: "桂川",             lat: 34.9522, lon: 135.7124, passengers:   8000, spread: 270, profile: { commuter: 1.0 } },
+  { name: "向日町",           lat: 34.9436, lon: 135.7067, passengers:   8500, spread: 270, profile: { commuter: 1.0 } },
+  { name: "長岡京",           lat: 34.9231, lon: 135.6923, passengers:  15000, spread: 300, profile: { commuter: 1.0 } },
+  { name: "山崎",             lat: 34.8920, lon: 135.6810, passengers:   4500, spread: 250, profile: { commuter: 0.85, tourist: 0.15 } },
+  { name: "島本",             lat: 34.8823, lon: 135.6656, passengers:   4500, spread: 250, profile: { commuter: 1.0 } },
+  { name: "摂津富田",         lat: 34.8380, lon: 135.5934, passengers:  12000, spread: 290, profile: { commuter: 1.0 } },
+  { name: "JR総持寺",         lat: 34.8280, lon: 135.5780, passengers:   5000, spread: 250, profile: { commuter: 1.0 } },
+  { name: "千里丘",           lat: 34.7950, lon: 135.5560, passengers:  10000, spread: 280, profile: { commuter: 1.0 } },
+  { name: "岸辺",             lat: 34.7800, lon: 135.5440, passengers:   9000, spread: 280, profile: { commuter: 1.0 } },
+  { name: "東淀川",           lat: 34.7408, lon: 135.5010, passengers:   4000, spread: 250, profile: { commuter: 1.0 } },
+
+  // ===== JR神戸線 追加駅(大阪→姫路) =====
+  { name: "塚本",             lat: 34.7108, lon: 135.4693, passengers:   9000, spread: 270, profile: { commuter: 1.0 } },
+  { name: "立花",             lat: 34.7268, lon: 135.3944, passengers:  15000, spread: 300, profile: { commuter: 1.0 } },
+  { name: "甲子園口",         lat: 34.7332, lon: 135.3665, passengers:  11000, spread: 290, profile: { commuter: 1.0 } },
+  { name: "さくら夙川",       lat: 34.7350, lon: 135.3310, passengers:   5000, spread: 250, profile: { commuter: 1.0 } },
+  { name: "甲南山手",         lat: 34.7270, lon: 135.2880, passengers:   5500, spread: 250, profile: { commuter: 1.0 } },
+  { name: "摂津本山",         lat: 34.7237, lon: 135.2696, passengers:  11000, spread: 290, profile: { commuter: 1.0 } },
+  { name: "摩耶",             lat: 34.7069, lon: 135.2249, passengers:   5000, spread: 250, profile: { commuter: 1.0 } },
+  { name: "灘",               lat: 34.7050, lon: 135.2130, passengers:   7000, spread: 260, profile: { commuter: 1.0 } },
+  { name: "兵庫",             lat: 34.6664, lon: 135.1659, passengers:  12000, spread: 290, profile: { commuter: 0.90, nightlife: 0.10 } },
+  { name: "新長田",           lat: 34.6572, lon: 135.1450, passengers:  11000, spread: 290, profile: { commuter: 1.0 } },
+  { name: "鷹取",             lat: 34.6503, lon: 135.1338, passengers:   5500, spread: 250, profile: { commuter: 1.0 } },
+  { name: "須磨海浜公園",     lat: 34.6461, lon: 135.1219, passengers:   4000, spread: 250, profile: { commuter: 0.75, tourist: 0.25 } },
+  { name: "須磨",             lat: 34.6410, lon: 135.1110, passengers:   8000, spread: 270, profile: { commuter: 0.80, tourist: 0.20 } },
+  { name: "塩屋",             lat: 34.6318, lon: 135.0750, passengers:   4000, spread: 250, profile: { commuter: 1.0 } },
+  { name: "舞子",             lat: 34.6323, lon: 135.0335, passengers:   8000, spread: 270, profile: { commuter: 0.90, tourist: 0.10 } },
+  { name: "朝霧",             lat: 34.6386, lon: 135.0100, passengers:   7000, spread: 260, profile: { commuter: 1.0 } },
+  { name: "大久保",           lat: 34.6740, lon: 134.9400, passengers:  11000, spread: 290, profile: { commuter: 1.0 } },
+  { name: "魚住",             lat: 34.6860, lon: 134.9060, passengers:   6000, spread: 260, profile: { commuter: 1.0 } },
+  { name: "土山",             lat: 34.7000, lon: 134.8740, passengers:   6000, spread: 260, profile: { commuter: 1.0 } },
+  { name: "東加古川",         lat: 34.7280, lon: 134.8650, passengers:   8000, spread: 270, profile: { commuter: 1.0 } },
+  { name: "加古川",           lat: 34.7663, lon: 134.8412, passengers:  19000, spread: 340, profile: { commuter: 0.80, regional: 0.20 } },
+  { name: "宝殿",             lat: 34.7750, lon: 134.8080, passengers:   7000, spread: 260, profile: { commuter: 1.0 } },
+  { name: "曽根",             lat: 34.7889, lon: 134.7550, passengers:   5000, spread: 250, profile: { commuter: 1.0 } },
+  { name: "ひめじ別所",       lat: 34.8020, lon: 134.7270, passengers:   2500, spread: 250, profile: { commuter: 1.0 } },
+  { name: "御着",             lat: 34.8090, lon: 134.7140, passengers:   3500, spread: 250, profile: { commuter: 1.0 } },
+  { name: "東姫路",           lat: 34.8221, lon: 134.7052, passengers:   2500, spread: 250, profile: { commuter: 1.0 } },
+
   // ===== 北陸エリア =====
   { name: "敦賀",             lat: 35.6455, lon: 136.0559, passengers:   6000, spread: 280, profile: { regional: 0.70, terminal: 0.30 } },
   { name: "福井",             lat: 36.0622, lon: 136.2233, passengers:  20000, spread: 350, profile: { regional: 0.70, terminal: 0.20, tourist: 0.10 } },
@@ -83,6 +141,29 @@ const HOURLY_PROFILES = {
   tourist:   [0.02, 0.05, 0.15, 0.35, 0.60, 0.85, 0.95, 1.00, 1.00, 0.95, 0.90, 0.80, 0.65, 0.45, 0.30, 0.20, 0.12, 0.08, 0.04, 0.02],
   nightlife: [0.03, 0.05, 0.15, 0.30, 0.25, 0.28, 0.35, 0.50, 0.45, 0.42, 0.45, 0.55, 0.75, 0.95, 1.00, 0.95, 0.90, 0.80, 0.55, 0.25],
   regional:  [0.08, 0.25, 0.70, 0.90, 0.55, 0.45, 0.45, 0.50, 0.48, 0.48, 0.55, 0.65, 0.85, 1.00, 0.75, 0.50, 0.38, 0.28, 0.15, 0.05],
+};
+
+// 米原→姫路 コリドー(琵琶湖線・JR京都線・JR神戸線)の駅順
+const CORRIDOR = {
+  name: "米原→姫路",
+  segments: [
+    { name: "琵琶湖線(米原→京都)", stations: [
+      "米原", "彦根", "南彦根", "河瀬", "稲枝", "能登川", "安土", "近江八幡",
+      "篠原", "野洲", "守山", "栗東", "草津", "南草津", "瀬田", "石山",
+      "膳所", "大津", "山科", "京都",
+    ]},
+    { name: "JR京都線(京都→大阪)", stations: [
+      "西大路", "桂川", "向日町", "長岡京", "山崎", "島本", "高槻", "摂津富田",
+      "JR総持寺", "茨木", "千里丘", "岸辺", "吹田", "東淀川", "新大阪", "大阪",
+    ]},
+    { name: "JR神戸線(大阪→姫路)", stations: [
+      "塚本", "尼崎", "立花", "甲子園口", "西宮", "さくら夙川", "芦屋", "甲南山手",
+      "摂津本山", "住吉", "六甲道", "摩耶", "灘", "三ノ宮", "元町", "神戸",
+      "兵庫", "新長田", "鷹取", "須磨海浜公園", "須磨", "塩屋", "垂水", "舞子",
+      "朝霧", "明石", "西明石", "大久保", "魚住", "土山", "東加古川", "加古川",
+      "宝殿", "曽根", "ひめじ別所", "御着", "東姫路", "姫路",
+    ]},
+  ],
 };
 
 // エリアビュー(画面のプリセット)

@@ -213,6 +213,11 @@
       <p>各セルは5時台〜24時台の混雑指数(駅別乗車人員×駅タイプ別の時間帯モデルによる推定値)。駅名をクリックすると右に日内カーブを表示します。</p>
     </div>
     <div class="mx-controls">
+      <span>並び順:</span>
+      <span class="mx-seg">
+        <button id="mxSortLine" class="active">路線順(米原→姫路)</button>
+        <button id="mxSortPax">乗車人員順</button>
+      </span>
       <span>正規化:</span>
       <span class="mx-seg">
         <button id="mxNormRow" class="active">駅ごと(パターン比較)</button>
@@ -470,12 +475,14 @@ STATIONS.forEach(st => {
   const el = document.createElement("div");
   el.className = "station-label";
   el.textContent = st.name;
+  // 小規模駅のラベルは高ズームのみ(密集区間の重なり対策)
+  el.dataset.minZoom = st.passengers >= 25000 ? 9.2 : 11;
   new maplibregl.Marker({ element: el, anchor: "center" }).setLngLat([st.lon, st.lat]).addTo(map);
   labelEls.push(el);
 });
 function updateLabelVisibility() {
-  const show = map.getZoom() >= 9.2;
-  labelEls.forEach(el => { el.style.display = show ? "" : "none"; });
+  const z = map.getZoom();
+  labelEls.forEach(el => { el.style.display = z >= Number(el.dataset.minZoom) ? "" : "none"; });
 }
 map.on("zoom", updateLabelVisibility);
 updateLabelVisibility();
@@ -655,11 +662,33 @@ const MX_AVG_SHAPE = HOURS.map(h =>
   STATIONS.reduce((s, st) => s + mxIndex(st, h) / mxRowMax(st), 0) / STATIONS.length * 100);
 
 let mxNorm = "row";      // "row" | "abs"
+let mxSort = "line";     // "line"(米原→姫路 路線順) | "pax"(乗車人員順)
 let mxShowNums = false;
 let mxSelected = STATIONS[0]; // 大阪
 let mxBuilt = false;
 
 const MX_GROUPS = ["京阪神・近畿", "岡山・広島・山口", "山陰", "北陸"];
+
+// 表示するグループ(タイトル+駅リスト)を並び順モードに応じて組み立てる
+function mxGroupList() {
+  const byPax = g => STATIONS.filter(st => mxArea(st) === g)
+    .sort((a, b) => b.passengers - a.passengers);
+  if (mxSort === "line" && typeof CORRIDOR !== "undefined") {
+    const byName = Object.fromEntries(STATIONS.map(s => [s.name, s]));
+    const inCorridor = new Set(CORRIDOR.segments.flatMap(s => s.stations));
+    const groups = CORRIDOR.segments.map(seg => ({
+      title: seg.name,
+      members: seg.stations.map(n => byName[n]).filter(Boolean),
+    }));
+    for (const g of MX_GROUPS) {
+      const members = byPax(g).filter(st => !inCorridor.has(st.name));
+      if (members.length) groups.push({ title: `${g}(その他の主要駅)`, members });
+    }
+    return groups;
+  }
+  return MX_GROUPS.map(g => ({ title: g, members: byPax(g) }))
+    .filter(g => g.members.length);
+}
 
 function mxCellValue(st, h) {
   return mxNorm === "row" ? mxIndex(st, h) / mxRowMax(st) * 100 : mxIndex(st, h);
@@ -672,13 +701,10 @@ function buildMatrix() {
   const grid = document.getElementById("mxGrid");
   grid.style.gridTemplateColumns = `120px repeat(${HOURS.length}, minmax(24px, 1fr))`;
   grid.innerHTML = "";
-  for (const group of MX_GROUPS) {
-    const members = STATIONS.filter(st => mxArea(st) === group)
-      .sort((a, b) => b.passengers - a.passengers);
-    if (!members.length) continue;
+  for (const { title, members } of mxGroupList()) {
     const g = document.createElement("div");
     g.className = "mx-group";
-    g.textContent = group;
+    g.textContent = title;
     grid.appendChild(g);
     // 時間ヘッダ(グループごとに繰り返して縦スクロールでも迷わないように)
     const corner = document.createElement("div");
@@ -785,6 +811,16 @@ function renderMxDetail() {
 }
 
 // コントロール
+document.getElementById("mxSortLine").addEventListener("click", function () {
+  mxSort = "line";
+  this.classList.add("active"); document.getElementById("mxSortPax").classList.remove("active");
+  buildMatrix(); paintMatrix();
+});
+document.getElementById("mxSortPax").addEventListener("click", function () {
+  mxSort = "pax";
+  this.classList.add("active"); document.getElementById("mxSortLine").classList.remove("active");
+  buildMatrix(); paintMatrix();
+});
 document.getElementById("mxNormRow").addEventListener("click", function () {
   mxNorm = "row";
   this.classList.add("active"); document.getElementById("mxNormAbs").classList.remove("active");
