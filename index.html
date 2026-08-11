@@ -82,9 +82,85 @@
   }
   .tooltip b { font-size: 12px; }
 
+  /* ---------- ビュー切替 ---------- */
+  .viewbar {
+    position: absolute; top: 12px; right: 52px; z-index: 40;
+    display: flex; border-radius: 8px; overflow: hidden;
+    border: 1px solid #3a3e46;
+    font-family: "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+  }
+  .viewbar button {
+    background: rgba(15,17,22,0.85); color: #cfd3d8; border: none;
+    font-size: 12px; padding: 7px 14px; cursor: pointer;
+  }
+  .viewbar button.active { background: #e8503a; color: #fff; }
+  .hidden { display: none !important; }
+
+  /* ---------- グラフ(マトリクス)ビュー ---------- */
+  #matrixView {
+    position: absolute; inset: 0; z-index: 30; display: none;
+    overflow-y: auto; background: #101318; color: #e6e8ec;
+    font-family: "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic", sans-serif;
+  }
+  #matrixView.active { display: block; }
+  .mx-inner { max-width: 1180px; margin: 0 auto; padding: 18px 20px 48px; }
+  .mx-head h1 { margin: 0 0 4px; font-size: 17px; font-weight: 700; }
+  .mx-head p { margin: 0 0 14px; font-size: 11px; color: #9aa0a8; line-height: 1.6; max-width: 720px; }
+  .mx-controls {
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 16px;
+    font-size: 11px; color: #9aa0a8;
+  }
+  .mx-seg { display: flex; border: 1px solid #3a3e46; border-radius: 6px; overflow: hidden; }
+  .mx-seg button {
+    background: #1a1e25; color: #cfd3d8; border: none; font-size: 11px;
+    padding: 4px 11px; cursor: pointer;
+  }
+  .mx-seg button.active { background: #e8503a; color: #fff; }
+  .mx-check { display: inline-flex; align-items: center; gap: 5px; cursor: pointer; user-select: none; }
+  .mx-legend { display: inline-flex; align-items: center; gap: 6px; }
+  .mx-legend .bar { width: 120px; height: 8px; border-radius: 4px; }
+  .mx-layout { display: flex; gap: 18px; align-items: flex-start; flex-wrap: wrap; }
+  .mx-gridwrap { flex: 1 1 620px; min-width: 0; overflow-x: auto; }
+  .mx-grid { display: grid; gap: 2px; min-width: 660px; }
+  .mx-group {
+    grid-column: 1 / -1; font-size: 11px; font-weight: 700; color: #9aa0a8;
+    letter-spacing: 0.08em; padding: 14px 0 2px;
+  }
+  .mx-hrow { display: contents; }
+  .mx-hcell { font-size: 9px; color: #7c828c; text-align: center; padding-bottom: 1px; }
+  .mx-name {
+    font-size: 11px; color: #cfd3d8; text-align: right; padding-right: 8px;
+    display: flex; align-items: center; justify-content: flex-end;
+    background: none; border: none; cursor: pointer; font-family: inherit;
+    border-radius: 4px;
+  }
+  .mx-name:hover { color: #fff; background: #1c212a; }
+  .mx-name.selected { color: #ff8a70; font-weight: 700; }
+  .mx-name:focus-visible { outline: 2px solid #e8503a; outline-offset: 1px; }
+  .mx-cell {
+    height: 20px; border-radius: 3px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px; font-variant-numeric: tabular-nums;
+  }
+  .mx-cell:hover { outline: 2px solid rgba(255,255,255,0.75); outline-offset: -1px; }
+  .mx-detail {
+    flex: 0 0 330px; position: sticky; top: 18px;
+    background: #151920; border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px; padding: 14px 16px;
+  }
+  .mx-detail h2 { margin: 0 0 2px; font-size: 15px; }
+  .mx-detail .meta { font-size: 11px; color: #9aa0a8; margin: 0 0 10px; }
+  .mx-detail .stats { display: flex; gap: 18px; margin: 0 0 8px; }
+  .mx-detail .stat b { display: block; font-size: 17px; font-variant-numeric: tabular-nums; }
+  .mx-detail .stat span { font-size: 10px; color: #9aa0a8; }
+  .mx-detail .chart-legend { display: flex; gap: 14px; font-size: 10px; color: #9aa0a8; margin-top: 6px; }
+  .mx-detail .chart-legend i { display: inline-block; width: 14px; height: 0; border-top: 2px solid; margin-right: 4px; vertical-align: middle; }
+  .mx-note { font-size: 10px; color: #7c828c; margin-top: 10px; line-height: 1.6; }
+
   @media (max-width: 640px) {
     .panel { width: calc(100% - 48px); }
     .clock { font-size: 36px; bottom: 16px; }
+    .mx-detail { position: static; flex: 1 1 100%; }
   }
 </style>
 </head>
@@ -124,6 +200,33 @@
 
 <div class="clock"><span class="day">平日イメージ</span><span id="clockText">8:00</span></div>
 <div class="tooltip" id="tooltip"></div>
+
+<div class="viewbar">
+  <button id="viewMapBtn" class="active">マップ</button>
+  <button id="viewGraphBtn">グラフ</button>
+</div>
+
+<div id="matrixView">
+  <div class="mx-inner">
+    <div class="mx-head">
+      <h1>JR西日本 主要駅 混雑パターン(駅×時間帯)</h1>
+      <p>各セルは5時台〜24時台の混雑指数(駅別乗車人員×駅タイプ別の時間帯モデルによる推定値)。駅名をクリックすると右に日内カーブを表示します。</p>
+    </div>
+    <div class="mx-controls">
+      <span>正規化:</span>
+      <span class="mx-seg">
+        <button id="mxNormRow" class="active">駅ごと(パターン比較)</button>
+        <button id="mxNormAbs">全体(規模込み)</button>
+      </span>
+      <label class="mx-check"><input type="checkbox" id="mxNums"> 数値を表示</label>
+      <span class="mx-legend">少 <span class="bar" id="mxLegendBar"></span> 多</span>
+    </div>
+    <div class="mx-layout">
+      <div class="mx-gridwrap"><div class="mx-grid" id="mxGrid"></div></div>
+      <aside class="mx-detail" id="mxDetail"></aside>
+    </div>
+  </div>
+</div>
 
 <script src="data/stations.js"></script>
 <script src="data/rail_lines.js"></script>
@@ -507,10 +610,224 @@ AREA_VIEWS.forEach((v, i) => {
   areaBtns.appendChild(b);
 });
 
+// ---------- グラフ(マトリクス)ビュー ----------
+const HOURS = Array.from({ length: 20 }, (_, i) => i + 5); // 5..24時台
+
+// 明度単調の暖色シーケンシャルランプ(暗→ワイン→赤→橙→黄)
+const MX_RAMP = [
+  [0.00, [29, 32, 39]],
+  [0.15, [58, 31, 56]],
+  [0.35, [121, 38, 63]],
+  [0.55, [194, 56, 58]],
+  [0.75, [238, 124, 51]],
+  [0.90, [255, 201, 77]],
+  [1.00, [255, 236, 158]],
+];
+function mxColor(t) {
+  t = Math.max(0, Math.min(1, t));
+  for (let i = 1; i < MX_RAMP.length; i++) {
+    if (t <= MX_RAMP[i][0]) {
+      const [t0, c0] = MX_RAMP[i - 1], [t1, c1] = MX_RAMP[i];
+      const f = (t - t0) / (t1 - t0);
+      const c = c0.map((v, k) => Math.round(v + (c1[k] - v) * f));
+      return `rgb(${c[0]},${c[1]},${c[2]})`;
+    }
+  }
+  return "rgb(255,236,158)";
+}
+
+function mxArea(st) {
+  if (st.lat >= 35.6 && st.lon >= 135.9) return "北陸";
+  if (st.lat > 35.2 && st.lon < 134.6) return "山陰";
+  if (st.lon <= 134.5) return "岡山・広島・山口";
+  return "京阪神・近畿";
+}
+
+// 混雑指数: 全駅・全時間帯の最大(大阪駅のピーク時)= 100(乗車人員^0.55 × 時間帯モデル)
+const mxIndexRaw = (st, h) => Math.pow(st.passengers / MAX_PAX, 0.55) * stationProfileAt(st, h * 60 + 30);
+const MX_RAW_MAX = Math.max(...STATIONS.map(st => Math.max(...HOURS.map(h => mxIndexRaw(st, h)))));
+const mxIndex = (st, h) => mxIndexRaw(st, h) / MX_RAW_MAX * 100;
+const mxRowMax = st => Math.max(...HOURS.map(h => mxIndex(st, h)));
+const MX_ABS_MAX = 100;
+
+// 各駅正規化カーブの全駅平均(形の比較用リファレンス)
+const MX_AVG_SHAPE = HOURS.map(h =>
+  STATIONS.reduce((s, st) => s + mxIndex(st, h) / mxRowMax(st), 0) / STATIONS.length * 100);
+
+let mxNorm = "row";      // "row" | "abs"
+let mxShowNums = false;
+let mxSelected = STATIONS[0]; // 大阪
+let mxBuilt = false;
+
+const MX_GROUPS = ["京阪神・近畿", "岡山・広島・山口", "山陰", "北陸"];
+
+function mxCellValue(st, h) {
+  return mxNorm === "row" ? mxIndex(st, h) / mxRowMax(st) * 100 : mxIndex(st, h);
+}
+function mxCellT(st, h) {
+  return mxNorm === "row" ? mxIndex(st, h) / mxRowMax(st) : mxIndex(st, h) / MX_ABS_MAX;
+}
+
+function buildMatrix() {
+  const grid = document.getElementById("mxGrid");
+  grid.style.gridTemplateColumns = `120px repeat(${HOURS.length}, minmax(24px, 1fr))`;
+  grid.innerHTML = "";
+  for (const group of MX_GROUPS) {
+    const members = STATIONS.filter(st => mxArea(st) === group)
+      .sort((a, b) => b.passengers - a.passengers);
+    if (!members.length) continue;
+    const g = document.createElement("div");
+    g.className = "mx-group";
+    g.textContent = group;
+    grid.appendChild(g);
+    // 時間ヘッダ(グループごとに繰り返して縦スクロールでも迷わないように)
+    const corner = document.createElement("div");
+    grid.appendChild(corner);
+    for (const h of HOURS) {
+      const hc = document.createElement("div");
+      hc.className = "mx-hcell";
+      hc.textContent = (h % 3 === 0) ? h : "";
+      grid.appendChild(hc);
+    }
+    for (const st of members) {
+      const name = document.createElement("button");
+      name.className = "mx-name";
+      name.textContent = st.name;
+      name.dataset.station = st.name;
+      name.addEventListener("click", () => { mxSelected = st; paintMatrix(); renderMxDetail(); });
+      grid.appendChild(name);
+      for (const h of HOURS) {
+        const cell = document.createElement("div");
+        cell.className = "mx-cell";
+        cell.dataset.station = st.name;
+        cell.dataset.hour = h;
+        cell.addEventListener("mousemove", ev => mxTooltip(ev, st, h));
+        cell.addEventListener("mouseleave", () => { tooltip.style.display = "none"; });
+        cell.addEventListener("click", () => { mxSelected = st; paintMatrix(); renderMxDetail(); });
+        grid.appendChild(cell);
+      }
+    }
+  }
+  document.getElementById("mxLegendBar").style.background =
+    `linear-gradient(to right, ${[0, 0.25, 0.5, 0.75, 1].map(t => mxColor(t)).join(",")})`;
+  mxBuilt = true;
+}
+
+function paintMatrix() {
+  const byName = Object.fromEntries(STATIONS.map(s => [s.name, s]));
+  document.querySelectorAll(".mx-cell").forEach(cell => {
+    const st = byName[cell.dataset.station];
+    const h = Number(cell.dataset.hour);
+    const t = mxCellT(st, h);
+    cell.style.background = mxColor(t);
+    if (mxShowNums) {
+      cell.textContent = Math.round(mxCellValue(st, h));
+      cell.style.color = t > 0.62 ? "#3a2410" : "#b9bec7";
+    } else {
+      cell.textContent = "";
+    }
+  });
+  document.querySelectorAll(".mx-name").forEach(el =>
+    el.classList.toggle("selected", el.dataset.station === mxSelected.name));
+}
+
+function mxTooltip(ev, st, h) {
+  tooltip.style.display = "block";
+  tooltip.style.position = "fixed";
+  tooltip.style.left = Math.min(ev.clientX + 14, window.innerWidth - 190) + "px";
+  tooltip.style.top = (ev.clientY + 14) + "px";
+  tooltip.innerHTML = `<b>${st.name}</b> ${h}時台<br>` +
+    `混雑指数: ${mxIndex(st, h).toFixed(1)}(大阪ピーク=100)<br>` +
+    `駅内ピーク比: ${Math.round(mxIndex(st, h) / mxRowMax(st) * 100)}%`;
+}
+
+const PROFILE_LABELS = { terminal: "ターミナル", commuter: "通勤", tourist: "観光", nightlife: "繁華街", regional: "地方中核" };
+
+function renderMxDetail() {
+  const st = mxSelected;
+  const shape = HOURS.map(h => mxIndex(st, h) / mxRowMax(st) * 100);
+  const peakH = HOURS[shape.indexOf(Math.max(...shape))];
+  const types = Object.entries(st.profile).sort((a, b) => b[1] - a[1])
+    .map(([k, w]) => `${PROFILE_LABELS[k]} ${Math.round(w * 100)}%`).join(" / ");
+
+  // 折れ線チャート(SVG): 選択駅 vs 全駅平均(ともにピーク比%)
+  const W = 300, H = 170, L = 30, R = 8, T = 12, B = 24;
+  const x = h => L + (h - 5) / 19 * (W - L - R);
+  const y = v => T + (1 - v / 100) * (H - T - B);
+  const path = vals => vals.map((v, i) => `${i ? "L" : "M"}${x(HOURS[i]).toFixed(1)},${y(v).toFixed(1)}`).join("");
+  const gridY = [0, 50, 100].map(v =>
+    `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="#2a2f38" stroke-width="1"/>` +
+    `<text x="${L - 5}" y="${y(v) + 3}" text-anchor="end" font-size="9" fill="#7c828c">${v}</text>`).join("");
+  const gridX = [6, 9, 12, 15, 18, 21, 24].map(h =>
+    `<text x="${x(h)}" y="${H - 8}" text-anchor="middle" font-size="9" fill="#7c828c">${h}時</text>`).join("");
+  const area = `${path(shape)} L${x(24)},${y(0)} L${x(5)},${y(0)} Z`;
+
+  document.getElementById("mxDetail").innerHTML = `
+    <h2>${st.name}</h2>
+    <p class="meta">${types}</p>
+    <div class="stats">
+      <div class="stat"><b>${st.passengers.toLocaleString()}</b><span>乗車人員(人/日・概算)</span></div>
+      <div class="stat"><b>${peakH}時台</b><span>ピーク時間帯</span></div>
+      <div class="stat"><b>${Math.round(mxRowMax(st))}</b><span>ピーク混雑指数</span></div>
+    </div>
+    <svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${st.name}の時間帯別混雑カーブ">
+      ${gridY}${gridX}
+      <path d="${area}" fill="rgba(232,80,58,0.14)"/>
+      <path d="${path(MX_AVG_SHAPE)}" fill="none" stroke="#5b8dd6" stroke-width="2" stroke-dasharray="4 3"/>
+      <path d="${path(shape)}" fill="none" stroke="#e8503a" stroke-width="2"/>
+      <circle cx="${x(peakH)}" cy="${y(shape[HOURS.indexOf(peakH)])}" r="3.5" fill="#e8503a" stroke="#151920" stroke-width="2"/>
+    </svg>
+    <div class="chart-legend">
+      <span><i style="border-color:#e8503a"></i>${st.name}</span>
+      <span><i style="border-color:#5b8dd6; border-top-style:dashed"></i>全駅平均</span>
+    </div>
+    <p class="mx-note">縦軸は各駅のピーク=100とした比率。時間帯カーブは駅タイプ別の推定モデルです(実測の時間帯別データは大都市交通センサス取込で置換予定)。</p>`;
+}
+
+// コントロール
+document.getElementById("mxNormRow").addEventListener("click", function () {
+  mxNorm = "row";
+  this.classList.add("active"); document.getElementById("mxNormAbs").classList.remove("active");
+  paintMatrix();
+});
+document.getElementById("mxNormAbs").addEventListener("click", function () {
+  mxNorm = "abs";
+  this.classList.add("active"); document.getElementById("mxNormRow").classList.remove("active");
+  paintMatrix();
+});
+document.getElementById("mxNums").addEventListener("change", function () {
+  mxShowNums = this.checked; paintMatrix();
+});
+
+// ビュー切替
+const viewMapBtn = document.getElementById("viewMapBtn");
+const viewGraphBtn = document.getElementById("viewGraphBtn");
+const matrixView = document.getElementById("matrixView");
+function setView(v) {
+  const graph = v === "graph";
+  matrixView.classList.toggle("active", graph);
+  viewGraphBtn.classList.toggle("active", graph);
+  viewMapBtn.classList.toggle("active", !graph);
+  document.querySelector(".panel").classList.toggle("hidden", graph);
+  document.querySelector(".clock").classList.toggle("hidden", graph);
+  tooltip.style.display = "none";
+  tooltip.style.position = "";
+  if (graph) {
+    if (playing) setPlaying(false);
+    if (!mxBuilt) { buildMatrix(); renderMxDetail(); }
+    paintMatrix();
+  } else {
+    map.resize();
+  }
+}
+viewMapBtn.addEventListener("click", () => setView("map"));
+viewGraphBtn.addEventListener("click", () => setView("graph"));
+
 // スクリーンショット・デバッグ用フック
 window.__setTime = m => { setPlaying(false); render(m); };
 window.__play = () => setPlaying(true);
 window.__setMode = (m, d) => { mode = m; if (d) dayType = d; updateModeUI(); applyModePaint(); render(currentMinutes); };
+window.__setView = setView;
 </script>
 </body>
 </html>
