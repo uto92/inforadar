@@ -42,7 +42,7 @@ npx wrangler secret put API_KEY        # iOSアプリ用。任意の長い文字
 npm run deploy
 ```
 
-デプロイ後に表示される URL（例 `https://wester-visit-scanner.<account>.workers.dev`）を控える。
+デプロイ後に表示される URL（例 `https://visit-checkin.<account>.workers.dev`）を控える。
 以降これを **WORKER_URL** と呼ぶ。
 
 疎通確認:
@@ -67,15 +67,10 @@ cd webapp && npm run deploy    # ビルドしてWorkerごとデプロイ
 > 旧構成の Cloudflare Pages（wester-checkin.pages.dev）は削除済み。
 > Accessで保護できないURLのため、再作成しないこと。
 
-## 4. Worker に許可オリジンを設定する
+## 4. （廃止）許可オリジン設定
 
-ブラウザから別オリジンのWorkerを呼ぶため、明示的な許可が要る。
-
-```bash
-cd server
-npx wrangler secret put ALLOWED_ORIGINS
-# 入力例: https://wester-checkin.pages.dev
-```
+アプリとAPIが同一オリジンになったため CORS 設定は不要。
+`ALLOWED_ORIGINS` は別オリジンから叩く構成に戻す場合のみ設定する。
 
 ## 5. Cloudflare Access で関係者に限定する
 

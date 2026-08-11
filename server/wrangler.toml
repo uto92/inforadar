@@ -1,4 +1,4 @@
-name = "wester-visit-scanner"
+name = "visit-checkin"
 main = "src/index.ts"
 compatibility_date = "2025-11-01"
 
@@ -6,6 +6,8 @@ compatibility_date = "2025-11-01"
 # の出力にある database_id に差し替える
 [[d1_databases]]
 binding = "DB"
+# D1の実名は作成時のまま（内部名でURLには出ないため改名しない。改名は
+# エクスポート/インポートが必要で、実験データを危険に晒す価値がない）
 database_name = "wester-visit-scanner"
 database_id = "ce7e5c2b-6bfd-4749-ba42-f1f4fe8891ab"
 

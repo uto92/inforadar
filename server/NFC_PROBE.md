@@ -94,7 +94,7 @@ Authorization: Bearer <API_KEY>
 
 ## 5. 送信: POST /v1/wc/sync
 
-エンドポイント: `https://wester-visit-scanner.kikkaku.workers.dev/v1/wc/sync`
+エンドポイント: `https://visit-checkin.kikkaku.workers.dev/v1/wc/sync`
 
 1タップ = 1リクエストを基本とする（応答をそのまま画面表示に使えるため）。
 オフライン蓄積分の一括送信も可（1リクエスト最大1000件）。
@@ -167,7 +167,7 @@ GET /v1/wc/sync?since=<received_at>       増分（応答の nextSince を次回
 ## 9. curl での受入確認
 
 ```bash
-API=https://wester-visit-scanner.kikkaku.workers.dev/v1/wc/sync
+API=https://visit-checkin.kikkaku.workers.dev/v1/wc/sync
 KEY=<API_KEY>
 
 # 登録（1回目: stored=1 / 2回目: ignored=1 になれば正しい）
