@@ -10,8 +10,10 @@
     "typecheck": "tsc --noEmit",
     "deploy": "VITE_SYNC_URL=/ VITE_SELF_URL=https://visit-self.kikkaku.workers.dev vite build && cd ../server && npx wrangler deploy && npx wrangler deploy -c wrangler.self.toml",
     "build:pages": "tsc --noEmit && vite build --base=/inforadar/ --outDir ../docs --emptyOutDir",
+    "test:smoke": "node e2e/smoke.mjs",
     "test:scan": "node e2e/barcode-scan.mjs",
     "test:sync": "node e2e/two-device-sync.mjs",
+    "test:places": "node e2e/places-sync.mjs",
     "test:join": "node e2e/join-handoff.mjs",
     "test:salt": "node e2e/cross-event-salt.mjs",
     "test:formats": "node e2e/multi-format-scan.mjs"

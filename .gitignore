@@ -16,3 +16,6 @@ server/.dev.vars
 dist/
 webapp/.env.local
 webapp/.env
+
+# TypeScript
+*.tsbuildinfo

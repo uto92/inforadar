@@ -358,13 +358,11 @@ export async function handlePull(url: URL, env: SyncEnv): Promise<Response> {
     ).all<Record<string, string | null>>(),
   ]);
 
-  // 次回の since。取得した中で最も新しい received_at を使う
-  const maxReceived = [
-    ...events.results.map((r) => r.received_at),
-    ...places.results.map((r) => r.received_at),
-    ...checkins.results.map((r) => r.received_at),
-    ...scanErrors.results.map((r) => r.received_at),
-  ].reduce<string>((acc, v) => (typeof v === "string" && v > acc ? v : acc), cursor);
+  const { nextSince, hasMore } = computeNextSince(
+    [events.results, places.results, checkins.results, scanErrors.results],
+    cursor,
+    PULL_LIMIT
+  );
 
   return json({
     events: events.results.map((r) => ({
@@ -402,14 +400,59 @@ export async function handlePull(url: URL, env: SyncEnv): Promise<Response> {
       occurredAt: r.occurred_at,
       deviceId: r.device_id,
     })),
-    nextSince: maxReceived,
+    nextSince,
     // LIMITに達した場合は続きがある。呼び出し側は nextSince で再取得する
-    hasMore:
-      events.results.length === PULL_LIMIT ||
-      places.results.length === PULL_LIMIT ||
-      checkins.results.length === PULL_LIMIT ||
-      scanErrors.results.length === PULL_LIMIT,
+    hasMore,
   });
+}
+
+/**
+ * 次回の since（取得カーソル）を決める。
+ *
+ * 各種別は received_at 昇順で独立に limit 件まで取る。ある種別が limit に
+ * 達した（＝続きがある）場合、その種別で「返せた最後の received_at」より
+ * 先へカーソルを進めてはならない。進めると、打ち切られた続きの行が
+ * received_at > since を満たさなくなり恒久的に取りこぼす。
+ *
+ * 具体的には places の upsert が received_at を進めるため、checkins が
+ * limit で打ち切られた回に「今トグルした場所」が同じ応答に載ると、
+ * 全種別の max を取る旧実装ではカーソルがその場所の時刻まで飛び、
+ * 間の checkins が二度と取得されなくなっていた（レビュー指摘 major）。
+ *
+ * 安全なカーソル = 「打ち切られた種別の最終 received_at の最小値」。
+ * 打ち切りが無ければ全種別の max（＝全部読み切った）。
+ *
+ * limit 件ちょうどで終端だった場合は hasMore が空振りするが、
+ * 次回の取得が0件になるだけで取りこぼしは起きない。
+ */
+export function computeNextSince(
+  kinds: Array<Array<{ received_at?: unknown }>>,
+  cursor: string,
+  limit: number
+): { nextSince: string; hasMore: boolean } {
+  const lastOf = (rows: Array<{ received_at?: unknown }>): string | null => {
+    // 昇順取得なので末尾が最大。空なら null
+    const last = rows.length > 0 ? rows[rows.length - 1].received_at : null;
+    return typeof last === "string" ? last : null;
+  };
+  const truncatedLasts = kinds
+    .filter((rows) => rows.length >= limit)
+    .map(lastOf)
+    .filter((v): v is string => v !== null);
+
+  if (truncatedLasts.length > 0) {
+    // 続きのある種別が1つでもあれば、その最小の最終時刻までしか進めない
+    return {
+      nextSince: truncatedLasts.reduce((min, v) => (v < min ? v : min)),
+      hasMore: true,
+    };
+  }
+  // 全種別読み切り。全体の最大へ進める（無ければ cursor 据え置き）
+  const nextSince = kinds
+    .flat()
+    .map((r) => r.received_at)
+    .reduce<string>((acc, v) => (typeof v === "string" && v > acc ? v : acc), cursor);
+  return { nextSince, hasMore: false };
 }
 
 function json(body: unknown, status = 200): Response {

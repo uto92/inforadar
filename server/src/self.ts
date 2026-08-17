@@ -162,15 +162,32 @@ async function handleCheckin(request: Request, env: Env): Promise<Response> {
   const target = await loadTarget(eventId, placeId, env);
   if (!target) return json({ status: "error" }, 404);
 
+  // 端末仮名を "self:" 名前空間へ写像してから保存する。
+  //
+  // これをしないと、公開POSTに任意の64hexを渡せることと相まって2つの穴が開く:
+  //   (1) 出席オラクル: 誰かのカード/NFC仮名を投げ、応答が "already" かで
+  //       そのイベントへの来場有無を認証なしに照会できる
+  //   (2) 先回り妨害: 既知のカード仮名を先に self で入れておくと、本物の
+  //       スタッフ読取が (event_id, member_hash) の一意制約で捨てられる
+  // member_hash 列と一意制約は method を区別しないため、名前空間を混ぜると
+  // カード/NFC空間へ公開面から書き込め・照会できてしまう（DESIGN.md §3 違反）。
+  // 端末仮名は本人性の弱い段2であり、ここで一方向に写せば衝突も逆算も防げる。
+  const memberHash = await sha256Hex(`self:${pseudonym}`);
+
   const result = await env.DB.prepare(
     "INSERT OR IGNORE INTO wc_checkins" +
       " (id, event_id, place_id, member_hash, suffix_hash, method, checked_in_at, device_id)" +
       " VALUES (?1, ?2, ?3, ?4, NULL, 'self', ?5, 'self-web')"
   )
-    .bind(crypto.randomUUID(), eventId, placeId, pseudonym, new Date().toISOString())
+    .bind(crypto.randomUUID(), eventId, placeId, memberHash, new Date().toISOString())
     .run();
 
   return json({ status: (result.meta?.changes ?? 0) > 0 ? "stored" : "already" });
+}
+
+async function sha256Hex(input: string): Promise<string> {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(input));
+  return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
 function html(bodyInner: string, status = 200): Response {

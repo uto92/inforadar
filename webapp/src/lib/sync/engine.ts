@@ -54,7 +54,10 @@ class SyncEngine {
         db.checkins.where("synced").equals(0).count(),
         db.scanErrors.where("synced").equals(0).count(),
       ]);
-      return e + p + c + s;
+      // places を送れない同期先（pushPlaces未実装）では未同期の場所が
+      // 永久に解消せず「未同期 N件」が出続けるため、pending から除く
+      const placesPending = this.backend?.pushPlaces ? p : 0;
+      return e + placesPending + c + s;
     }).subscribe({
       next: (pending) => {
         this.patch({ pending });
@@ -122,7 +125,23 @@ class SyncEngine {
         const places = await db.places.where("synced").equals(0).limit(BATCH_SIZE).toArray();
         if (places.length > 0 && backend.pushPlaces) {
           await backend.pushPlaces(places);
-          await db.places.where("id").anyOf(places.map((r) => r.id)).modify({ synced: 1 });
+          // places は可変（selfEnabled/nameの編集がある）。push待機中にユーザーが
+          // 同じ行を編集していると、その編集は未送信のまま synced:1 で潰され、
+          // 直後のpullで古い値へ巻き戻る（レビュー指摘）。送信した内容と現在値が
+          // 一致する行だけを synced:1 にし、割り込み編集は synced:0 のまま残す。
+          await db.transaction("rw", db.places, async () => {
+            for (const sent of places) {
+              const current = await db.places.get(sent.id);
+              if (
+                current &&
+                current.synced === 0 &&
+                current.name === sent.name &&
+                current.selfEnabled === sent.selfEnabled
+              ) {
+                await db.places.update(sent.id, { synced: 1 });
+              }
+            }
+          });
           continue;
         }
         const checkins = await db.checkins.where("synced").equals(0).limit(BATCH_SIZE).toArray();

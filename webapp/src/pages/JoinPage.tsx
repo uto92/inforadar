@@ -28,13 +28,18 @@ export default function JoinPage() {
         });
         return;
       }
-      // QRに場所が入っていれば、この端末をその場所の受付として紐づける
-      if (payload.placeId) await setDevicePlace(payload.id, payload.placeId);
+      // 場所の紐づけは、取り込みが成立した経路でのみ行う。
+      // salt不一致や鍵競合で拒否する場合は紐づけないこと。先に紐づけると、
+      // 拒否したQR由来の placeId が以後の読取に刻印されてしまう（レビュー指摘）。
+      const bindPlace = async () => {
+        if (payload.placeId) await setDevicePlace(payload.id, payload.placeId);
+      };
       const existing = await db.events.get(payload.id);
       if (existing) {
         // 同期で先に取り込んだイベントは salt が空。ここで補うと読み取り可能になる
         if (!existing.salt) {
           await db.events.update(payload.id, { salt: payload.salt });
+          await bindPlace();
           if (!cancelled) {
             setState({ kind: "done", eventId: payload.id, name: payload.name, updated: true });
           }
@@ -50,6 +55,7 @@ export default function JoinPage() {
           });
           return;
         }
+        await bindPlace();
         if (!cancelled) {
           setState({ kind: "done", eventId: payload.id, name: payload.name, updated: false });
         }
@@ -78,6 +84,7 @@ export default function JoinPage() {
         // サーバ側は同じidを無視するため、送っても重複しない
         synced: 0,
       });
+      await bindPlace();
       if (!cancelled) {
         setState({ kind: "done", eventId: payload.id, name: payload.name, updated: true });
       }

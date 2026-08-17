@@ -69,6 +69,41 @@ const body = await A.locator("body").innerText();
 check("端末Aで同一人物が重複と判定される",
   body.includes("チェックイン済") ? "重複" : "新規", "重複");
 
+// 受付場所の刻印は「取り込みが成立した経路」でだけ行われること。
+// 拒否したリンクの p= を先に紐づけてしまうと、以後この端末の読取すべてに
+// 拒否したはずの場所が刻まれる（レビュー指摘 minor）。
+console.log("5) 拒否されたリンクの場所は紐づかない");
+const eventId = new URL(copied.split("#")[1].replace("/join", ""), "http://x").searchParams.get("e");
+const PLACE = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
+// 端末Bは既に本物のソルトで取り込み済み。別ソルト＋場所つきのリンクを開かせる
+const tampered = copied.replace(/([?&]s=)[0-9a-f]{32}/, "$1" + "f".repeat(32)) + `&p=${PLACE}`;
+const devicePlace = (page, ev) =>
+  page.evaluate(
+    (ev) =>
+      new Promise((resolve) => {
+        const req = indexedDB.open("wester-checkin");
+        req.onsuccess = () => {
+          const g = req.result.transaction("meta", "readonly").objectStore("meta")
+            .get(`devicePlace:${ev}`);
+          g.onsuccess = () => resolve(g.result ? g.result.value : null);
+          g.onerror = () => resolve("READ_ERROR");
+        };
+        req.onerror = () => resolve("OPEN_ERROR");
+      }),
+    ev
+  );
+
+check("前提: まだ場所は紐づいていない", await devicePlace(B, eventId), null);
+await B.goto(tampered.replace("http://localhost:4180", new URL(BASE).origin));
+await B.getByText("取り込めませんでした").waitFor({ timeout: 15000 });
+check("別ソルトのリンクは拒否される", "拒否", "拒否");
+check("拒否したリンクの場所は刻印されない", await devicePlace(B, eventId), null);
+
+// 正しいソルト＋場所つきなら紐づくこと（上の検査が「常にnull」ではないことの確認）
+await B.goto((copied + `&p=${PLACE}`).replace("http://localhost:4180", new URL(BASE).origin));
+await B.getByText("この端末で受付できます").waitFor({ timeout: 15000 });
+check("正しいリンクなら場所が紐づく", await devicePlace(B, eventId), PLACE);
+
 console.log(`\n結果: PASS ${pass} / FAIL ${fail}`);
 await browser.close();
 process.exitCode = fail === 0 ? 0 : 1;

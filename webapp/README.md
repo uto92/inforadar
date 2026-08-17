@@ -37,6 +37,38 @@ npm run dev        # http://localhost:5173 （PCのブラウザ + Webカメラ�
 npm run build      # 型チェック + 本番ビルド（dist/）
 ```
 
+## テスト
+
+| コマンド | 対象 | 前提 |
+|---|---|---|
+| `npm run test:smoke` | 登録→読取→集計→CSVの一巡（18項目） | 静的配信のみ |
+| `npm run test:scan` | 実バーコード映像の読取（仮想カメラ） | 静的配信のみ |
+| `npm run test:formats` | Codabar/Code128/EAN-13/Code39/QR | 静的配信のみ |
+| `npm run test:salt` | イベント横断で同一人物と判定できるか | 静的配信のみ |
+| `npm run test:sync` | 2端末間の同期 | Worker + 同期URL付きビルド |
+| `npm run test:places` | 場所の同期と、push応答待ち中の編集の保全 | 同上 |
+| `npm run test:join` | 招待リンクによるソルト共有と場所の刻印 | 同上 |
+| `cd ../server && npm run test:unit` | 増分取得カーソルの単体テスト | なし |
+| `cd ../server && ./test/sync-api.sh <APIキー>` | 同期APIの検証（20項目） | Worker |
+| `cd ../server && ./test/self-api.sh` | 公開面と仮名の名前空間分離（13項目） | Worker 2つ |
+
+同期を伴うテストは Worker と、同期先を指した静的ビルドが要る:
+
+```bash
+cd server && npm run migrate:local
+cd server && npx wrangler dev --port 8787 --local \
+  --var DEV_OPEN_WC_SYNC:1 --var ALLOWED_ORIGINS:http://localhost:4180
+# 公開面も要る場合（self-api.sh）。--inspector-port を分けないとデバッグポートが衝突する
+cd server && npx wrangler dev -c wrangler.self.toml --port 8788 --inspector-port 9230 --local
+
+cd webapp && VITE_SYNC_URL=http://localhost:8787 VITE_SELF_URL=http://localhost:8788 \
+  npx vite build --base=/inforadar/ --outDir /tmp/site/inforadar --emptyOutDir
+(cd /tmp/site && python3 -m http.server 4180)
+```
+
+`test:smoke` など同期を使わないテストは、**同期URLを付けずに**ビルドしたものを別ポートで
+配信して `BASE_URL` で指す（同期ありのビルドだと他テストのデータを取り込んでしまう）。
+
 ## 公開範囲とアクセス制限（デプロイ前に必ず読む）
 
 **`https://xxx.pages.dev` はインターネット上に公開される。** URLを知っている人は誰でも開ける。
