@@ -46,12 +46,12 @@ echo "4) 端末間の重複"
 r=$(curl -s --noproxy '*' -X POST "$API" -H "$H" -H 'Content-Type: application/json' -d "{
   \"checkins\":[{\"id\":\"$C3\",\"eventId\":\"$EV\",\"memberHash\":\"$HASH_A\",\"suffixHash\":\"$SUF\",\"method\":\"scan\",\"checkedInAt\":\"2026-08-08T10:03:00.000Z\",\"deviceId\":\"devB\"}]}")
 check "別端末が読んだ同一来場者は登録されない" "$(echo "$r" | grep -o '"checkins":[0-9]*' | head -1 | grep -o '[0-9]*$')" "0"
-check "無視された件数が1と報告される" "$(echo "$r" | grep -o '"ignored":{"events":[0-9]*,"checkins":[0-9]*' | grep -o '[0-9]*$')" "1"
+check "無視された件数が1と報告される" "$(echo "$r" | grep -o '"ignored":{"events":[0-9]*,"places":[0-9]*,"checkins":[0-9]*' | grep -o '[0-9]*$')" "1"
 
 echo "5) 不正データの排除"
 r=$(curl -s --noproxy '*' -X POST "$API" -H "$H" -H 'Content-Type: application/json' -d "{
   \"checkins\":[{\"id\":\"$C4\",\"eventId\":\"$EV\",\"memberHash\":\"328913579881\",\"suffixHash\":\"$SUF\",\"method\":\"scan\",\"checkedInAt\":\"2026-08-08T10:04:00.000Z\",\"deviceId\":\"devB\"}]}")
-check "生の12桁IDは破棄される" "$(echo "$r" | grep -o '"rejected":{"events":[0-9]*,"checkins":[0-9]*' | grep -o '[0-9]*$')" "1"
+check "生の12桁IDは破棄される" "$(echo "$r" | grep -o '"rejected":{"events":[0-9]*,"places":[0-9]*,"checkins":[0-9]*' | grep -o '[0-9]*$')" "1"
 
 echo "6) 取得"
 r=$(curl -s --noproxy '*' "$API?eventId=$EV" -H "$H")
@@ -83,7 +83,28 @@ check "残額がサーバに保存されていない" "$(echo "$r" | grep -c '19
 # 本体ハッシュの無いNFCは弾く
 r=$(curl -s --noproxy '*' -X POST "$API" -H "$H" -H 'Content-Type: application/json' -d "{
   \"checkins\":[{\"id\":\"88888888-8888-4888-8888-8888${R}\",\"eventId\":\"$EV\",\"method\":\"nfc\",\"checkedInAt\":\"2026-08-11T08:52:00.000Z\",\"deviceId\":\"ios-A9E5AEBF\"}]}")
-check "仮名の無いNFCは破棄される" "$(echo "$r" | grep -o '"rejected":{"events":[0-9]*,"checkins":[0-9]*' | grep -o '[0-9]*$')" "1"
+check "仮名の無いNFCは破棄される" "$(echo "$r" | grep -o '"rejected":{"events":[0-9]*,"places":[0-9]*,"checkins":[0-9]*' | grep -o '[0-9]*$')" "1"
+
+# ---- 場所（0004以降） ----
+echo "8) 場所"
+PL="aaaa1111-1111-4111-8111-1111${R}"
+r=$(curl -s --noproxy '*' -X POST "$API" -H "$H" -H 'Content-Type: application/json' -d "{
+  \"places\":[{\"id\":\"$PL\",\"name\":\"中央改札前\",\"selfEnabled\":1,\"deviceId\":\"devA\",\"createdAt\":\"2026-08-12T09:00:00.000Z\"}]}")
+check "場所が登録される" "$(echo "$r" | grep -o '"places":[0-9]*' | head -1 | grep -o '[0-9]*$')" "1"
+
+r=$(curl -s --noproxy '*' -X POST "$API" -H "$H" -H 'Content-Type: application/json' -d "{
+  \"places\":[{\"id\":\"$PL\",\"name\":\"中央改札前\",\"selfEnabled\":0,\"deviceId\":\"devA\",\"createdAt\":\"2026-08-12T09:00:00.000Z\"}]}")
+check "場所の更新(selfEnabled切替)が反映される" "$(echo "$r" | grep -o '"places":[0-9]*' | head -1 | grep -o '[0-9]*$')" "1"
+
+CK_PL="bbbb1111-1111-4111-8111-1111${R}"
+r=$(curl -s --noproxy '*' -X POST "$API" -H "$H" -H 'Content-Type: application/json' -d "{
+  \"checkins\":[{\"id\":\"$CK_PL\",\"eventId\":\"$EV\",\"placeId\":\"$PL\",\"memberHash\":\"$(printf '9%.0s' {1..56})${R}\",\"suffixHash\":\"$SUF\",\"method\":\"scan\",\"checkedInAt\":\"2026-08-12T09:01:00.000Z\",\"deviceId\":\"devA\"}]}")
+check "場所つきチェックインが登録される" "$(echo "$r" | grep -o '"checkins":[0-9]*' | head -1 | grep -o '[0-9]*$')" "1"
+
+r=$(curl -s --noproxy '*' "$API?eventId=$EV" -H "$H")
+check "取得に placeId が含まれる" "$(echo "$r" | grep -c "\"placeId\":\"$PL\"")" "1"
+r=$(curl -s --noproxy '*' "$API" -H "$H")
+check "取得に場所一覧が含まれる" "$(echo "$r" | grep -c "中央改札前")" "1"
 
 echo
 echo "結果: PASS $pass / FAIL $fail"

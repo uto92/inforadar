@@ -19,13 +19,25 @@ export interface EventRow {
   synced: 0 | 1;
 }
 
+export interface PlaceRow {
+  id: string; // クライアント生成UUID = 同期の冪等キー
+  name: string;
+  /** 1 = 来場者向けQR（公開面）での自己チェックインを許可 */
+  selfEnabled: 0 | 1;
+  deviceId: string;
+  createdAt: string;
+  synced: 0 | 1;
+}
+
 export interface CheckinRow {
   id: string; // クライアント生成UUID = 同期の冪等キー
   eventId: string;
+  /** 場所。未指定運用・既存データは undefined/null */
+  placeId?: string | null;
   memberHash: string | null; // scan時のみ。manual時はnull
   suffixHash: string; // 末尾6桁の照合キー（scan/manual共通）
-  /** nfc は外部のNFCプローブ由来（同期で取り込む。この画面では作らない） */
-  method: "scan" | "manual" | "nfc";
+  /** nfc = NFCプローブ由来 / self = 公開面の自己チェックイン（いずれも同期で取り込む） */
+  method: "scan" | "manual" | "nfc" | "self";
   checkedInAt: string; // ISO8601
   deviceId: string;
   synced: 0 | 1;
@@ -51,6 +63,7 @@ export interface MetaRow {
 
 export const db = new Dexie("wester-checkin") as Dexie & {
   events: EntityTable<EventRow, "id">;
+  places: EntityTable<PlaceRow, "id">;
   checkins: EntityTable<CheckinRow, "id">;
   scanErrors: EntityTable<ScanErrorRow, "id">;
   meta: EntityTable<MetaRow, "key">;
@@ -66,6 +79,15 @@ db.version(1).stores({
 // 既存イベントのソルトは書き換えない（記録済みのハッシュと照合できなくなるため）
 db.version(2).stores({
   events: "id, synced, createdAt",
+  checkins: "id, eventId, synced, checkedInAt, [eventId+memberHash], [eventId+suffixHash]",
+  scanErrors: "id, eventId, synced, occurredAt",
+  meta: "key",
+});
+
+// v3: 場所(places)を追加（DESIGN.md Phase 1）。checkin.placeId は非インデックス列
+db.version(3).stores({
+  events: "id, synced, createdAt",
+  places: "id, synced, createdAt",
   checkins: "id, eventId, synced, checkedInAt, [eventId+memberHash], [eventId+suffixHash]",
   scanErrors: "id, eventId, synced, occurredAt",
   meta: "key",
@@ -131,6 +153,41 @@ export async function createEvent(input: {
   return row;
 }
 
+// ---------------------------------------------------------------- 場所
+
+export async function createPlace(name: string, selfEnabled: 0 | 1): Promise<PlaceRow> {
+  const row: PlaceRow = {
+    id: crypto.randomUUID(),
+    name: name.trim(),
+    selfEnabled,
+    deviceId: getDeviceId(),
+    createdAt: new Date().toISOString(),
+    synced: 0,
+  };
+  await db.places.add(row);
+  return row;
+}
+
+/** 公開面での自己チェックイン可否の切替。synced を戻して再同期させる */
+export async function setPlaceSelfEnabled(placeId: string, selfEnabled: 0 | 1): Promise<void> {
+  await db.places.update(placeId, { selfEnabled, synced: 0 });
+}
+
+/**
+ * この端末の受付場所（イベントごと）。同期しない端末ローカルの設定。
+ * スタッフ端末が「どこの受付か」を覚え、以後の読取に場所を刻印するために使う
+ */
+export async function getDevicePlace(eventId: string): Promise<string | null> {
+  const row = await db.meta.get(`devicePlace:${eventId}`);
+  return row?.value || null;
+}
+
+export async function setDevicePlace(eventId: string, placeId: string | null): Promise<void> {
+  const key = `devicePlace:${eventId}`;
+  if (placeId) await db.meta.put({ key, value: placeId });
+  else await db.meta.delete(key);
+}
+
 // ---------------------------------------------------------------- チェックイン
 
 export type CheckinOutcome =
@@ -150,7 +207,8 @@ export type CheckinOutcome =
 export async function recordScan(
   event: EventRow,
   rawText: string,
-  symbology: string
+  symbology: string,
+  placeId: string | null = null
 ): Promise<CheckinOutcome> {
   const now = new Date().toISOString();
   const normalized = normalizeScan(rawText, event.cardMode ?? "any");
@@ -193,6 +251,7 @@ export async function recordScan(
   const row: CheckinRow = {
     id: crypto.randomUUID(),
     eventId: event.id,
+    placeId,
     memberHash: mh,
     suffixHash: sh,
     method: "scan",
@@ -223,7 +282,11 @@ export async function recordScan(
 }
 
 /** 手入力フォールバック（会員ID末尾6桁）。 */
-export async function recordManual(event: EventRow, digits: string): Promise<CheckinOutcome> {
+export async function recordManual(
+  event: EventRow,
+  digits: string,
+  placeId: string | null = null
+): Promise<CheckinOutcome> {
   const trimmed = digits.trim();
   if (!new RegExp(`^\\d{${SUFFIX_LEN}}$`).test(trimmed)) {
     return { status: "invalid", reason: "manual_format" };
@@ -235,6 +298,7 @@ export async function recordManual(event: EventRow, digits: string): Promise<Che
   const row: CheckinRow = {
     id: crypto.randomUUID(),
     eventId: event.id,
+    placeId,
     memberHash: null,
     suffixHash: sh,
     method: "manual",

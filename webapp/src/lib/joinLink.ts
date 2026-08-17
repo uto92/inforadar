@@ -20,10 +20,16 @@ export interface JoinPayload {
   name: string;
   eventDate: string;
   venue: string;
+  /** 受け取った端末が受付場所として紐づく場所ID（任意） */
+  placeId: string | null;
 }
 
 /** 受け取り用リンクを組み立てる。QR表示・コピーの両方で使う */
-export function buildJoinUrl(event: EventRow, origin = window.location.href): string {
+export function buildJoinUrl(
+  event: EventRow,
+  placeId: string | null = null,
+  origin = window.location.href
+): string {
   // HashRouter のため #/join?... の形になる。#以降は送信されない
   const base = origin.split("#")[0];
   const params = new URLSearchParams({
@@ -33,6 +39,7 @@ export function buildJoinUrl(event: EventRow, origin = window.location.href): st
     d: event.eventDate,
     v: event.venue,
   });
+  if (placeId) params.set("p", placeId);
   return `${base}#/join?${params.toString()}`;
 }
 
@@ -48,5 +55,7 @@ export function parseJoinParams(search: URLSearchParams): JoinPayload | null {
   // 黙って進めず必ず弾く
   if (!SALT_RE.test(salt)) return null;
   if (!name.trim() || !eventDate.trim()) return null;
-  return { id, salt, name: name.trim(), eventDate, venue: venue.trim() };
+  const placeRaw = (search.get("p") ?? "").toLowerCase();
+  const placeId = UUID_RE.test(placeRaw) ? placeRaw : null;
+  return { id, salt, name: name.trim(), eventDate, venue: venue.trim(), placeId };
 }

@@ -48,12 +48,13 @@ class SyncEngine {
     if (this.started) return;
     this.started = true;
     liveQuery(async () => {
-      const [e, c, s] = await Promise.all([
+      const [e, p, c, s] = await Promise.all([
         db.events.where("synced").equals(0).count(),
+        db.places.where("synced").equals(0).count(),
         db.checkins.where("synced").equals(0).count(),
         db.scanErrors.where("synced").equals(0).count(),
       ]);
-      return e + c + s;
+      return e + p + c + s;
     }).subscribe({
       next: (pending) => {
         this.patch({ pending });
@@ -118,6 +119,12 @@ class SyncEngine {
           await db.events.where("id").anyOf(events.map((r) => r.id)).modify({ synced: 1 });
           continue;
         }
+        const places = await db.places.where("synced").equals(0).limit(BATCH_SIZE).toArray();
+        if (places.length > 0 && backend.pushPlaces) {
+          await backend.pushPlaces(places);
+          await db.places.where("id").anyOf(places.map((r) => r.id)).modify({ synced: 1 });
+          continue;
+        }
         const checkins = await db.checkins.where("synced").equals(0).limit(BATCH_SIZE).toArray();
         if (checkins.length > 0) {
           await backend.pushCheckins(checkins);
@@ -162,6 +169,7 @@ class SyncEngine {
     for (let page = 0; page < MAX_PULL_PAGES; page += 1) {
       const result = await backend.pull(since);
       const newEvents = result.events.filter((r) => r.id);
+      const pulledPlaces = (result.places ?? []).filter((r) => r.id);
       const newCheckins = result.checkins.filter((r) => r.id);
       const newErrors = result.scanErrors.filter((r) => r.id);
 
@@ -176,6 +184,22 @@ class SyncEngine {
           .filter((r) => !existing.has(r.id))
           .map((r) => ({ ...r, salt: "", synced: 1 as const }));
         if (toAdd.length > 0) await db.events.bulkAdd(toAdd);
+      }
+      if (pulledPlaces.length > 0) {
+        // 場所は name / selfEnabled の変更が他端末から届くため、
+        // ローカルに未送信の変更（synced:0）が無い行に限り上書きを許す
+        for (const pl of pulledPlaces) {
+          const existing = await db.places.get(pl.id);
+          if (!existing) {
+            await db.places.add({ ...pl, synced: 1 });
+          } else if (existing.synced === 1) {
+            await db.places.update(pl.id, {
+              name: pl.name,
+              selfEnabled: pl.selfEnabled,
+              synced: 1,
+            });
+          }
+        }
       }
       if (newCheckins.length > 0) {
         const existing = new Set(

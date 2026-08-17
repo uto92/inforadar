@@ -50,6 +50,7 @@ https://<app-host>/#/join?e=<eventId>&s=<salt>&n=<名前>&d=<日付>&v=<会場>
 |---|---|---|
 | `e` | イベントID (UUID) | `^[0-9a-f-]{36}$` (小文字化して使う) |
 | `s` | プロジェクト共通ソルト | `^[0-9a-f]{32}$` |
+| `p` | 受付場所ID (UUID・任意) | あれば保存し、送信時に `placeId` として付ける |
 | `n` / `d` / `v` | 表示用（名前・日付・会場） | 画面表示のみに使用 |
 
 - `e` と `s` を端末に保存する（`s` は Keychain 推奨。ソルトは鍵に相当する）
@@ -119,6 +120,7 @@ Authorization: Bearer <API_KEY>
       "id": "550e8400-e29b-41d4-a716-446655440000",
       "eventId": "<QRから取り込んだ e>",
       "memberHash": "<算出した仮名 64桁hex>",
+      "placeId": "<QRの p（無ければ省略）>",
       "method": "nfc",
       "checkedInAt": "2026-08-11T08:50:03.000Z",
       "deviceId": "ios-A9E5AEBF"
@@ -132,6 +134,7 @@ Authorization: Bearer <API_KEY>
 | `id` | **タップごとにクライアントで生成するUUID**。再送時は同じidを使う（冪等キー） |
 | `eventId` | QRの `e`。小文字 |
 | `memberHash` | §3の仮名。これ以外の形式（生ID等）は破棄される |
+| `placeId` | 任意。QRの `p`。「どこの受付か」が checkin に刻まれる |
 | `method` | 固定で `"nfc"`。`suffixHash` は**送らない**（NFCに末尾6桁の概念はない） |
 | `checkedInAt` | タップ時刻。ISO8601。端末時計のずれは許容される（同期カーソルはサーバ採番の received_at） |
 | `deviceId` | 端末識別子。64文字以内 |

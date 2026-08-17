@@ -1,11 +1,12 @@
 import { useLiveQuery } from "dexie-react-hooks";
 import { useState, useSyncExternalStore } from "react";
 import { Link, useParams } from "react-router-dom";
+import PlacesCard from "../components/PlacesCard";
 import QrCode from "../components/QrCode";
 import Histogram from "../components/Histogram";
 import SyncBadge from "../components/SyncBadge";
 import { downloadCsv, sanitizeFilename, toCsv } from "../lib/csv";
-import { db, type CheckinRow, type ScanErrorRow } from "../lib/db";
+import { db, type CheckinRow, type PlaceRow, type ScanErrorRow } from "../lib/db";
 import { formatDateJa, formatDateTime } from "../lib/format";
 import { buildJoinUrl } from "../lib/joinLink";
 import { syncEngine } from "../lib/sync/engine";
@@ -15,6 +16,8 @@ export default function AdminPage() {
   // 他端末へイベント（とソルト）を引き渡すQRの表示切替
   const [shareOpen, setShareOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  // 追加する端末をどの場所の受付にするか（未指定可）
+  const [sharePlaceId, setSharePlaceId] = useState("");
   // undefined = 読み込み中 / null = 該当なし（読込中に「見つかりません」を出さない）
   const event = useLiveQuery(async () => (await db.events.get(eventId)) ?? null, [eventId]);
   const checkins = useLiveQuery(
@@ -27,6 +30,7 @@ export default function AdminPage() {
     [eventId],
     [] as ScanErrorRow[]
   );
+  const places = useLiveQuery(() => db.places.orderBy("createdAt").toArray(), [], [] as PlaceRow[]);
   const syncState = useSyncExternalStore(syncEngine.subscribe, syncEngine.getSnapshot);
 
   if (event === undefined) {
@@ -46,8 +50,21 @@ export default function AdminPage() {
     );
   }
 
+  const placeName = new Map(places.map((pl) => [pl.id, pl.name]));
   const scanCount = checkins.filter((c) => c.method === "scan").length;
-  const manualCount = checkins.length - scanCount;
+  const selfCount = checkins.filter((c) => c.method === "self").length;
+  const nfcCount = checkins.filter((c) => c.method === "nfc").length;
+  const manualCount = checkins.length - scanCount - selfCount - nfcCount;
+  // 場所別の内訳（場所を使っている場合のみ表示）
+  const byPlace = new Map<string, number>();
+  for (const c of checkins) {
+    const key = c.placeId ?? "";
+    byPlace.set(key, (byPlace.get(key) ?? 0) + 1);
+  }
+  const placeRows = [...byPlace.entries()]
+    .map(([id, n]) => ({ name: id ? (placeName.get(id) ?? "（不明な場所）") : "場所未指定", n }))
+    .sort((a, b) => b.n - a.n);
+  const showPlaces = placeRows.some((r) => r.name !== "場所未指定");
   const dupCount = errors.filter((e) => e.kind === "duplicate").length;
   const invalidCount = errors.length - dupCount;
 
@@ -58,6 +75,7 @@ export default function AdminPage() {
         "event_name",
         "event_date",
         "venue",
+        "place_name",
         "member_hash",
         "suffix_hash",
         "method",
@@ -70,6 +88,7 @@ export default function AdminPage() {
         event.name,
         event.eventDate,
         event.venue,
+        c.placeId ? (placeName.get(c.placeId) ?? c.placeId) : "",
         c.memberHash ?? "",
         c.suffixHash,
         c.method,
@@ -140,6 +159,14 @@ export default function AdminPage() {
             <div className="label">手入力</div>
             <div className="value">{manualCount}</div>
           </div>
+          {(selfCount > 0 || nfcCount > 0) && (
+            <div className="stat-tile">
+              <div className="label">セルフ / NFC</div>
+              <div className="value">
+                {selfCount} / {nfcCount}
+              </div>
+            </div>
+          )}
           <div className="stat-tile">
             <div className="label">重複読取（記録済を再読取）</div>
             <div className="value">{dupCount}</div>
@@ -157,6 +184,32 @@ export default function AdminPage() {
         </h2>
         <Histogram timestamps={checkins.map((c) => c.checkedInAt)} />
       </section>
+
+      {showPlaces && (
+        <section className="card">
+          <h2 className="section-title" style={{ marginTop: 0 }}>
+            場所別の来場数
+          </h2>
+          <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+            {placeRows.map((r) => (
+              <li
+                key={r.name}
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  padding: "6px 0",
+                  borderTop: "1px solid var(--color-border-light)",
+                }}
+              >
+                <span>{r.name}</span>
+                <strong>{r.n}人</strong>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      <PlacesCard event={event} />
 
       <section className="card">
         <h2 className="section-title" style={{ marginTop: 0 }}>
@@ -227,8 +280,36 @@ export default function AdminPage() {
               2台目のスマホの<strong>標準のカメラアプリ</strong>でこのQRを写し、
               表示されるリンクを開いてください。読み取りに必要な設定が引き継がれます。
             </p>
+            {places.length > 0 && (
+              <div className="field">
+                <label htmlFor="share-place">追加する端末の受付場所</label>
+                <select
+                  id="share-place"
+                  value={sharePlaceId}
+                  onChange={(e) => setSharePlaceId(e.target.value)}
+                  style={{
+                    width: "100%",
+                    minHeight: "var(--tap-min)",
+                    padding: "8px 12px",
+                    fontFamily: "inherit",
+                    fontSize: 18,
+                    color: "var(--color-text)",
+                    background: "var(--color-bg)",
+                    border: "2px solid var(--color-border)",
+                    borderRadius: "var(--radius)",
+                  }}
+                >
+                  <option value="">未指定</option>
+                  {places.map((pl) => (
+                    <option key={pl.id} value={pl.id}>
+                      {pl.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
             <div style={{ display: "flex", justifyContent: "center", padding: "12px 0" }}>
-              <QrCode text={buildJoinUrl(event)} />
+              <QrCode text={buildJoinUrl(event, sharePlaceId || null)} />
             </div>
             <p className="muted">
               このリンクには読み取りに必要な鍵が含まれます。関係者以外に共有しないでください。

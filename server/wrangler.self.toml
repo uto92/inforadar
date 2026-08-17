@@ -1,0 +1,19 @@
+# 公開面（来場者セルフチェックイン）用のWorker設定。
+# スタッフ面(wrangler.toml / visit-checkin)とWorkerを分ける理由:
+#   - visit-checkin は Cloudflare Access でWorker全体が保護されており、
+#     公開ページを同居させられない
+#   - 公開面には秘密（ソルト・APIキー）を一切持たせない設計を構成で強制する
+#
+# デプロイ:   npx wrangler deploy -c wrangler.self.toml
+# ローカル:   npx wrangler dev -c wrangler.self.toml --port 8788 --local
+name = "visit-self"
+main = "src/self.ts"
+compatibility_date = "2025-11-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "wester-visit-scanner"
+database_id = "ce7e5c2b-6bfd-4749-ba42-f1f4fe8891ab"
+
+[observability]
+enabled = true

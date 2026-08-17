@@ -1,4 +1,4 @@
-import type { CheckinRow, EventRow, ScanErrorRow } from "../db";
+import type { CheckinRow, EventRow, PlaceRow, ScanErrorRow } from "../db";
 import { createSupabaseBackend } from "./supabase";
 import { createWorkerBackend } from "./worker";
 
@@ -8,6 +8,7 @@ import { createWorkerBackend } from "./worker";
 /** 他端末ぶんを取り込むための取得結果。salt はサーバに存在しないため含まない */
 export interface PullResult {
   events: Array<Omit<EventRow, "salt" | "synced">>;
+  places?: Array<Omit<PlaceRow, "synced">>;
   checkins: Array<Omit<CheckinRow, "synced">>;
   scanErrors: Array<Omit<ScanErrorRow, "synced">>;
   /** 次回の取得開始位置（サーバ採番。端末時計に依存しない） */
@@ -19,6 +20,8 @@ export interface PullResult {
 export interface SyncBackend {
   readonly name: string;
   pushEvents(rows: EventRow[]): Promise<void>;
+  /** 場所の同期。未対応の同期先（Supabase版）は undefined でよい */
+  pushPlaces?(rows: PlaceRow[]): Promise<void>;
   pushCheckins(rows: CheckinRow[]): Promise<void>;
   pushScanErrors(rows: ScanErrorRow[]): Promise<void>;
   /** 未実装の同期先（Supabase版）は undefined。その場合はpushのみ動作する */

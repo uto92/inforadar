@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { adoptProjectSalt, db } from "../lib/db";
+import { adoptProjectSalt, db, setDevicePlace } from "../lib/db";
 import { getDeviceId } from "../lib/deviceId";
 import { parseJoinParams } from "../lib/joinLink";
 
@@ -28,6 +28,8 @@ export default function JoinPage() {
         });
         return;
       }
+      // QRに場所が入っていれば、この端末をその場所の受付として紐づける
+      if (payload.placeId) await setDevicePlace(payload.id, payload.placeId);
       const existing = await db.events.get(payload.id);
       if (existing) {
         // 同期で先に取り込んだイベントは salt が空。ここで補うと読み取り可能になる

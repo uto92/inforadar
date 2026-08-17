@@ -9,6 +9,7 @@ import { initAudio, playError, playSuccess, playWarn, vibrate } from "../lib/aud
 import {
   commitPending,
   db,
+  getDevicePlace,
   recordManual,
   recordScan,
   type CheckinOutcome,
@@ -75,6 +76,16 @@ export default function ScanPage() {
     [eventId],
     0
   );
+
+  // この端末の受付場所。読取時に checkin へ刻印する
+  const devicePlaceId = useLiveQuery(() => getDevicePlace(eventId), [eventId], null);
+  const devicePlace = useLiveQuery(
+    async () => (devicePlaceId ? ((await db.places.get(devicePlaceId)) ?? null) : null),
+    [devicePlaceId],
+    null
+  );
+  const placeIdRef = useRef<string | null>(null);
+  placeIdRef.current = devicePlaceId ?? null;
 
   const [running, setRunning] = useState(false);
   const [starting, setStarting] = useState(false);
@@ -227,7 +238,7 @@ export default function ScanPage() {
       busyRef.current = true;
       disarm();
       try {
-        const outcome = await recordScan(ev, text, symbology);
+        const outcome = await recordScan(ev, text, symbology, placeIdRef.current);
         presentOutcome(outcome);
       } finally {
         busyRef.current = false;
@@ -365,7 +376,7 @@ export default function ScanPage() {
     if (!ev) return;
     setManualOpen(false);
     initAudio();
-    const outcome = await recordManual(ev, digits);
+    const outcome = await recordManual(ev, digits, placeIdRef.current);
     presentOutcome(outcome);
   }
 
@@ -393,7 +404,10 @@ export default function ScanPage() {
           <Link to="/" className="back-link">
             イベント
           </Link>
-          <span className="scan-event-name">{event.name}</span>
+          <span className="scan-event-name">
+            {event.name}
+            {devicePlace ? `｜${devicePlace.name}` : ""}
+          </span>
           <Link to={`/admin/${event.id}`} className="back-link" style={{ fontWeight: 700 }}>
             管理
           </Link>

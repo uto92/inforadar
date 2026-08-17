@@ -4,13 +4,13 @@
 /// APIとアプリは同一オリジンであり、Accessのセッションcookieがそのまま届く。
 /// 資格情報をJSバンドルに埋め込まないので、URLを知る第三者がデータを読むことはない。
 
-import type { CheckinRow, EventRow, ScanErrorRow } from "../db";
+import type { CheckinRow, EventRow, PlaceRow, ScanErrorRow } from "../db";
 import type { PullResult, SyncBackend } from "./backend";
 
 interface PushResponse {
-  stored: { events: number; checkins: number; scanErrors: number };
-  ignored: { events: number; checkins: number; scanErrors: number };
-  rejected: { events: number; checkins: number; scanErrors: number };
+  stored: { events: number; places: number; checkins: number; scanErrors: number };
+  ignored: { events: number; places: number; checkins: number; scanErrors: number };
+  rejected: { events: number; places: number; checkins: number; scanErrors: number };
 }
 
 function endpoint(base: string): string {
@@ -61,11 +61,24 @@ export function createWorkerBackend(): SyncBackend | null {
       });
     },
 
+    async pushPlaces(rows: PlaceRow[]) {
+      await push({
+        places: rows.map((r) => ({
+          id: r.id,
+          name: r.name,
+          selfEnabled: r.selfEnabled,
+          deviceId: r.deviceId,
+          createdAt: r.createdAt,
+        })),
+      });
+    },
+
     async pushCheckins(rows: CheckinRow[]) {
       await push({
         checkins: rows.map((r) => ({
           id: r.id,
           eventId: r.eventId,
+          placeId: r.placeId ?? null,
           memberHash: r.memberHash,
           suffixHash: r.suffixHash,
           method: r.method,
@@ -96,6 +109,7 @@ export function createWorkerBackend(): SyncBackend | null {
       const body = (await res.json()) as PullResult;
       return {
         events: body.events ?? [],
+        places: body.places ?? [],
         checkins: body.checkins ?? [],
         scanErrors: body.scanErrors ?? [],
         nextSince: body.nextSince,

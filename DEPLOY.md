@@ -58,11 +58,22 @@ curl "$WORKER_URL/v1/wc/sync"          # {"error":"unauthorized"} が返れば�
 
 アプリ本体はWorkerの静的アセットとして同じURLから配信される
 （`server/wrangler.toml` の `[assets]`）。個別のホスティングは不要で、
-更新は次の1コマンド:
+更新は次の1コマンド（スタッフ面と公開面の両Workerをデプロイする）:
 
 ```bash
-cd webapp && npm run deploy    # ビルドしてWorkerごとデプロイ
+cd webapp && npm run deploy
 ```
+
+### 公開面（visit-self）について
+
+来場者セルフチェックイン用の公開Worker（`server/wrangler.self.toml`）。
+**意図的にAccessをかけない**（来場者が開くページのため）。代わりに:
+
+- 秘密を一切持たない（ソルト・APIキーはこのWorkerに存在しない）
+- 書き込めるのは「セルフ受付」を許可した場所へのチェックインだけ
+- 身元は端末仮名（ブラウザ内の乱数）。カード読取は公開面では行わない
+
+Accessの対象は**スタッフ面（visit-checkin）だけ**でよい。
 
 > 旧構成の Cloudflare Pages（wester-checkin.pages.dev）は削除済み。
 > Accessで保護できないURLのため、再作成しないこと。
