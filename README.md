@@ -15,6 +15,7 @@ JR西日本の社員が、イベント会場や駅で来場者の WESTER 会員�
 │   ├── WesterVisitScan.xcodeproj
 │   ├── WesterVisitScan/          # アプリ本体
 │   └── WesterVisitScanTests/     # classifyBarcode / transformID の単体テスト
+├── DESIGN.md   # 再設計の構想（場所・IDの階段・民主化）
 ├── server/     # Cloudflare Workers + D1（TypeScript, wrangler）
 │                 # NFCプローブの接続仕様は server/NFC_PROBE.md
 ├── webapp/     # Web版チェックインツール（Vite + React, IndexedDB + Worker同期）
